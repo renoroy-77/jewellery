@@ -520,6 +520,9 @@ export default function AdminProductsPage() {
             style={{
               maxWidth: '780px',
               width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
               borderRadius: '16px',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               border: '1px solid #e2e8f0',
@@ -533,6 +536,7 @@ export default function AdminProductsPage() {
                 background: 'linear-gradient(to right, #f8fafc, #ffffff)',
                 borderBottom: '1px solid #f1f5f9',
                 padding: '20px 24px',
+                flexShrink: 0,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -578,8 +582,26 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveProduct}>
-              <div className="admin-modal-body" style={{ padding: '24px', gap: '18px' }}>
+            <form
+              onSubmit={handleSaveProduct}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                className="admin-modal-body"
+                style={{
+                  padding: '24px',
+                  gap: '18px',
+                  flex: 1,
+                  minHeight: 0,
+                  overflowY: 'auto',
+                }}
+              >
                 {/* Product Name */}
                 <div className="admin-form-group">
                   <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
@@ -866,8 +888,11 @@ export default function AdminProductsPage() {
                   background: '#f8fafc',
                   borderTop: '1px solid #e2e8f0',
                   display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'flex-end',
                   gap: '12px',
+                  flexShrink: 0,
+                  zIndex: 10,
                 }}
               >
                 <button
