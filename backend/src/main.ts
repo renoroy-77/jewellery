@@ -9,15 +9,15 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
-  // Enable CORS
-  const allowedOrigins = process.env.CORS_ORIGIN
-    ? [process.env.CORS_ORIGIN, 'http://localhost:3000']
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
-
+  // Enable CORS with dynamic origin reflection for Vercel & localhost
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Reflect the origin to properly support credentials: true across all origins
+      callback(null, true);
+    },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Authorization,Accept,Origin,X-Requested-With',
   });
 
   // Global DTO Validation
