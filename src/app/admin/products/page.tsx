@@ -18,7 +18,7 @@ import {
   Database,
   Upload,
 } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
+import { CATEGORIES, PRODUCTS } from '@/data/products';
 import { Product } from '@/types';
 import { productsService } from '@/services/productsService';
 import { cmsService } from '@/services/cmsService';
@@ -65,12 +65,18 @@ export default function AdminProductsPage() {
     setIsLoading(true);
     try {
       const data = await productsService.getAll();
-      setProducts(data);
-      setBackendOnline(true);
+      if (data && data.length > 0) {
+        setProducts(data);
+        setBackendOnline(true);
+      } else {
+        setProducts(PRODUCTS);
+        setBackendOnline(false);
+      }
     } catch (err: any) {
       console.error('Failed to load products:', err);
+      setProducts(PRODUCTS);
       setBackendOnline(false);
-      showToast('Could not load from PostgreSQL. Fallback applied.', 'error');
+      showToast('Could not load from PostgreSQL. Fallback catalog loaded.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -316,7 +322,7 @@ export default function AdminProductsPage() {
                 }}
               >
                 <Database size={12} />
-                {backendOnline ? 'PostgreSQL Connected (NestJS :4000)' : 'Offline Fallback'}
+                {backendOnline ? 'PostgreSQL Connected (Neon Cloud)' : 'Demo Catalog (Offline)'}
               </span>
             )}
           </div>

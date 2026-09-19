@@ -18,6 +18,10 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
+  Loader2,
+  Check,
+  Percent,
+  Sliders,
 } from 'lucide-react';
 import {
   referralsService,
@@ -39,7 +43,7 @@ export default function AdminReferralsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'REWARDED' | 'PENDING' | 'REVERSED'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,21 +58,23 @@ export default function AdminReferralsPage() {
         referralsService.getAdminReferrals(),
       ]);
       if (fetchedSettings) setSettings(fetchedSettings);
-      if (fetchedReferrals) setReferrals(fetchedReferrals);
-    } catch {
-      // Keep defaults
+      if (fetchedReferrals && Array.isArray(fetchedReferrals)) {
+        setReferrals(fetchedReferrals);
+      }
+    } catch (err: any) {
+      console.error('Failed to load referrals data:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSaving(true);
     try {
       const updated = await referralsService.updateAdminSettings({
@@ -78,9 +84,9 @@ export default function AdminReferralsPage() {
         minOrderSubtotal: Number(settings.minOrderSubtotal),
       });
       setSettings(updated);
-      showToast('Referral program settings updated and synchronized with backend!');
+      showToast('Referral program settings successfully saved to Neon Cloud PostgreSQL!', 'success');
     } catch (err: any) {
-      showToast(err.message || 'Failed to update referral settings');
+      showToast(err.message || 'Failed to update referral settings', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -89,6 +95,7 @@ export default function AdminReferralsPage() {
   const handleCopy = (code: string) => {
     navigator.clipboard?.writeText(code);
     setCopiedCoupon(code);
+    showToast(`Coupon "${code}" copied to clipboard!`, 'success');
     setTimeout(() => setCopiedCoupon(null), 2000);
   };
 
@@ -108,13 +115,14 @@ export default function AdminReferralsPage() {
 
   const totalRewardsGranted = referrals
     .filter((r) => r.status === 'REWARDED')
-    .reduce((sum, r) => sum + r.rewardAmount, 0);
+    .reduce((sum, r) => sum + (r.rewardAmount || 0), 0);
 
   const pendingCount = referrals.filter((r) => r.status === 'PENDING').length;
   const rewardedCount = referrals.filter((r) => r.status === 'REWARDED').length;
+  const reversedCount = referrals.filter((r) => r.status === 'REVERSED').length;
 
   return (
-    <div className="admin-page-container">
+    <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '60px' }}>
       {/* Toast Alert */}
       {toastMessage && (
         <div
@@ -122,453 +130,593 @@ export default function AdminReferralsPage() {
             position: 'fixed',
             top: '24px',
             right: '24px',
-            background: 'linear-gradient(135deg, #041f14 0%, #03140c 100%)',
-            border: '1px solid #d4af37',
-            color: '#fcf9f2',
-            padding: '14px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.6)',
+            background: toastMessage.type === 'success' ? '#064e3b' : '#7f1d1d',
+            color: '#ffffff',
+            border: toastMessage.type === 'success' ? '1px solid #10b981' : '1px solid #ef4444',
+            padding: '12px 20px',
+            borderRadius: '10px',
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.25)',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
             zIndex: 9999,
-            fontSize: '0.9rem',
+            fontSize: '0.88rem',
+            fontWeight: 500,
           }}
         >
-          <CheckCircle2 size={18} color="#4ade80" />
-          <span>{toastMessage}</span>
+          {toastMessage.type === 'success' ? (
+            <CheckCircle2 size={18} color="#34d399" />
+          ) : (
+            <AlertCircle size={18} color="#f87171" />
+          )}
+          <span>{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <Sparkles size={24} color="#d4af37" />
-          <h1 style={{ fontSize: '1.8rem', color: '#fcf9f2', margin: 0 }}>
-            Referrals &amp; Rewards Program
-          </h1>
-        </div>
-        <p style={{ color: '#9db3a8', fontSize: '0.92rem', margin: 0 }}>
-          Manage referral rules, discount amounts, referrer reward coupons, and track friend invitations.
-        </p>
-      </div>
-
-      {/* Analytics Metric Cards */}
+      {/* Header Section */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
           marginBottom: '28px',
+          flexWrap: 'wrap',
+          gap: '16px',
         }}
       >
-        <div
-          style={{
-            background: 'rgba(4, 20, 13, 0.75)',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '10px',
-            padding: '18px 20px',
-          }}
-        >
-          <div style={{ fontSize: '0.78rem', color: '#8fa59b', textTransform: 'uppercase', marginBottom: '6px' }}>
-            Total Friends Referred
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#fcf9f2' }}>
-            {referrals.length}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#4ade80', marginTop: '4px' }}>
-            {rewardedCount} orders confirmed
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: 'rgba(4, 20, 13, 0.75)',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '10px',
-            padding: '18px 20px',
-          }}
-        >
-          <div style={{ fontSize: '0.78rem', color: '#8fa59b', textTransform: 'uppercase', marginBottom: '6px' }}>
-            Rewards Granted
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#d4af37' }}>
-            ₹{totalRewardsGranted.toLocaleString('en-IN')}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#b0c4b8', marginTop: '4px' }}>
-            Single-use referrer coupons
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: 'rgba(4, 20, 13, 0.75)',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '10px',
-            padding: '18px 20px',
-          }}
-        >
-          <div style={{ fontSize: '0.78rem', color: '#8fa59b', textTransform: 'uppercase', marginBottom: '6px' }}>
-            Pending Verification
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#f5d77f' }}>
-            {pendingCount}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#8fa59b', marginTop: '4px' }}>
-            Awaiting order confirmation
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: 'rgba(4, 20, 13, 0.75)',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '10px',
-            padding: '18px 20px',
-          }}
-        >
-          <div style={{ fontSize: '0.78rem', color: '#8fa59b', textTransform: 'uppercase', marginBottom: '6px' }}>
-            Program Status
-          </div>
-          <div
-            style={{
-              fontSize: '1.2rem',
-              fontWeight: 700,
-              color: settings.enabled ? '#4ade80' : '#f87171',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginTop: '4px',
-            }}
-          >
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-cinzel, serif)',
+                fontSize: '1.85rem',
+                fontWeight: 700,
+                color: '#0f172a',
+                margin: 0,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              REFERRALS &amp; REWARDS
+            </h1>
             <span
               style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: settings.enabled ? '#4ade80' : '#f87171',
-                boxShadow: settings.enabled ? '0 0 10px #4ade80' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                backgroundColor: settings.enabled ? '#ecfdf5' : '#fef2f2',
+                color: settings.enabled ? '#047857' : '#b91c1c',
+                border: `1px solid ${settings.enabled ? '#a7f3d0' : '#fecaca'}`,
               }}
-            />
-            <span>{settings.enabled ? 'Active at Checkout' : 'Paused / Inactive'}</span>
+            >
+              <span
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: settings.enabled ? '#10b981' : '#ef4444',
+                }}
+              />
+              {settings.enabled ? 'Active at Checkout' : 'Program Paused'}
+            </span>
           </div>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>
+            Configure backend referral discounts, manage referrer reward coupons, and monitor devotee invitations.
+          </p>
         </div>
-      </div>
 
-      {/* Backend Control Settings Card */}
-      <form
-        onSubmit={handleSaveSettings}
-        style={{
-          background: 'rgba(4, 20, 13, 0.85)',
-          border: '1px solid rgba(212, 175, 55, 0.3)',
-          borderRadius: '12px',
-          padding: '24px',
-          marginBottom: '36px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
-            paddingBottom: '16px',
-            marginBottom: '20px',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: '1.2rem', color: '#fcf9f2', margin: 0 }}>
-              Backend Program Rules &amp; Controls
-            </h2>
-            <p style={{ color: '#8fa59b', fontSize: '0.85rem', margin: '4px 0 0' }}>
-              These parameters directly control the checkout discounts and referrer reward values.
-            </p>
-          </div>
-
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <button
-            type="submit"
+            type="button"
+            className="admin-btn admin-btn-secondary"
+            onClick={loadData}
+            disabled={isLoading}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Loader2 size={15} className={isLoading ? 'animate-spin' : ''} />
+            <span>{isLoading ? 'Syncing...' : 'Sync Database'}</span>
+          </button>
+          <button
+            type="button"
+            className="admin-btn admin-btn-gold"
+            onClick={() => handleSaveSettings()}
             disabled={isSaving}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 22px',
-              background: 'linear-gradient(135deg, #d4af37 0%, #aa8010 100%)',
-              color: '#05160f',
-              border: 'none',
-              borderRadius: '6px',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              opacity: isSaving ? 0.7 : 1,
-            }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >
             <Save size={16} />
             <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
           </button>
         </div>
+      </div>
 
+      {/* 4 Executive Metric Cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '16px',
+          marginBottom: '28px',
+        }}
+      >
+        {/* Card 1: Total Referred */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '20px',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
           }}
         >
-          {/* Toggle on/off */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.85rem',
-                color: '#b0c4b8',
-                marginBottom: '8px',
-                fontWeight: 600,
-              }}
-            >
-              Referral Program Status
-            </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Friends Referred
+            </span>
             <div
-              onClick={() => setSettings({ ...settings, enabled: !settings.enabled })}
               style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: '#ecfdf5',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px',
-                background: 'rgba(2, 12, 8, 0.85)',
-                border: '1px solid rgba(212, 175, 55, 0.25)',
-                borderRadius: '8px',
-                cursor: 'pointer',
+                justifyContent: 'center',
+                color: '#059669',
               }}
             >
+              <Users size={18} />
+            </div>
+          </div>
+          <div style={{ marginTop: '14px' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a', lineHeight: 1 }}>
+              {referrals.length}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 500, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle2 size={13} />
+              <span>{rewardedCount} orders verified &amp; rewarded</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Rewards Granted */}
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Rewards Granted
+            </span>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: '#fffbeb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#d97706',
+              }}
+            >
+              <Coins size={18} />
+            </div>
+          </div>
+          <div style={{ marginTop: '14px' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#b45309', lineHeight: 1 }}>
+              ₹{totalRewardsGranted.toLocaleString('en-IN')}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '6px' }}>
+              Single-use referrer coupons issued
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Pending Verification */}
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Pending Verification
+            </span>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: '#eff6ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#2563eb',
+              }}
+            >
+              <Clock size={18} />
+            </div>
+          </div>
+          <div style={{ marginTop: '14px' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a', lineHeight: 1 }}>
+              {pendingCount}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '6px' }}>
+              Orders awaiting fulfillment/payment
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Current Rules Overview */}
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Active Incentives
+            </span>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: '#faf5ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#9333ea',
+              }}
+            >
+              <Gift size={18} />
+            </div>
+          </div>
+          <div style={{ marginTop: '14px' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
+              ₹{settings.refereeDiscountRupees} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748b' }}>off friend</span>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#0d5438', fontWeight: 600, marginTop: '4px' }}>
+              + ₹{settings.referrerRewardRupees} voucher for devotee
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Backend Program Rules & Controls (Clean Light Card) */}
+      <div
+        style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '14px',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+          overflow: 'hidden',
+          marginBottom: '32px',
+        }}
+      >
+        {/* Card Header Bar */}
+        <div
+          style={{
+            padding: '18px 24px',
+            borderBottom: '1px solid #f1f5f9',
+            background: 'linear-gradient(to right, #f8fafc, #ffffff)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: '#0d5438',
+                color: '#fcd34d',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Sliders size={16} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                Program Rules &amp; Discount Configuration
+              </h2>
+              <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+                These parameters directly govern the live checkout discounts and devotee coupon rewards.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleSaveSettings()}
+            disabled={isSaving}
+            className="admin-btn admin-btn-gold"
+            style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+          >
+            <Save size={14} />
+            <span>{isSaving ? 'Updating...' : 'Update Rules'}</span>
+          </button>
+        </div>
+
+        {/* Card Form Body */}
+        <div style={{ padding: '24px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '24px',
+            }}
+          >
+            {/* 1. Toggle Switch */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+                Referral Program Status
+              </label>
               <div
+                onClick={() => setSettings({ ...settings, enabled: !settings.enabled })}
                 style={{
-                  width: '42px',
-                  height: '24px',
-                  borderRadius: '12px',
-                  background: settings.enabled ? '#4ade80' : '#4b5563',
-                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  padding: '12px 16px',
+                  background: settings.enabled ? '#f0fdf4' : '#f8fafc',
+                  border: settings.enabled ? '1.5px solid #86efac' : '1px solid #cbd5e1',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  userSelect: 'none',
                   transition: 'all 0.2s ease',
                 }}
               >
                 <div
                   style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    background: '#05160f',
-                    position: 'absolute',
-                    top: '3px',
-                    left: settings.enabled ? '21px' : '3px',
-                    transition: 'all 0.2s ease',
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    background: settings.enabled ? '#10b981' : '#cbd5e1',
+                    position: 'relative',
+                    transition: 'background 0.2s ease',
                   }}
+                >
+                  <div
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: '#ffffff',
+                      position: 'absolute',
+                      top: '3px',
+                      left: settings.enabled ? '23px' : '3px',
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 600, color: settings.enabled ? '#065f46' : '#64748b' }}>
+                    {settings.enabled ? 'Enabled at Checkout' : 'Paused / Inactive'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    {settings.enabled ? 'Devotees can redeem codes' : 'Referral box hidden at checkout'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Friend Discount */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+                Friend Welcome Discount (₹)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b' }}>
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="10"
+                  value={settings.refereeDiscountRupees}
+                  onChange={(e) =>
+                    setSettings({ ...settings, refereeDiscountRupees: Number(e.target.value) })
+                  }
+                  className="admin-form-input"
+                  style={{ paddingLeft: '32px', fontWeight: 600, fontSize: '0.95rem' }}
                 />
               </div>
-              <span style={{ fontSize: '0.9rem', color: settings.enabled ? '#4ade80' : '#9ca3af' }}>
-                {settings.enabled ? 'Enabled at Checkout' : 'Disabled'}
-              </span>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px', margin: '6px 0 0' }}>
+                Instant rupee deduction deducted from the friend&apos;s first purchase.
+              </p>
+            </div>
+
+            {/* 3. Referrer Reward */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+                Referrer Reward Coupon (₹)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b' }}>
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="10"
+                  value={settings.referrerRewardRupees}
+                  onChange={(e) =>
+                    setSettings({ ...settings, referrerRewardRupees: Number(e.target.value) })
+                  }
+                  className="admin-form-input"
+                  style={{ paddingLeft: '32px', fontWeight: 600, fontSize: '0.95rem' }}
+                />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px', margin: '6px 0 0' }}>
+                Single-use coupon automatically generated for the referrer upon order payment.
+              </p>
+            </div>
+
+            {/* 4. Minimum Subtotal */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+                Minimum Order Subtotal (₹)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b' }}>
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  value={settings.minOrderSubtotal}
+                  onChange={(e) =>
+                    setSettings({ ...settings, minOrderSubtotal: Number(e.target.value) })
+                  }
+                  className="admin-form-input"
+                  style={{ paddingLeft: '32px', fontWeight: 600, fontSize: '0.95rem' }}
+                />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px', margin: '6px 0 0' }}>
+                Cart minimum required before referral discounts can be unlocked.
+              </p>
             </div>
           </div>
-
-          {/* Friend Discount */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.85rem',
-                color: '#b0c4b8',
-                marginBottom: '8px',
-                fontWeight: 600,
-              }}
-            >
-              Friend Discount (₹)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="10"
-              value={settings.refereeDiscountRupees}
-              onChange={(e) =>
-                setSettings({ ...settings, refereeDiscountRupees: Number(e.target.value) })
-              }
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                background: 'rgba(2, 12, 8, 0.85)',
-                border: '1px solid rgba(212, 175, 55, 0.25)',
-                borderRadius: '6px',
-                color: '#fcf9f2',
-                fontSize: '0.95rem',
-                outline: 'none',
-              }}
-            />
-            <div style={{ fontSize: '0.72rem', color: '#8fa59b', marginTop: '4px' }}>
-              Instant welcome deduction on the friend&apos;s first purchase.
-            </div>
-          </div>
-
-          {/* Referrer Reward */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.85rem',
-                color: '#b0c4b8',
-                marginBottom: '8px',
-                fontWeight: 600,
-              }}
-            >
-              Referrer Reward Coupon (₹)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="10"
-              value={settings.referrerRewardRupees}
-              onChange={(e) =>
-                setSettings({ ...settings, referrerRewardRupees: Number(e.target.value) })
-              }
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                background: 'rgba(2, 12, 8, 0.85)',
-                border: '1px solid rgba(212, 175, 55, 0.25)',
-                borderRadius: '6px',
-                color: '#fcf9f2',
-                fontSize: '0.95rem',
-                outline: 'none',
-              }}
-            />
-            <div style={{ fontSize: '0.72rem', color: '#8fa59b', marginTop: '4px' }}>
-              Single-use reward coupon generated for referrer when payment succeeds.
-            </div>
-          </div>
-
-          {/* Min Order Subtotal */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.85rem',
-                color: '#b0c4b8',
-                marginBottom: '8px',
-                fontWeight: 600,
-              }}
-            >
-              Minimum Order Subtotal (₹)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="50"
-              value={settings.minOrderSubtotal}
-              onChange={(e) =>
-                setSettings({ ...settings, minOrderSubtotal: Number(e.target.value) })
-              }
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                background: 'rgba(2, 12, 8, 0.85)',
-                border: '1px solid rgba(212, 175, 55, 0.25)',
-                borderRadius: '6px',
-                color: '#fcf9f2',
-                fontSize: '0.95rem',
-                outline: 'none',
-              }}
-            />
-            <div style={{ fontSize: '0.72rem', color: '#8fa59b', marginTop: '4px' }}>
-              Minimum cart value required before referral code can be applied.
-            </div>
-          </div>
-        </div>
-      </form>
-
-      {/* Referrals Audit Table Header & Controls */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {(['all', 'REWARDED', 'PENDING', 'REVERSED'] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                border:
-                  statusFilter === st
-                    ? '1px solid #d4af37'
-                    : '1px solid rgba(212, 175, 55, 0.2)',
-                background:
-                  statusFilter === st
-                    ? 'rgba(212, 175, 55, 0.15)'
-                    : 'rgba(2, 12, 8, 0.6)',
-                color: statusFilter === st ? '#f5d77f' : '#8fa59b',
-                cursor: 'pointer',
-              }}
-            >
-              {st === 'all' ? 'All Referrals' : st}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Box */}
-        <div style={{ position: 'relative', width: '280px' }}>
-          <Search
-            size={16}
-            color="#8fa59b"
-            style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search email, order, or coupon..."
-            style={{
-              width: '100%',
-              padding: '8px 12px 8px 36px',
-              background: 'rgba(2, 12, 8, 0.85)',
-              border: '1px solid rgba(212, 175, 55, 0.25)',
-              borderRadius: '6px',
-              color: '#fcf9f2',
-              fontSize: '0.85rem',
-              outline: 'none',
-            }}
-          />
         </div>
       </div>
 
-      {/* Table */}
+      {/* Referrals Audit Trail Section */}
       <div
         style={{
-          background: 'rgba(4, 20, 13, 0.85)',
-          border: '1px solid rgba(212, 175, 55, 0.25)',
-          borderRadius: '12px',
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '14px',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
           overflow: 'hidden',
         }}
       >
+        {/* Table Filters and Search Bar */}
+        <div
+          style={{
+            padding: '18px 24px',
+            borderBottom: '1px solid #f1f5f9',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
+          {/* Status Filter Tabs */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {(
+              [
+                { key: 'all', label: 'All Referrals', count: referrals.length },
+                { key: 'REWARDED', label: 'Rewarded', count: rewardedCount },
+                { key: 'PENDING', label: 'Pending', count: pendingCount },
+                { key: 'REVERSED', label: 'Reversed', count: reversedCount },
+              ] as const
+            ).map((tab) => {
+              const isActive = statusFilter === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.key)}
+                  style={{
+                    padding: '7px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    border: isActive ? '1px solid #0d5438' : '1px solid #e2e8f0',
+                    background: isActive ? '#0d5438' : '#ffffff',
+                    color: isActive ? '#ffffff' : '#64748b',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    style={{
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontSize: '0.72rem',
+                      background: isActive ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
+                      color: isActive ? '#ffffff' : '#475569',
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Box */}
+          <div style={{ position: 'relative', width: '280px' }}>
+            <Search
+              size={15}
+              color="#94a3b8"
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search email, order, or coupon..."
+              className="admin-form-input"
+              style={{ paddingLeft: '36px', height: '38px', fontSize: '0.85rem' }}
+            />
+          </div>
+        </div>
+
+        {/* Data Table */}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
             <thead>
-              <tr style={{ background: 'rgba(2, 12, 8, 0.95)', borderBottom: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Date</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Referrer</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Invited Friend</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Order ID</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600 }}>Referrer Reward Coupon</th>
-                <th style={{ padding: '14px 16px', color: '#d4af37', fontWeight: 600, textAlign: 'right' }}>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Referrer</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Invited Friend</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order ID</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Referrer Reward Coupon</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>
                   Reward (₹)
                 </th>
               </tr>
@@ -576,10 +724,30 @@ export default function AdminReferralsPage() {
             <tbody>
               {filteredReferrals.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: '40px 16px', textAlign: 'center', color: '#8fa59b' }}>
-                    {isLoading
-                      ? 'Loading referrals from PostgreSQL database...'
-                      : 'No referral activity found matching your filter.'}
+                  <td colSpan={7} style={{ padding: '48px 24px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#94a3b8',
+                        }}
+                      >
+                        <Gift size={22} />
+                      </div>
+                      <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.95rem' }}>
+                        No referral activity matching current filter
+                      </div>
+                      <p style={{ color: '#64748b', fontSize: '0.82rem', margin: 0, maxWidth: '420px' }}>
+                        Devotees receive their personal referral code on their account page. When a friend uses the code at checkout, the verified record will appear here.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -587,11 +755,14 @@ export default function AdminReferralsPage() {
                   <tr
                     key={item.id}
                     style={{
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderBottom: '1px solid #f1f5f9',
                       transition: 'background 0.15s ease',
                     }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#f8fafc')}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
                   >
-                    <td style={{ padding: '14px 16px', color: '#8fa59b', whiteSpace: 'nowrap' }}>
+                    {/* Date */}
+                    <td style={{ padding: '14px 18px', color: '#64748b', whiteSpace: 'nowrap', fontSize: '0.82rem' }}>
                       {new Date(item.createdAt).toLocaleDateString('en-GB', {
                         day: '2-digit',
                         month: 'short',
@@ -599,104 +770,162 @@ export default function AdminReferralsPage() {
                       })}
                     </td>
 
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ fontWeight: 600, color: '#fcf9f2' }}>{item.referrerName}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#d4af37' }}>
-                        Code: <code>{item.referrerCode}</code>
+                    {/* Referrer */}
+                    <td style={{ padding: '14px 18px' }}>
+                      <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                        {item.referrerName || 'Devotee User'}
                       </div>
-                    </td>
-
-                    <td style={{ padding: '14px 16px', color: '#b0c4b8' }}>
-                      <div>{item.refereeEmail}</div>
-                      {item.refereePhone && (
-                        <div style={{ fontSize: '0.75rem', color: '#8fa59b' }}>{item.refereePhone}</div>
+                      {item.referrerCode && (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            marginTop: '3px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            fontFamily: 'monospace',
+                            backgroundColor: '#f1f5f9',
+                            color: '#0d5438',
+                            border: '1px solid #cbd5e1',
+                          }}
+                        >
+                          {item.referrerCode}
+                        </span>
                       )}
                     </td>
 
-                    <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                      <Link
-                        href={`/admin/orders?search=${item.orderId}`}
-                        style={{
-                          color: '#f5d77f',
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          fontWeight: 500,
-                        }}
-                      >
-                        <span>{item.orderId}</span>
-                        <ExternalLink size={12} />
-                      </Link>
-                    </td>
-
-                    <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          padding: '3px 10px',
-                          borderRadius: '12px',
-                          fontWeight: 600,
-                          background:
-                            item.status === 'REWARDED'
-                              ? 'rgba(34, 197, 94, 0.15)'
-                              : item.status === 'PENDING'
-                              ? 'rgba(212, 175, 55, 0.15)'
-                              : 'rgba(239, 68, 68, 0.15)',
-                          color:
-                            item.status === 'REWARDED'
-                              ? '#4ade80'
-                              : item.status === 'PENDING'
-                              ? '#f5d77f'
-                              : '#f87171',
-                        }}
-                      >
-                        {item.status}
+                    {/* Referee Email */}
+                    <td style={{ padding: '14px 18px' }}>
+                      <div style={{ fontWeight: 500, color: '#1e293b' }}>
+                        {item.refereeEmail}
+                      </div>
+                      <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
+                        First Order Devotee
                       </span>
                     </td>
 
-                    <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                      {item.rewardCoupon ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <code
-                            style={{
-                              background: 'rgba(212, 175, 55, 0.1)',
-                              border: '1px solid rgba(212, 175, 55, 0.3)',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              color: '#f5d77f',
-                              fontSize: '0.8rem',
-                            }}
-                          >
-                            {item.rewardCoupon}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(item.rewardCoupon!)}
-                            title="Copy coupon code"
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: copiedCoupon === item.rewardCoupon ? '#4ade80' : '#8fa59b',
-                              cursor: 'pointer',
-                              padding: '2px',
-                            }}
-                          >
-                            <Copy size={13} />
-                          </button>
-                          {item.rewardCouponUsed && (
-                            <span style={{ fontSize: '0.7rem', color: '#9db3a8', fontStyle: 'italic' }}>
-                              (Used)
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>Issued on confirmation</span>
+                    {/* Order ID */}
+                    <td style={{ padding: '14px 18px' }}>
+                      <Link
+                        href={`/admin/orders`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: '#0d5438',
+                          fontWeight: 600,
+                          fontSize: '0.82rem',
+                          textDecoration: 'none',
+                          padding: '2px 8px',
+                          background: '#ecfdf5',
+                          border: '1px solid #a7f3d0',
+                          borderRadius: '6px',
+                        }}
+                      >
+                        <span>{item.orderId.substring(0, 12)}...</span>
+                        <ExternalLink size={11} />
+                      </Link>
+                    </td>
+
+                    {/* Status Pill */}
+                    <td style={{ padding: '14px 18px' }}>
+                      {item.status === 'REWARDED' && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '3px 10px',
+                            borderRadius: '20px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: '#ecfdf5',
+                            color: '#047857',
+                            border: '1px solid #a7f3d0',
+                          }}
+                        >
+                          <CheckCircle2 size={13} />
+                          <span>REWARDED</span>
+                        </span>
+                      )}
+                      {item.status === 'PENDING' && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '3px 10px',
+                            borderRadius: '20px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: '#fffbeb',
+                            color: '#b45309',
+                            border: '1px solid #fde68a',
+                          }}
+                        >
+                          <Clock size={13} />
+                          <span>PENDING</span>
+                        </span>
+                      )}
+                      {item.status === 'REVERSED' && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '3px 10px',
+                            borderRadius: '20px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: '#fef2f2',
+                            color: '#b91c1c',
+                            border: '1px solid #fecaca',
+                          }}
+                        >
+                          <XCircle size={13} />
+                          <span>REVERSED</span>
+                        </span>
                       )}
                     </td>
 
-                    <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 600, color: '#4ade80' }}>
-                      ₹{item.rewardAmount.toLocaleString('en-IN')}
+                    {/* Referrer Coupon */}
+                    <td style={{ padding: '14px 18px' }}>
+                      {item.rewardCoupon ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(item.rewardCoupon!)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px dashed #d4af37',
+                            background: '#fffdf5',
+                            color: '#92400e',
+                            fontWeight: 700,
+                            fontFamily: 'monospace',
+                            fontSize: '0.82rem',
+                            cursor: 'pointer',
+                          }}
+                          title="Click to copy coupon code"
+                        >
+                          <span>{item.rewardCoupon}</span>
+                          {copiedCoupon === item.rewardCoupon ? (
+                            <Check size={12} color="#059669" />
+                          ) : (
+                            <Copy size={12} color="#b45309" />
+                          )}
+                        </button>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Generating...</span>
+                      )}
+                    </td>
+
+                    {/* Reward Amount */}
+                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: '#047857', fontSize: '0.95rem' }}>
+                      +₹{item.rewardAmount || 200}
                     </td>
                   </tr>
                 ))
