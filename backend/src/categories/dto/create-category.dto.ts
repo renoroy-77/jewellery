@@ -2,15 +2,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
-  @ApiProperty({ example: 'pendants' })
+  @ApiPropertyOptional({ example: 'pendants' })
   @IsString()
-  @IsNotEmpty()
-  id: string;
+  @IsOptional()
+  id?: string;
 
-  @ApiProperty({ example: 'pendants' })
+  @ApiPropertyOptional({ example: 'pendants' })
   @IsString()
-  @IsNotEmpty()
-  slug: string;
+  @IsOptional()
+  slug?: string;
 
   @ApiProperty({ example: 'Sacred Pendants' })
   @IsString()
@@ -22,18 +22,18 @@ export class CreateCategoryDto {
   @IsOptional()
   tamilName?: string;
 
-  @ApiProperty({ example: '/images/categories/pendants.jpg' })
+  @ApiPropertyOptional({ example: '/assets/cat_ganesha.png' })
   @IsString()
-  @IsNotEmpty()
-  image: string;
+  @IsOptional()
+  image?: string;
 
-  @ApiProperty({ example: 24, default: 0 })
+  @ApiPropertyOptional({ example: 24, default: 0 })
   @IsNumber()
   @IsOptional()
   itemCount?: number;
 
-  @ApiProperty({ example: 'Handcrafted Panchaloham pendants charged with Agamic mantras.' })
+  @ApiPropertyOptional({ example: 'Handcrafted Panchaloham pendants charged with Agamic mantras.' })
   @IsString()
-  @IsNotEmpty()
-  description: string;
+  @IsOptional()
+  description?: string;
 }

@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { ChevronRight, Heart, ShoppingBag, Star } from 'lucide-react';
 import { CATEGORIES } from '@/data/products';
 import { productsService } from '@/services/productsService';
+import { categoriesService } from '@/services/categoriesService';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import BackButton from '@/components/BackButton';
@@ -21,7 +22,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category: slug } = await params;
-  const category = CATEGORIES.find((c) => c.slug === slug);
+  let category = CATEGORIES.find((c) => c.slug === slug || c.id === slug);
+  if (!category) {
+    category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
+  }
 
   if (!category) {
     return constructMetadata({
@@ -46,7 +50,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Props) {
   const { category: slug } = await params;
-  const category = CATEGORIES.find((c) => c.slug === slug);
+  let category = CATEGORIES.find((c) => c.slug === slug || c.id === slug);
+  if (!category) {
+    category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
+  }
 
   if (!category) {
     notFound();
@@ -55,15 +62,19 @@ export default async function CategoryPage({ params }: Props) {
   // Find products matching this category slug from PostgreSQL database
   const allProducts = await productsService.getAll();
   const matchedProducts = allProducts.filter((p) => {
-    if (category.id === 'ganesha') return p.deity === 'Lord Ganesha';
-    if (category.id === 'murugan') return p.deity === 'Lord Murugan';
-    if (category.id === 'shiva') return p.deity === 'Lord Shiva';
-    if (category.id === 'lakshmi') return p.deity === 'Goddess Lakshmi';
-    if (category.id === 'chains') return p.category === 'chains';
-    if (category.id === 'bracelets') return p.category === 'bracelets';
-    if (category.id === 'rings') return p.category === 'rings';
-    if (category.id === 'pooja') return p.category === 'pooja-items';
-    return p.category === 'pendants';
+    if (category!.id === 'ganesha') return p.deity === 'Lord Ganesha';
+    if (category!.id === 'murugan') return p.deity === 'Lord Murugan';
+    if (category!.id === 'shiva') return p.deity === 'Lord Shiva';
+    if (category!.id === 'lakshmi') return p.deity === 'Goddess Lakshmi';
+    if (category!.id === 'chains') return p.category === 'chains';
+    if (category!.id === 'bracelets') return p.category === 'bracelets';
+    if (category!.id === 'rings') return p.category === 'rings';
+    if (category!.id === 'pooja') return p.category === 'pooja-items';
+    const catVal = category!.slug.toLowerCase();
+    const catId = category!.id.toLowerCase();
+    const pCat = (p.category || '').toLowerCase();
+    const pDeity = (p.deity || '').toLowerCase();
+    return pCat === catVal || pCat === catId || pDeity.includes(catVal) || pDeity.includes(catId);
   });
 
   const breadcrumbs = [

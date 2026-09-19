@@ -18,9 +18,9 @@ export default function FeaturedProducts() {
       .getAll({ featured: true })
       .then((data) => {
         if (data.length > 0) {
-          setFeaturedProducts(data.slice(0, 4));
+          setFeaturedProducts(data.slice(0, 8));
         } else {
-          productsService.getAll().then((all) => setFeaturedProducts(all.slice(0, 4)));
+          productsService.getAll().then((all) => setFeaturedProducts(all.slice(0, 8)));
         }
       })
       .catch(() => setFeaturedProducts([]));

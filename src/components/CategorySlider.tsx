@@ -4,6 +4,8 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CATEGORIES } from '@/data/products';
+import { Category } from '@/types';
+import { categoriesService } from '@/services/categoriesService';
 import { useTranslation } from '@/context/LanguageContext';
 
 const CATEGORY_IMAGES: Record<string, string> = {
@@ -16,9 +18,9 @@ const CATEGORY_IMAGES: Record<string, string> = {
   chains: '/assets/prod_chain_hq.webp',
 };
 
-// Filter out bracelets, rings, and pooja-essentials as requested
+// Filter out bracelets, rings, and pooja-essentials from circular bar
 const EXCLUDED_IDS = ['bracelets', 'rings', 'pooja'];
-const FEATURED_COLLECTIONS = CATEGORIES.filter((c) => !EXCLUDED_IDS.includes(c.id));
+const DEFAULT_FEATURED_COLLECTIONS = CATEGORIES.filter((c) => !EXCLUDED_IDS.includes(c.id));
 
 // Timing intervals: auto-slide every 3.2s, pause for 4s on manual click/swipe
 const CAROUSEL_INTERVAL_MS = 3200;
@@ -27,16 +29,29 @@ const USER_CLICK_PAUSE_MS = 4000;
 export default function CategorySlider() {
   const { t, locale } = useTranslation();
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [collections, setCollections] = useState<Category[]>(DEFAULT_FEATURED_COLLECTIONS);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   activeIndexRef.current = activeIndex;
+
+  useEffect(() => {
+    categoriesService
+      .getAll()
+      .then((data) => {
+        if (data && data.length > 0) {
+          const filtered = data.filter((c) => !EXCLUDED_IDS.includes(c.id));
+          setCollections(filtered.length > 0 ? filtered : data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Total items in carousel (7 collections + 1 "View All" card)
-  const totalSlides = FEATURED_COLLECTIONS.length + 1;
+  // Total items in carousel (collections + 1 "View All" card)
+  const totalSlides = collections.length + 1;
 
   // Track scroll position to update active indicator
   const handleScroll = useCallback(() => {
@@ -167,7 +182,7 @@ export default function CategorySlider() {
             onMouseDown={handleTouchStart}
             onMouseUp={handleTouchEnd}
           >
-            {FEATURED_COLLECTIONS.map((cat, index) => {
+            {collections.map((cat, index) => {
               const isActive = index === activeIndex;
 
               return (
@@ -181,7 +196,7 @@ export default function CategorySlider() {
                   <div className="category-circle-wrapper-five">
                     <div className="category-circle-inner-five">
                       <img
-                        src={CATEGORY_IMAGES[cat.id] || cat.image}
+                        src={CATEGORY_IMAGES[cat.id] || cat.image || '/assets/cat_ganesha_hq.webp'}
                         alt={cat.name}
                         loading="lazy"
                       />

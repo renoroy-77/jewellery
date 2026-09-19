@@ -19,12 +19,14 @@ import {
   Upload,
 } from 'lucide-react';
 import { CATEGORIES, PRODUCTS } from '@/data/products';
-import { Product } from '@/types';
+import { Category, Product } from '@/types';
 import { productsService } from '@/services/productsService';
+import { categoriesService } from '@/services/categoriesService';
 import { cmsService } from '@/services/cmsService';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -84,11 +86,25 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     loadProducts();
+    categoriesService
+      .getAll()
+      .then((data) => {
+        if (data && data.length > 0) setCategories(data);
+      })
+      .catch(() => {});
   }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
+      if (categoryFilter !== 'all') {
+        const cat = categoryFilter.toLowerCase();
+        const prodCat = (p.category || '').toLowerCase();
+        const prodDeity = (p.deity || '').toLowerCase();
+        const prodSlug = (p.slug || '').toLowerCase();
+        if (prodCat !== cat && !prodDeity.includes(cat) && !prodSlug.includes(cat)) {
+          return false;
+        }
+      }
       if (searchQuery.trim().length > 0) {
         const q = searchQuery.toLowerCase();
         const matchName = p.name.toLowerCase().includes(q);
@@ -377,12 +393,12 @@ export default function AdminProductsPage() {
               className="admin-form-select"
               style={{ width: 'auto', minWidth: '170px' }}
             >
-              <option value="all">All Categories ({products.length})</option>
-              <option value="pendants">Pendants</option>
-              <option value="chains">Chains &amp; Necklaces</option>
-              <option value="bracelets">Bracelets &amp; Kadas</option>
-              <option value="rings">Temple Rings</option>
-              <option value="pooja-items">Pooja Items</option>
+              <option value="all">All Collections &amp; Categories ({products.length})</option>
+              {categories.map((c) => (
+                <option key={c.id || c.slug} value={c.slug || c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -645,11 +661,11 @@ export default function AdminProductsPage() {
                       className="admin-form-select"
                       style={{ height: '42px' }}
                     >
-                      <option value="pendants">Pendants</option>
-                      <option value="chains">Chains &amp; Necklaces</option>
-                      <option value="bracelets">Bracelets &amp; Kadas</option>
-                      <option value="rings">Temple Rings</option>
-                      <option value="pooja-items">Pooja Items</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id || cat.slug} value={cat.slug || cat.id}>
+                          {cat.name} {cat.tamilName ? `(${cat.tamilName})` : ''}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -699,6 +715,36 @@ export default function AdminProductsPage() {
                       <option value="false">Sold Out / Backorder</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Featured Showcase Toggle */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: formFeatured ? '#f0fdf4' : '#f8fafc',
+                    border: formFeatured ? '1px solid #86efac' : '1px solid #e2e8f0',
+                    padding: '12px 16px',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <input
+                    id="featured-product-toggle"
+                    type="checkbox"
+                    checked={formFeatured}
+                    onChange={(e) => setFormFeatured(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: '#0d5438', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="featured-product-toggle" style={{ cursor: 'pointer', margin: 0 }}>
+                    <span style={{ fontWeight: 700, color: formFeatured ? '#166534' : '#1e293b', fontSize: '0.9rem' }}>
+                      ⭐ Feature on Homepage (Consecrated Creations showcase)
+                    </span>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                      When enabled, this consecrated piece is showcased in the &quot;Blessings for Every Occasion / Consecrated Creations&quot; homepage grid.
+                    </p>
+                  </label>
                 </div>
 
                 {/* Image URL & Upload */}

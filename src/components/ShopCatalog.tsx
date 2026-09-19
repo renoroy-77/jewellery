@@ -40,28 +40,30 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
   // Jewellery Types (Dynamically calculated from live database products)
+  const baseTypes = [
+    { label: 'Pendants & Lockets', value: 'pendants' },
+    { label: 'Chains & Necklaces', value: 'chains' },
+    { label: 'Bracelets & Kadas', value: 'bracelets' },
+    { label: 'Temple Rings', value: 'rings' },
+  ];
+
+  const productCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+  const customCats = productCats
+    .filter((c) => !baseTypes.some((b) => b.value.toLowerCase() === c.toLowerCase()))
+    .map((c) => ({
+      label: c.charAt(0).toUpperCase() + c.slice(1).replace(/-/g, ' '),
+      value: c,
+    }));
+
+  const allCategoryOptions = [...baseTypes, ...customCats];
+
   const JEWELLERY_TYPES = [
     { label: 'All Sacred Jewellery', value: 'all', count: products.length },
-    {
-      label: 'Pendants & Lockets',
-      value: 'pendants',
-      count: products.filter((p) => p.category === 'pendants').length,
-    },
-    {
-      label: 'Chains & Necklaces',
-      value: 'chains',
-      count: products.filter((p) => p.category === 'chains').length,
-    },
-    {
-      label: 'Bracelets & Kadas',
-      value: 'bracelets',
-      count: products.filter((p) => p.category === 'bracelets').length,
-    },
-    {
-      label: 'Temple Rings',
-      value: 'rings',
-      count: products.filter((p) => p.category === 'rings').length,
-    },
+    ...allCategoryOptions.map((t) => ({
+      label: t.label,
+      value: t.value,
+      count: products.filter((p) => p.category?.toLowerCase() === t.value.toLowerCase()).length,
+    })),
   ];
 
   const PRICE_RANGES = [

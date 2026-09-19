@@ -28,15 +28,30 @@ export class CategoriesService {
   }
 
   async create(dto: CreateCategoryDto) {
-    return this.prisma.category.create({
-      data: {
-        id: dto.id,
-        slug: dto.slug || dto.id,
+    const rawSlug = dto.slug || dto.id || dto.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = rawSlug || `collection-${Date.now()}`;
+    const id = dto.id || slug;
+    const image = dto.image || '/assets/cat_ganesha.png';
+    const description = dto.description || `${dto.name} consecrated Panchaloham temple collection.`;
+
+    return this.prisma.category.upsert({
+      where: { id },
+      update: {
+        slug,
         name: dto.name,
         tamilName: dto.tamilName,
-        image: dto.image,
+        image,
+        itemCount: dto.itemCount ?? undefined,
+        description,
+      },
+      create: {
+        id,
+        slug,
+        name: dto.name,
+        tamilName: dto.tamilName || null,
+        image,
         itemCount: dto.itemCount ?? 0,
-        description: dto.description,
+        description,
       },
     });
   }
