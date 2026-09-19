@@ -511,25 +511,80 @@ export default function AdminProductsPage() {
 
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="admin-modal-backdrop">
-          <div className="admin-modal-card" style={{ maxWidth: '720px' }}>
-            <div className="admin-modal-header">
-              <h2 className="admin-modal-title">
-                {editingProduct ? 'Edit Sacred Jewellery Item' : 'Add New Panchaloham Item'}
-              </h2>
+        <div
+          className="admin-modal-overlay"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="admin-modal-card"
+            style={{
+              maxWidth: '780px',
+              width: '100%',
+              borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #e2e8f0',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="admin-modal-header"
+              style={{
+                background: 'linear-gradient(to right, #f8fafc, #ffffff)',
+                borderBottom: '1px solid #f1f5f9',
+                padding: '20px 24px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: '#0d5438',
+                    color: '#fcd34d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Package size={16} />
+                </div>
+                <div>
+                  <h2
+                    className="admin-modal-title"
+                    style={{
+                      fontFamily: 'var(--font-cinzel, serif)',
+                      fontSize: '1.25rem',
+                      fontWeight: 700,
+                      color: '#0f172a',
+                      margin: 0,
+                    }}
+                  >
+                    {editingProduct ? 'Edit Sacred Jewellery Item' : 'Add New Panchaloham Item'}
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+                    Directly saves to Neon PostgreSQL and synchronizes with the live catalog.
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="admin-modal-close"
+                title="Close"
               >
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSaveProduct}>
-              <div className="admin-modal-body">
+              <div className="admin-modal-body" style={{ padding: '24px', gap: '18px' }}>
+                {/* Product Name */}
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Product Name *</label>
+                  <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                    Product Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -537,28 +592,36 @@ export default function AdminProductsPage() {
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g. Lord Ganesha Panchaloham Pendant"
                     className="admin-form-input"
+                    style={{ height: '42px', fontSize: '0.95rem' }}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                {/* Deity & Category */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="admin-form-group">
-                    <label className="admin-form-label">Deity / Form *</label>
+                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                      Deity / Spiritual Form *
+                    </label>
                     <input
                       type="text"
                       required
                       value={formDeity}
                       onChange={(e) => setFormDeity(e.target.value)}
-                      placeholder="e.g. Lord Ganesha, Shiva, Murugan"
+                      placeholder="e.g. Lord Ganesha, Shiva, Murugan, Lakshmi"
                       className="admin-form-input"
+                      style={{ height: '42px' }}
                     />
                   </div>
 
                   <div className="admin-form-group">
-                    <label className="admin-form-label">Category</label>
+                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                      Collection / Category
+                    </label>
                     <select
                       value={formCategory}
                       onChange={(e) => setFormCategory(e.target.value as Product['category'])}
                       className="admin-form-select"
+                      style={{ height: '42px' }}
                     >
                       <option value="pendants">Pendants</option>
                       <option value="chains">Chains &amp; Necklaces</option>
@@ -569,9 +632,12 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+                {/* Price, MRP, Stock */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                   <div className="admin-form-group">
-                    <label className="admin-form-label">Price (₹) *</label>
+                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                      Price (₹) *
+                    </label>
                     <input
                       type="number"
                       required
@@ -579,37 +645,60 @@ export default function AdminProductsPage() {
                       value={formPrice}
                       onChange={(e) => setFormPrice(Number(e.target.value))}
                       className="admin-form-input"
+                      style={{ height: '42px', fontWeight: 600 }}
                     />
                   </div>
 
                   <div className="admin-form-group">
-                    <label className="admin-form-label">Original MRP (₹)</label>
+                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                      Original MRP (₹)
+                    </label>
                     <input
                       type="number"
                       min={0}
                       value={formOriginalPrice}
                       onChange={(e) => setFormOriginalPrice(Number(e.target.value))}
                       className="admin-form-input"
+                      style={{ height: '42px' }}
                     />
                   </div>
 
                   <div className="admin-form-group">
-                    <label className="admin-form-label">Stock Status</label>
+                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                      Stock Status
+                    </label>
                     <select
                       value={formInStock ? 'true' : 'false'}
                       onChange={(e) => setFormInStock(e.target.value === 'true')}
                       className="admin-form-select"
+                      style={{ height: '42px', fontWeight: 600, color: formInStock ? '#047857' : '#b91c1c' }}
                     >
-                      <option value="true">In Stock</option>
-                      <option value="false">Sold Out</option>
+                      <option value="true">In Stock (Available)</option>
+                      <option value="false">Sold Out / Backorder</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Image URL & Upload */}
-                <div className="admin-form-group" style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-                  <label className="admin-form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>Product Image URL or Path</span>
+                <div
+                  className="admin-form-group"
+                  style={{
+                    background: '#f8fafc',
+                    padding: '16px',
+                    borderRadius: '10px',
+                    border: '1px dashed #cbd5e1',
+                  }}
+                >
+                  <label
+                    className="admin-form-label"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Product Image URL or Path</span>
                     <label style={{ cursor: 'pointer' }}>
                       <input
                         type="file"
@@ -617,94 +706,170 @@ export default function AdminProductsPage() {
                         style={{ display: 'none' }}
                         onChange={handleImageFileUpload}
                       />
-                      <span className="admin-btn admin-btn-sm admin-btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <Upload size={12} />
+                      <span
+                        className="admin-btn admin-btn-sm admin-btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Upload size={13} />
                         <span>Upload File</span>
                       </span>
                     </label>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formImageUrl}
-                    onChange={(e) => setFormImageUrl(e.target.value)}
-                    placeholder="e.g. /assets/prod_ganesha_hq.webp or https://..."
-                    className="admin-form-input"
-                  />
+
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {formImageUrl && (
+                      <div
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0',
+                          background: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={formImageUrl}
+                          alt="Preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
+                        />
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      required
+                      value={formImageUrl}
+                      onChange={(e) => setFormImageUrl(e.target.value)}
+                      placeholder="e.g. /assets/prod_ganesha_hq.webp or https://..."
+                      className="admin-form-input"
+                      style={{ flexGrow: 1, height: '40px' }}
+                    />
+                  </div>
                 </div>
 
+                {/* Sacred Description */}
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Sacred Description</label>
+                  <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
+                    Sacred Consecration Description
+                  </label>
                   <textarea
                     rows={3}
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="Provide consecration details and Agamic metallurgy significance..."
                     className="admin-form-textarea"
+                    style={{ fontSize: '0.88rem', lineHeight: '1.5' }}
                   />
                 </div>
 
                 {/* 5 Metals Composition Matrix */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0d5438', marginBottom: '8px' }}>
-                    Panchaloham Five-Metal Ratio Matrix
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    padding: '16px',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      color: '#0d5438',
+                      marginBottom: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <span>Panchaloham Five-Metal Ratio Matrix</span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 400 }}>
+                      (Agamic tradition)
+                    </span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
                     <div>
-                      <label style={{ fontSize: '0.7rem', color: '#64748b' }}>Gold (Au)</label>
+                      <label style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Gold (Au)
+                      </label>
                       <input
                         type="text"
                         value={formGoldComp}
                         onChange={(e) => setFormGoldComp(e.target.value)}
                         className="admin-form-input"
-                        style={{ padding: '6px 8px', fontSize: '0.8rem' }}
+                        style={{ padding: '6px 8px', fontSize: '0.82rem', textAlign: 'center' }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.7rem', color: '#64748b' }}>Silver (Ag)</label>
+                      <label style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Silver (Ag)
+                      </label>
                       <input
                         type="text"
                         value={formSilverComp}
                         onChange={(e) => setFormSilverComp(e.target.value)}
                         className="admin-form-input"
-                        style={{ padding: '6px 8px', fontSize: '0.8rem' }}
+                        style={{ padding: '6px 8px', fontSize: '0.82rem', textAlign: 'center' }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.7rem', color: '#64748b' }}>Copper (Cu)</label>
+                      <label style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Copper (Cu)
+                      </label>
                       <input
                         type="text"
                         value={formCopperComp}
                         onChange={(e) => setFormCopperComp(e.target.value)}
                         className="admin-form-input"
-                        style={{ padding: '6px 8px', fontSize: '0.8rem' }}
+                        style={{ padding: '6px 8px', fontSize: '0.82rem', textAlign: 'center' }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.7rem', color: '#64748b' }}>Zinc (Zn)</label>
+                      <label style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Zinc (Zn)
+                      </label>
                       <input
                         type="text"
                         value={formZincComp}
                         onChange={(e) => setFormZincComp(e.target.value)}
                         className="admin-form-input"
-                        style={{ padding: '6px 8px', fontSize: '0.8rem' }}
+                        style={{ padding: '6px 8px', fontSize: '0.82rem', textAlign: 'center' }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.7rem', color: '#64748b' }}>Iron (Fe)</label>
+                      <label style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Iron (Fe)
+                      </label>
                       <input
                         type="text"
                         value={formIronComp}
                         onChange={(e) => setFormIronComp(e.target.value)}
                         className="admin-form-input"
-                        style={{ padding: '6px 8px', fontSize: '0.8rem' }}
+                        style={{ padding: '6px 8px', fontSize: '0.82rem', textAlign: 'center' }}
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="admin-modal-footer">
+              {/* Modal Footer */}
+              <div
+                className="admin-modal-footer"
+                style={{
+                  padding: '16px 24px',
+                  background: '#f8fafc',
+                  borderTop: '1px solid #e2e8f0',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '12px',
+                }}
+              >
                 <button
                   type="button"
                   className="admin-btn admin-btn-secondary"
@@ -716,10 +881,10 @@ export default function AdminProductsPage() {
                   type="submit"
                   disabled={isSaving}
                   className="admin-btn admin-btn-gold"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px' }}
                 >
                   {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                  <span>{editingProduct ? 'Save Changes in PostgreSQL' : 'Create in PostgreSQL'}</span>
+                  <span>{editingProduct ? 'Save Changes' : 'Create in PostgreSQL'}</span>
                 </button>
               </div>
             </form>
