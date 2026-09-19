@@ -1,0 +1,171 @@
+import React from 'react';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { Metadata } from 'next';
+import { ChevronRight, Heart, ShoppingBag, Star } from 'lucide-react';
+import { CATEGORIES } from '@/data/products';
+import { productsService } from '@/services/productsService';
+import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
+import BackButton from '@/components/BackButton';
+
+interface Props {
+  params: Promise<{ category: string }>;
+}
+
+export async function generateStaticParams() {
+  return CATEGORIES.map((cat) => ({
+    category: cat.slug,
+  }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { category: slug } = await params;
+  const category = CATEGORIES.find((c) => c.slug === slug);
+
+  if (!category) {
+    return constructMetadata({
+      title: 'Collection Not Found',
+      description: 'The requested jewellery collection could not be found.',
+    });
+  }
+
+  return constructMetadata({
+    title: `${category.name} - Consecrated Panchaloham`,
+    description: category.description,
+    image: category.image,
+    canonicalUrl: `/collections/${category.slug}`,
+    keywords: [
+      category.name,
+      'Panchaloham jewellery',
+      'temple jewellery',
+      'sacred collection',
+    ],
+  });
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { category: slug } = await params;
+  const category = CATEGORIES.find((c) => c.slug === slug);
+
+  if (!category) {
+    notFound();
+  }
+
+  // Find products matching this category slug from PostgreSQL database
+  const allProducts = await productsService.getAll();
+  const matchedProducts = allProducts.filter((p) => {
+    if (category.id === 'ganesha') return p.deity === 'Lord Ganesha';
+    if (category.id === 'murugan') return p.deity === 'Lord Murugan';
+    if (category.id === 'shiva') return p.deity === 'Lord Shiva';
+    if (category.id === 'lakshmi') return p.deity === 'Goddess Lakshmi';
+    if (category.id === 'chains') return p.category === 'chains';
+    if (category.id === 'bracelets') return p.category === 'bracelets';
+    if (category.id === 'rings') return p.category === 'rings';
+    if (category.id === 'pooja') return p.category === 'pooja-items';
+    return p.category === 'pendants';
+  });
+
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Collections', url: '/collections' },
+    { name: category.name, url: `/collections/${category.slug}` },
+  ];
+
+  return (
+    <>
+      <JsonLd data={getBreadcrumbSchema(breadcrumbs)} />
+
+      <div className="section-padding" style={{ paddingTop: '32px' }}>
+        <div className="container">
+          <div className="pdp-top-bar">
+            <BackButton fallbackUrl="/collections" label="All Collections" />
+            <nav className="breadcrumb-nav" aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <ChevronRight size={14} className="breadcrumb-separator" />
+              <Link href="/collections">Collections</Link>
+              <ChevronRight size={14} className="breadcrumb-separator" />
+              <span style={{ color: 'var(--gold-light)' }}>{category.name}</span>
+            </nav>
+          </div>
+
+          <div
+            style={{
+              padding: '36px',
+              background: 'radial-gradient(circle at 75% 50%, rgba(18, 54, 41, 0.7), rgba(5, 22, 15, 0.95))',
+              border: '1px solid rgba(212, 175, 55, 0.25)',
+              borderRadius: '16px',
+              marginBottom: '40px',
+            }}
+          >
+            <div className="section-kicker">CONSECRATED COLLECTION</div>
+            <h1 className="section-title" style={{ fontSize: '2.4rem', marginBottom: '12px' }}>
+              {category.name}
+            </h1>
+            <p style={{ maxWidth: '680px', fontSize: '1rem', color: 'var(--text-secondary)' }}>
+              {category.description}
+            </p>
+          </div>
+
+          {matchedProducts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <p>More sanctified pieces are currently being cast by our sthapatis.</p>
+              <Link href="/collections" className="btn-gold" style={{ marginTop: '16px' }}>
+                Explore Other Collections
+              </Link>
+            </div>
+          ) : (
+            <div className="product-grid">
+              {matchedProducts.map((product) => (
+                <article key={product.id} className="product-card">
+                  <div className="product-image-container">
+                    <Link href={`/products/${product.slug}`}>
+                      <img src={product.images[0]} alt={product.name} />
+                    </Link>
+                    <span className="product-deity-badge">{product.deity}</span>
+                  </div>
+                  <div className="product-info">
+                    <h3 className="product-title">
+                      <Link href={`/products/${product.slug}`}>{product.name}</Link>
+                    </h3>
+                    <div className="product-rating">
+                      <div className="rating-stars">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={13}
+                            fill={i < Math.floor(product.rating) ? '#f5d77f' : 'none'}
+                            stroke="#f5d77f"
+                          />
+                        ))}
+                      </div>
+                      <span className="rating-count">({product.reviewsCount})</span>
+                    </div>
+                    <div className="product-price-row">
+                      <span className="current-price">
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="original-price">
+                          ₹{product.originalPrice.toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
+                    <Link
+                      href={`/products/${product.slug}`}
+                      className="add-to-cart-btn"
+                      style={{ textAlign: 'center' }}
+                    >
+                      <ShoppingBag size={16} />
+                      <span>View Sacred Details</span>
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

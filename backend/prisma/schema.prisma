@@ -1,0 +1,225 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AdminUser {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  name         String    @default("Chief Sthapati")
+  role         String    @default("SUPERADMIN")
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model Category {
+  id          String   @id
+  slug        String   @unique
+  name        String
+  tamilName   String?
+  image       String
+  itemCount   Int      @default(0)
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id                  String   @id @default(uuid())
+  slug                String   @unique
+  name                String
+  deity               String
+  category            String
+  price               Float
+  originalPrice       Float?
+  rating              Float    @default(5.0)
+  reviewsCount        Int      @default(1)
+  inStock             Boolean  @default(true)
+  featured            Boolean  @default(false)
+  description         String   @db.Text
+  metalGold           String   @default("2.5%")
+  metalSilver         String   @default("12.5%")
+  metalCopper         String   @default("65.0%")
+  metalZinc           String   @default("15.0%")
+  metalIron           String   @default("5.0%")
+  purityCertificate   String   @default("Government Assay Certified")
+  dimensions          String?
+  weight              String?
+  consecrationDetails String?
+  images              String[]
+  benefits            String[]
+  tags                String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id               String   @id
+  devoteeName      String
+  email            String
+  phone            String
+  items            Json
+  subtotal         Float?
+  shippingFee      Float?
+  referralCodeUsed String?
+  referralDiscount Float?   @default(0)
+  totalAmount      Float
+  status           String   @default("Pending")
+  shippingAddress  String   @db.Text
+  date             String
+  trackingNumber   String?
+  paymentMethod    String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model DevoteeUser {
+  id              String   @id
+  name            String
+  email           String   @unique
+  phone           String
+  shippingAddress String   @db.Text
+  memberSince     String
+  referralCode    String?  @unique
+  referredBy      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("devotee_users")
+}
+
+model BlogPost {
+  id         String   @id
+  slug       String   @unique
+  title      String
+  subtitle   String
+  excerpt    String   @db.Text
+  image      String
+  date       String
+  readTime   String
+  tag        String
+  category   String
+  authorName String
+  authorRole String
+  likes      Int      @default(0)
+  featured   Boolean  @default(false)
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("blog_posts")
+}
+
+model HeroSlide {
+  id          Int      @id @default(autoincrement())
+  kicker      String
+  titleLine1  String
+  titleLine2  String
+  subtitle    String
+  ctaText     String   @default("Shop Now")
+  ctaLink     String   @default("/collections")
+  tag         String   @default("FAITH IN EVERY DETAIL")
+  image       String
+  mobileImage String
+  orderIndex  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("hero_slides")
+}
+
+model StoryBanner {
+  id         String   @id @default(uuid())
+  title      String
+  desc       String
+  ctaText    String   @default("Explore")
+  ctaLink    String   @default("/collections")
+  image      String
+  orderIndex Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("story_banners")
+}
+
+model Announcement {
+  id               String   @id @default(uuid())
+  freeShippingText String   @default("Free Shipping on Orders Above ₹999")
+  authenticityText String   @default("Authentic Panchaloham")
+  worldwideText    String   @default("Blessings Delivered Worldwide")
+  activePromoAlert String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+model Faq {
+  id         String   @id @default(uuid())
+  question   String
+  answer     String
+  category   String   @default("general")
+  orderIndex Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  createdAt    DateTime @default(now())
+
+  @@map("media_assets")
+}
+
+model ReferralSettings {
+  id                    String   @id @default("default")
+  enabled               Boolean  @default(true)
+  refereeDiscountRupees Float    @default(100.0) // Discount for friend on first order
+  referrerRewardRupees  Float    @default(200.0) // Reward coupon amount for referrer
+  minOrderSubtotal      Float    @default(500.0) // Min order subtotal for referral discount
+  updatedAt             DateTime @updatedAt
+
+  @@map("referral_settings")
+}
+
+model Referral {
+  id               String   @id @default(uuid())
+  referrerId       String
+  refereeEmail     String
+  refereePhone     String?
+  orderId          String   @unique
+  status           String   @default("PENDING") // PENDING, REWARDED, REVERSED
+  rewardAmount     Float    @default(200.0)
+  rewardCoupon     String?  // e.g. REF-RWD-7K2X (single-use coupon for referrer)
+  rewardCouponUsed Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("referrals")
+}
