@@ -1,0 +1,16 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Live Render Backend
+        run: |
+          curl -s -f "https://jewellery-backend-9sbe.onrender.com/api/categories" > /dev/null || true
+          echo "Pinged Render backend successfully at $(date)"
