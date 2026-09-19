@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: jewellery-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma db push && npm run start:prod
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8815074421:AAHaESvwmDUVCxA7-Yke-XeGFE0_G7HnbzI
+      - key: TELEGRAM_CHAT_ID
+        value: "1621012627"
+      - key: RAZORPAY_KEY_ID
+        value: rzp_test_Sr6D04pinNyoBv
+      - key: RAZORPAY_KEY_SECRET
+        value: CAnL39TNG3i83jUxJMGQkq6g
