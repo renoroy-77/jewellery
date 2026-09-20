@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingBag, Star, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
 import { productsService } from '@/services/productsService';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
@@ -10,7 +10,7 @@ import { Product } from '@/types';
 
 export default function FeaturedProducts() {
   const { t } = useTranslation();
-  const { addToCart, toggleWishlist, isInWishlist } = useCart();
+  const { addToCart } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -58,11 +58,8 @@ export default function FeaturedProducts() {
 
         {/* 4-Item Featured Product Cards Grid */}
         <div className="product-grid-four">
-          {featuredProducts.map((product: Product) => {
-            const isWishlisted = isInWishlist(product.id);
-
-            return (
-              <article key={product.id} className="product-card-four" id={`product-${product.id}`}>
+          {featuredProducts.map((product: Product) => (
+            <article key={product.id} className="product-card-four" id={`product-${product.id}`}>
                 <div className="product-image-container-four">
                   <Link href={`/products/${product.slug}`} aria-label={`View details for ${product.name}`}>
                     <img
@@ -71,13 +68,6 @@ export default function FeaturedProducts() {
                       loading="lazy"
                     />
                   </Link>
-                  <button
-                    className={`wishlist-btn ${isWishlisted ? 'active' : ''}`}
-                    onClick={() => toggleWishlist(product.id)}
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    <Heart size={16} fill={isWishlisted ? '#05160f' : 'none'} />
-                  </button>
                   <span className="product-deity-badge-four">{product.deity}</span>
                 </div>
 
@@ -120,8 +110,7 @@ export default function FeaturedProducts() {
                   </button>
                 </div>
               </article>
-            );
-          })}
+          ))}
         </div>
       </div>
     </section>

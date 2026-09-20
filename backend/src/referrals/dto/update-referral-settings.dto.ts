@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, Min, Max } from 'class-validator';
 
 export class UpdateReferralSettingsDto {
   @IsBoolean()
@@ -6,14 +6,21 @@ export class UpdateReferralSettingsDto {
   enabled?: boolean;
 
   @IsNumber()
+  @Min(0)
+  @Max(10000)
   @IsOptional()
   refereeDiscountRupees?: number;
 
   @IsNumber()
+  @Min(0)
+  @Max(10000)
   @IsOptional()
   referrerRewardRupees?: number;
 
   @IsNumber()
+  @Min(0)
+  @Max(100000)
   @IsOptional()
   minOrderSubtotal?: number;
 }
+

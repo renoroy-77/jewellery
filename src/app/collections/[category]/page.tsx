@@ -2,8 +2,8 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { ChevronRight, Heart, ShoppingBag, Star } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
+import { ChevronRight, ShoppingBag, Star } from 'lucide-react';
+import { CATEGORIES, DEITY_COLLECTIONS } from '@/data/products';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
@@ -14,15 +14,27 @@ interface Props {
   params: Promise<{ category: string }>;
 }
 
+const ALL_COLLECTIONS = [
+  ...CATEGORIES,
+  ...DEITY_COLLECTIONS.map((d) => ({
+    id: d.id,
+    slug: d.slug,
+    name: d.name,
+    image: d.image,
+    itemCount: 0,
+    description: `Sacred consecrated Panchaloham jewellery dedicated to ${d.deity}.`,
+  })),
+];
+
 export async function generateStaticParams() {
-  return CATEGORIES.map((cat) => ({
+  return ALL_COLLECTIONS.map((cat) => ({
     category: cat.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category: slug } = await params;
-  let category = CATEGORIES.find((c) => c.slug === slug || c.id === slug);
+  let category = ALL_COLLECTIONS.find((c) => c.slug === slug || c.id === slug);
   if (!category) {
     category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
   }
@@ -50,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Props) {
   const { category: slug } = await params;
-  let category = CATEGORIES.find((c) => c.slug === slug || c.id === slug);
+  let category = ALL_COLLECTIONS.find((c) => c.slug === slug || c.id === slug);
   if (!category) {
     category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
   }
@@ -62,14 +74,18 @@ export default async function CategoryPage({ params }: Props) {
   // Find products matching this category slug from PostgreSQL database
   const allProducts = await productsService.getAll();
   const matchedProducts = allProducts.filter((p) => {
-    if (category!.id === 'ganesha') return p.deity === 'Lord Ganesha';
-    if (category!.id === 'murugan') return p.deity === 'Lord Murugan';
-    if (category!.id === 'shiva') return p.deity === 'Lord Shiva';
-    if (category!.id === 'lakshmi') return p.deity === 'Goddess Lakshmi';
-    if (category!.id === 'chains') return p.category === 'chains';
-    if (category!.id === 'bracelets') return p.category === 'bracelets';
-    if (category!.id === 'rings') return p.category === 'rings';
-    if (category!.id === 'pooja') return p.category === 'pooja-items';
+    if (category!.id === 'ganesha' || category!.slug === 'ganesha-jewellery') return p.deity === 'Lord Ganesha';
+    if (category!.id === 'murugan' || category!.slug === 'murugan-jewellery') return p.deity === 'Lord Murugan';
+    if (category!.id === 'shiva' || category!.slug === 'shiva-jewellery') return p.deity === 'Lord Shiva';
+    if (category!.id === 'lakshmi' || category!.slug === 'lakshmi-jewellery') return p.deity === 'Goddess Lakshmi';
+    if (category!.id === 'devi' || category!.slug === 'devi-jewellery') return p.deity === 'Goddess Devi';
+    if (category!.id === 'spiritual' || category!.slug === 'spiritual-symbols')
+      return p.tags?.includes('spiritual') || p.deity === 'Universal Brahman' || p.name.includes('Om');
+    if (category!.id === 'pendants' || category!.slug === 'pendants') return p.category === 'pendants';
+    if (category!.id === 'chains' || category!.slug === 'chains') return p.category === 'chains';
+    if (category!.id === 'bracelets' || category!.slug === 'bracelets') return p.category === 'bracelets';
+    if (category!.id === 'rings' || category!.slug === 'rings') return p.category === 'rings';
+    if (category!.id === 'pooja-items' || category!.id === 'pooja' || category!.slug === 'pooja-items') return p.category === 'pooja-items';
     const catVal = category!.slug.toLowerCase();
     const catId = category!.id.toLowerCase();
     const pCat = (p.category || '').toLowerCase();

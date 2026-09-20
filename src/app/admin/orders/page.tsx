@@ -25,13 +25,16 @@ import {
 } from 'lucide-react';
 import { INITIAL_ORDERS, OrderCMS } from '@/data/cmsData';
 import { ordersService } from '@/services/ordersService';
+import { toast } from 'sonner';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminOrdersPage() {
+  const { confirm } = useConfirm();
   const [orders, setOrders] = useState<OrderCMS[]>(INITIAL_ORDERS);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<OrderCMS | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTestingTelegram, setIsTestingTelegram] = useState(false);
@@ -47,9 +50,12 @@ export default function AdminOrdersPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    if (type === 'error' || msg.toLowerCase().includes('warning') || msg.toLowerCase().includes('failed')) {
+      toast.error(msg);
+    } else {
+      toast.success(msg);
+    }
   };
 
   const handleTestTelegram = async () => {
@@ -102,54 +108,86 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleUpdateStatus = (id: string, newStatus: OrderCMS['status']) => {
+  const handleUpdateStatus = async (id: string, newStatus: OrderCMS['status']) => {
+    if (newStatus === 'Delivered') {
+      const ok = await confirm({
+        title: 'Confirm Sacred Delivery',
+        message: `Mark Order #${id} as Delivered with Divine Grace?`,
+        description: 'This updates the order to Delivered, completes the consecration journey, and releases referral rewards.',
+        confirmText: 'Yes, Mark as Delivered',
+        cancelText: 'Cancel',
+        isDanger: false,
+        icon: 'check',
+      });
+      if (!ok) return;
+    }
+
     setOrders((prev) =>
       prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o))
     );
     if (selectedOrder && selectedOrder.id === id) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
-    showToast(`Order #${id} updated to ${newStatus} (Telegram alerted)`);
 
-    ordersService.updateStatus(id, newStatus).catch(() => {
-      showToast(`Warning: Could not sync status for #${id} to backend`);
-    });
-  };
-
-  const handleCancelOrder = (id: string) => {
-    const reason = prompt(
-      `Enter cancellation reason for order #${id} (dispatched via Telegram alert):`,
-      'Devotee requested cancellation',
-    );
-    if (reason !== null) {
+    try {
+      const updated = await ordersService.updateStatus(id, newStatus);
       setOrders((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, status: 'Cancelled' } : o))
+        prev.map((o) => (o.id === id ? { ...o, ...updated, status: updated.status } : o))
       );
-      if (selectedOrder && selectedOrder.id === id) {
-        setSelectedOrder({ ...selectedOrder, status: 'Cancelled' });
-      }
-      showToast(`Order #${id} marked as Cancelled (Telegram alert dispatched)`);
-
-      ordersService
-        .updateStatus(id, 'Cancelled', undefined, reason || 'Devotee requested cancellation')
-        .catch(() => {
-          showToast(`Warning: Could not sync cancellation for #${id} to backend`);
-        });
+      showToast(`Order #${id} updated to ${newStatus} (Synced to database)`);
+    } catch (err: any) {
+      showToast(`Warning: Could not sync status for #${id} to backend: ${err.message || 'Error'}`);
     }
   };
 
+  const handleCancelOrder = async (id: string) => {
+    const ok = await confirm({
+      title: 'Cancel Devotee Order',
+      message: `Are you sure you want to cancel order #${id}?`,
+      description: 'This will notify the devotee and mark the order as Cancelled.',
+      confirmText: 'Yes, Cancel Order',
+      cancelText: 'No, Keep Order',
+      isDanger: true,
+      icon: 'alert',
+    });
+    if (!ok) return;
+
+    setOrders((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, status: 'Cancelled' } : o))
+    );
+    if (selectedOrder && selectedOrder.id === id) {
+      setSelectedOrder({ ...selectedOrder, status: 'Cancelled' });
+    }
+    showToast(`Order #${id} marked as Cancelled`);
+
+    ordersService
+      .updateStatus(id, 'Cancelled', undefined, 'Devotee requested cancellation')
+      .catch(() => {
+        showToast(`Warning: Could not sync cancellation for #${id} to backend`);
+      });
+  };
+
   const handleDeleteOrder = async (id: string) => {
-    if (confirm(`Are you sure you want to permanently delete order #${id} from the database?`)) {
-      try {
-        await ordersService.delete(id);
-        setOrders((prev) => prev.filter((o) => o.id !== id));
-        if (selectedOrder && selectedOrder.id === id) {
-          setSelectedOrder(null);
-        }
-        showToast(`Order #${id} deleted successfully.`);
-      } catch (err: any) {
-        showToast(`Failed to delete order: ${err.message}`);
+    const ok = await confirm({
+      title: 'Delete Order Record',
+      message: `Are you sure you want to permanently delete order #${id} from PostgreSQL?`,
+      description: 'This action will completely remove this order and items from the database.',
+      confirmText: 'Yes, Delete Order',
+      cancelText: 'No, Keep Order',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
+
+    try {
+      await ordersService.delete(id);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      if (selectedOrder && selectedOrder.id === id) {
+        setSelectedOrder(null);
       }
+      showToast(`Order #${id} deleted successfully from database.`);
+    } catch (err: any) {
+      showToast(`Failed to delete order: ${err.message}`, 'error');
     }
   };
 
@@ -204,13 +242,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="admin-toast">
-          <CheckCircle2 size={18} color="#0d5438" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+
 
       {/* Header */}
       <div

@@ -24,13 +24,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [translations, setTranslations] = useState<TranslationItem[]>(DEFAULT_TRANSLATIONS);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage and API
+  // Initialize from localStorage and API - strictly English as requested
   useEffect(() => {
     try {
-      const savedLocale = localStorage.getItem(LOCAL_STORAGE_LOCALE_KEY) as SupportedLocale;
-      if (savedLocale === 'en' || savedLocale === 'ta') {
-        setLocaleState(savedLocale);
-      }
+      localStorage.setItem(LOCAL_STORAGE_LOCALE_KEY, 'en');
+      document.documentElement.lang = 'en';
+      setLocaleState('en');
 
       const savedTranslations = localStorage.getItem(LOCAL_STORAGE_TRANSLATIONS_KEY);
       if (savedTranslations) {

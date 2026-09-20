@@ -3,47 +3,46 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
-import { Category } from '@/types';
+import { DEITY_COLLECTIONS, DeityCollectionItem } from '@/data/products';
 import { categoriesService } from '@/services/categoriesService';
 import { useTranslation } from '@/context/LanguageContext';
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  ganesha: '/assets/cat_ganesha_hq.webp',
-  murugan: '/assets/cat_murugan_hq.webp',
-  shiva: '/assets/cat_shiva_hq.webp',
-  lakshmi: '/assets/cat_lakshmi_hq.webp',
-  devi: '/assets/cat_devi_hq.webp',
-  spiritual: '/assets/prod_om.png',
-  chains: '/assets/prod_chain_hq.webp',
-};
-
-// Filter out bracelets, rings, and pooja-essentials from circular bar
-const EXCLUDED_IDS = ['bracelets', 'rings', 'pooja'];
-const DEFAULT_FEATURED_COLLECTIONS = CATEGORIES.filter((c) => !EXCLUDED_IDS.includes(c.id));
 
 // Timing intervals: auto-slide every 3.2s, pause for 4s on manual click/swipe
 const CAROUSEL_INTERVAL_MS = 3200;
 const USER_CLICK_PAUSE_MS = 4000;
 
 export default function CategorySlider() {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [collections, setCollections] = useState<Category[]>(DEFAULT_FEATURED_COLLECTIONS);
+  const [collections, setCollections] = useState<DeityCollectionItem[]>(DEITY_COLLECTIONS);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   activeIndexRef.current = activeIndex;
 
+  // Sync with backend categories so newly created collections appear on homepage
   useEffect(() => {
+    let isMounted = true;
     categoriesService
       .getAll()
       .then((data) => {
-        if (data && data.length > 0) {
-          const filtered = data.filter((c) => !EXCLUDED_IDS.includes(c.id));
-          setCollections(filtered.length > 0 ? filtered : data);
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setCollections(
+            data.map((cat) => ({
+              id: cat.id,
+              name: cat.name,
+              tamilName: cat.tamilName,
+              slug: cat.slug,
+              image: cat.image || '/assets/cat_ganesha_hq.webp',
+              deity: cat.name,
+              itemCount: cat.itemCount || 0,
+            }))
+          );
         }
       })
       .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const [isHovered, setIsHovered] = useState(false);
@@ -137,9 +136,9 @@ export default function CategorySlider() {
       <div className="container">
         <div className="categories-header-row">
           <div>
-            <div className="section-kicker">{t('categories.kicker', 'SHOP BY JEWELLERY')}</div>
+            <div className="section-kicker">{t('categories.kicker', 'SACRED SELECTIONS')}</div>
             <h2 id="collections-heading" className="section-title">
-              {t('categories.title', 'Sacred Jewellery Collections')}
+              {t('categories.title', 'Shop By Sacred Deity')}
             </h2>
           </div>
 
@@ -196,7 +195,7 @@ export default function CategorySlider() {
                   <div className="category-circle-wrapper-five">
                     <div className="category-circle-inner-five">
                       <img
-                        src={CATEGORY_IMAGES[cat.id] || cat.image || '/assets/cat_ganesha_hq.webp'}
+                        src={cat.image || '/assets/cat_ganesha_hq.webp'}
                         alt={cat.name}
                         loading="lazy"
                       />

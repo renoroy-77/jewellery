@@ -1,6 +1,27 @@
 import { OrderCMS, INITIAL_ORDERS } from '@/data/cmsData';
+import { adminAuthService } from './adminAuthService';
+import { devoteeAuthService } from './devoteeAuthService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+
+function getAuthHeaders(preferAdmin = false): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  const adminToken = adminAuthService.getToken();
+  const devoteeSession = devoteeAuthService.getSession();
+
+  if (preferAdmin && adminToken) {
+    headers['Authorization'] = `Bearer ${adminToken}`;
+  } else if (devoteeSession?.token) {
+    headers['Authorization'] = `Bearer ${devoteeSession.token}`;
+  } else if (adminToken) {
+    headers['Authorization'] = `Bearer ${adminToken}`;
+  }
+
+  return headers;
+}
 
 export const ordersService = {
   async getAll(params?: { status?: string; search?: string }): Promise<OrderCMS[]> {
@@ -13,7 +34,10 @@ export const ordersService = {
         url.searchParams.set('search', params.search);
       }
 
-      const res = await fetch(url.toString(), { cache: 'no-store' });
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(true),
+        cache: 'no-store',
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -27,7 +51,9 @@ export const ordersService = {
 
   async getById(id: string): Promise<OrderCMS | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/orders/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/${id}`, {
+        headers: getAuthHeaders(false),
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return await res.json();
     } catch {
@@ -38,11 +64,12 @@ export const ordersService = {
   async create(order: Partial<OrderCMS>): Promise<OrderCMS> {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(false),
       body: JSON.stringify(order),
     });
     if (!res.ok) {
-      throw new Error(`Failed to create order: ${res.statusText}`);
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Failed to create order: ${res.statusText}`);
     }
     return res.json();
   },
@@ -55,11 +82,12 @@ export const ordersService = {
   ): Promise<OrderCMS> {
     const res = await fetch(`${API_BASE_URL}/api/orders/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify({ status, trackingNumber, cancellationReason }),
     });
     if (!res.ok) {
-      throw new Error(`Failed to update order status: ${res.statusText}`);
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Failed to update order status: ${res.statusText}`);
     }
     return res.json();
   },
@@ -67,6 +95,7 @@ export const ordersService = {
   async delete(id: string): Promise<boolean> {
     const res = await fetch(`${API_BASE_URL}/api/orders/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(true),
     });
     return res.ok;
   },
@@ -75,6 +104,7 @@ export const ordersService = {
     try {
       const res = await fetch(`${API_BASE_URL}/api/orders/test-telegram`, {
         method: 'POST',
+        headers: getAuthHeaders(true),
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return await res.json();

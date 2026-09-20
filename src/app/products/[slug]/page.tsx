@@ -219,27 +219,27 @@ export default async function ProductDetailPage({ params }: Props) {
                     <tbody>
                       <tr>
                         <td>Gold</td>
-                        <td>Pon (பொன்)</td>
+                        <td>Pon (Sacred Gold)</td>
                         <td>{product.metalComposition.gold}</td>
                       </tr>
                       <tr>
                         <td>Silver</td>
-                        <td>Velli (வெள்ளி)</td>
+                        <td>Velli (Pure Silver)</td>
                         <td>{product.metalComposition.silver}</td>
                       </tr>
                       <tr>
                         <td>Copper</td>
-                        <td>Chembu (செம்பு)</td>
+                        <td>Chembu (Sanctum Copper)</td>
                         <td>{product.metalComposition.copper}</td>
                       </tr>
                       <tr>
                         <td>Zinc / Brass</td>
-                        <td>Pithalai (பித்தளை)</td>
+                        <td>Pithalai (Temple Brass)</td>
                         <td>{product.metalComposition.zinc}</td>
                       </tr>
                       <tr>
                         <td>Iron</td>
-                        <td>Irumbu (இரும்பு)</td>
+                        <td>Irumbu (Sacred Iron)</td>
                         <td>{product.metalComposition.iron}</td>
                       </tr>
                     </tbody>

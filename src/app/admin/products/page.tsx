@@ -23,8 +23,11 @@ import { Category, Product } from '@/types';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
 import { cmsService } from '@/services/cmsService';
+import { toast } from 'sonner';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminProductsPage() {
+  const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +36,6 @@ export default function AdminProductsPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Modal state for Add/Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,8 +61,11 @@ export default function AdminProductsPage() {
   const [formConsecration, setFormConsecration] = useState('Consecrated with Vedic mantras in temple sanctum.');
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
+    if (type === 'error') {
+      toast.error(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   const loadProducts = async () => {
@@ -240,15 +245,24 @@ export default function AdminProductsPage() {
   };
 
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${name}" from PostgreSQL?`)) return;
+    const ok = await confirm({
+      title: 'Delete Sacred Product',
+      message: `Are you sure you want to permanently delete "${name}" from PostgreSQL?`,
+      description: 'This will remove the consecrated piece from the live catalogue and database.',
+      confirmText: 'Yes, Delete',
+      cancelText: 'No, Keep Product',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
 
     try {
       await productsService.delete(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
-      showToast(`Deleted "${name}" from database.`);
+      toast.success(`Deleted "${name}" from database.`);
     } catch (err: any) {
       console.error(err);
-      showToast(err.message || 'Failed to delete product', 'error');
+      toast.error(err.message || 'Failed to delete product');
     }
   };
 
@@ -279,24 +293,7 @@ export default function AdminProductsPage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div
-          className="admin-toast"
-          style={{
-            borderColor: toastMessage.type === 'error' ? '#ef4444' : '#10b981',
-            background: toastMessage.type === 'error' ? '#fef2f2' : '#f0fdf4',
-            color: toastMessage.type === 'error' ? '#991b1b' : '#065f46',
-          }}
-        >
-          {toastMessage.type === 'error' ? (
-            <AlertCircle size={18} color="#ef4444" />
-          ) : (
-            <CheckCircle2 size={18} color="#10b981" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
-      )}
+
 
       {/* Header */}
       <div

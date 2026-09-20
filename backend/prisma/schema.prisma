@@ -7,6 +7,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum OrderStatus {
+  Pending
+  Confirmed
+  Processing
+  Shipped
+  Delivered
+  Cancelled
+  Returned
+}
+
 model AdminUser {
   id           String    @id @default(uuid())
   username     String    @unique
@@ -67,7 +77,9 @@ model Product {
 }
 
 model Order {
-  id               String   @id
+  id               String       @id
+  devoteeId        String?
+  devotee          DevoteeUser? @relation(fields: [devoteeId], references: [id], onDelete: SetNull)
   devoteeName      String
   email            String
   phone            String
@@ -76,8 +88,9 @@ model Order {
   shippingFee      Float?
   referralCodeUsed String?
   referralDiscount Float?   @default(0)
+  walletDiscount   Float?   @default(0)
   totalAmount      Float
-  status           String   @default("Pending")
+  status           OrderStatus @default(Pending)
   shippingAddress  String   @db.Text
   date             String
   trackingNumber   String?
@@ -85,22 +98,59 @@ model Order {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  @@index([devoteeId])
   @@map("orders")
 }
 
 model DevoteeUser {
-  id              String   @id
+  id              String           @id
   name            String
-  email           String   @unique
+  email           String           @unique
   phone           String
-  shippingAddress String   @db.Text
+  shippingAddress String           @db.Text
   memberSince     String
-  referralCode    String?  @unique
-  referredBy      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  referralCode    String?          @unique
+  referredBy         String?
+  walletBalance      Float               @default(0.0)
+  addresses          DevoteeAddress[]
+  orders             Order[]
+  walletTransactions WalletTransaction[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@map("devotee_users")
+}
+
+model DevoteeAddress {
+  id            String      @id @default(uuid())
+  devoteeId     String
+  devotee       DevoteeUser @relation(fields: [devoteeId], references: [id], onDelete: Cascade)
+  label         String      @default("Home") // "Home", "Puja Room", "Ancestral Illam", "Temple"
+  recipientName String
+  phone         String
+  streetAddress String      @db.Text
+  city          String
+  state         String      @default("Tamil Nadu")
+  pincode       String
+  isDefault     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([devoteeId])
+  @@map("devotee_addresses")
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("otp_verifications")
 }
 
 model BlogPost {
@@ -200,8 +250,8 @@ model MediaAsset {
 model ReferralSettings {
   id                    String   @id @default("default")
   enabled               Boolean  @default(true)
-  refereeDiscountRupees Float    @default(100.0) // Discount for friend on first order
-  referrerRewardRupees  Float    @default(200.0) // Reward coupon amount for referrer
+  refereeDiscountRupees Float    @default(50.0) // Discount for friend on first order (e.g. ₹50)
+  referrerRewardRupees  Float    @default(100.0) // Store credit wallet reward for referrer upon delivery (e.g. ₹100)
   minOrderSubtotal      Float    @default(500.0) // Min order subtotal for referral discount
   updatedAt             DateTime @updatedAt
 
@@ -209,17 +259,35 @@ model ReferralSettings {
 }
 
 model Referral {
-  id               String   @id @default(uuid())
-  referrerId       String
-  refereeEmail     String
-  refereePhone     String?
-  orderId          String   @unique
-  status           String   @default("PENDING") // PENDING, REWARDED, REVERSED
-  rewardAmount     Float    @default(200.0)
-  rewardCoupon     String?  // e.g. REF-RWD-7K2X (single-use coupon for referrer)
-  rewardCouponUsed Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  referrerId           String
+  refereeEmail         String
+  refereePhone         String?
+  orderId              String   @unique
+  status               String   @default("PENDING") // PENDING, DELIVERED (rewarded), CANCELLED
+  rewardAmount         Float    @default(100.0)
+  rewardType           String   @default("WALLET_CREDIT") // WALLET_CREDIT or COUPON
+  rewardCoupon         String?  // legacy single-use coupon if applicable
+  rewardCouponUsed     Boolean  @default(false)
+  walletCredited       Boolean  @default(false) // true when referrer wallet balance is credited on delivery
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   @@map("referrals")
+}
+
+model WalletTransaction {
+  id           String      @id @default(uuid())
+  devoteeId    String
+  devotee      DevoteeUser @relation(fields: [devoteeId], references: [id], onDelete: Cascade)
+  amount       Float       // Positive for credit, negative for debit
+  type         String      // REFERRAL_REWARD, ORDER_REDEMPTION, ORDER_CANCEL_REFUND, CLAWBACK
+  referenceId  String?
+  description  String?
+  balanceAfter Float
+  createdAt    DateTime    @default(now())
+
+  @@unique([type, referenceId])
+  @@index([devoteeId])
+  @@map("wallet_transactions")
 }

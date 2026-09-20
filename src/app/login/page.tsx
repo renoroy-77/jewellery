@@ -1,152 +1,205 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Mail,
-  Lock,
-  Eye,
-  EyeOff,
   ArrowRight,
   ShieldCheck,
   Leaf,
   Sparkles,
-  User as UserIcon,
-  Phone,
+  KeyRound,
   CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  LogOut,
+  UserCheck,
 } from 'lucide-react';
+import {
+  devoteeAuthService,
+  DevoteeSessionData,
+} from '@/services/devoteeAuthService';
 
-type LoginView = 'login' | 'register' | 'forgot';
-
-interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-  deity: string;
-  nakshatra: string;
-  memberSince: string;
-  punyamPoints: number;
-}
-
-const DEMO_USER: UserProfile = {
-  name: 'Rajesh Sharma',
-  email: 'rajesh.sharma@example.com',
-  phone: '+91 98450 12345',
-  deity: 'Goddess Lakshmi',
-  nakshatra: 'Rohini',
-  memberSince: 'January 2025',
-  punyamPoints: 750,
-};
-
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [view, setView] = useState<LoginView>('login');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '/account';
 
-  // Form states
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regDeity, setRegDeity] = useState('Goddess Lakshmi');
-  const [forgotInput, setForgotInput] = useState('');
-  const [recoverySent, setRecoverySent] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  // Step state: 'enter-email' | 'enter-otp'
+  const [step, setStep] = useState<'enter-email' | 'enter-otp'>('enter-email');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [activeOtpIndex, setActiveOtpIndex] = useState(0);
 
+  // Status & loading
+  const [isLoading, setIsLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Active 29-day device session
+  const [existingSession, setExistingSession] = useState<DevoteeSessionData | null>(null);
+
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Check stored 29-day session on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('aamadappetti_user');
-      if (saved) {
-        setCurrentUser(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore
+    const session = devoteeAuthService.getStoredSession();
+    if (session) {
+      setExistingSession(session);
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Cooldown countdown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // Step 1: Request OTP
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const displayName = emailOrPhone.includes('@')
-      ? emailOrPhone.split('@')[0].replace(/[._]/g, ' ')
-      : 'Devotee';
-    const capitalizedName =
-      displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    setStatusMessage(null);
 
-    const loggedUser: UserProfile = {
-      ...DEMO_USER,
-      name: capitalizedName || 'Rajesh Sharma',
-      email: emailOrPhone.includes('@') ? emailOrPhone : 'devotee@aamadappetti.in',
-      phone: !emailOrPhone.includes('@') && emailOrPhone ? emailOrPhone : '+91 98450 12345',
-    };
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setStatusMessage({ type: 'error', text: 'Please enter a valid email address.' });
+      return;
+    }
 
-    localStorage.setItem('aamadappetti_user', JSON.stringify(loggedUser));
-    router.push('/account');
+    setIsLoading(true);
+    try {
+      const res = await devoteeAuthService.sendOtp(cleanEmail);
+      if (res.success) {
+        setStep('enter-otp');
+        setStatusMessage({
+          type: 'success',
+          text: `Sacred verification code sent to ${cleanEmail}. Check your inbox.`,
+        });
+        setCooldown(res.cooldownRemaining || 45);
+        // Auto-focus first OTP digit
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 150);
+      } else {
+        setStatusMessage({ type: 'error', text: res.message || 'Failed to send OTP.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'Error dispatching OTP.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDemoLogin = () => {
-    localStorage.setItem('aamadappetti_user', JSON.stringify(DEMO_USER));
-    router.push('/account');
+  // Handle OTP digit changes
+  const handleOtpChange = (index: number, value: string) => {
+    // Only accept numeric digit
+    const cleaned = value.replace(/\D/g, '');
+    if (!cleaned && value !== '') return;
+
+    const newOtp = [...otp];
+    if (cleaned.length > 1) {
+      // Handle paste of whole 6-digit code
+      const pasted = cleaned.slice(0, 6).split('');
+      pasted.forEach((char, i) => {
+        if (i < 6) newOtp[i] = char;
+      });
+      setOtp(newOtp);
+      const nextIndex = Math.min(pasted.length, 5);
+      otpInputRefs.current[nextIndex]?.focus();
+      return;
+    }
+
+    newOtp[index] = cleaned ? cleaned.slice(-1) : '';
+    setOtp(newOtp);
+
+    // Auto-advance to next input
+    if (cleaned && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+      setActiveOtpIndex(index + 1);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newUser: UserProfile = {
-      name: regName || 'Devotee',
-      email: regEmail || 'devotee@aamadappetti.in',
-      phone: regPhone || '+91 99000 00000',
-      deity: regDeity,
-      nakshatra: 'Anuradha',
-      memberSince: 'September 2026',
-      punyamPoints: 250,
-    };
-    localStorage.setItem('aamadappetti_user', JSON.stringify(newUser));
-    router.push('/account');
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+      setActiveOtpIndex(index - 1);
+    }
   };
 
-  const handleForgot = (e: React.FormEvent) => {
-    e.preventDefault();
-    setRecoverySent(true);
-    setTimeout(() => {
-      setRecoverySent(false);
-      setView('login');
-    }, 4000);
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setStatusMessage(null);
+
+    const fullCode = otp.join('');
+    if (fullCode.length !== 6) {
+      setStatusMessage({ type: 'error', text: 'Please enter all 6 digits of the verification code.' });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await devoteeAuthService.verifyOtp(email, fullCode);
+      if (res.success) {
+        setStatusMessage({
+          type: 'success',
+          text: `${res.message} Staying signed in on this device for 29 days!`,
+        });
+        setTimeout(() => {
+          router.push(redirectTarget);
+        }, 800);
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Verification failed. Please check the code or request a new one.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Switch account / Logout existing session
+  const handleSwitchAccount = () => {
+    devoteeAuthService.clearSession();
+    setExistingSession(null);
+    setStep('enter-email');
+    setEmail('');
+    setOtp(['', '', '', '', '', '']);
+    setStatusMessage(null);
   };
 
   return (
     <div className="login-hero-wrapper">
-      {/* Background Image & Atmospheric Layers */}
+      {/* Sanctum Background */}
       <div className="login-hero-bg" aria-hidden="true">
         <div className="login-hero-overlay" />
       </div>
 
       <div className="container login-hero-container">
-        {/* LEFT COLUMN: Brand Philosophy & Heritage */}
+        {/* LEFT COLUMN: Sacred Brand Essence & Elder-Friendly Trust Indicators */}
         <div className="login-left-content">
           <div className="login-kicker">
-            <span>FAITH</span>
-            <span className="kicker-dot">✦</span>
-            <span>TRADITION</span>
-            <span className="kicker-dot">✦</span>
-            <span>CRAFTSMANSHIP</span>
+            <span className="kicker-gem">❖</span>
+            <span>AAMADAPPETTI DEVOTEE SANCTUM</span>
+            <span className="kicker-gem">❖</span>
           </div>
 
           <h1 className="login-hero-headline">
-            More than<br />
-            Jewellery,<br />
-            a Part of Your<br />
-            Devotion
+            Sacred Login
+            <br />
+            <span className="login-headline-accent">Without Passwords</span>
           </h1>
 
-          {/* Sacred Lotus Divider */}
           <div className="login-lotus-divider" aria-hidden="true">
             <span className="divider-line" />
             <img
               src="/assets/gold_lotus_emblem.png"
-              alt="Sacred Lotus Divider"
+              alt="Lotus Emblem"
               width={26}
               height={26}
               className="lotus-divider-img"
@@ -155,21 +208,105 @@ export default function LoginPage() {
           </div>
 
           <p className="login-hero-subtitle">
-            Timeless pieces for your sacred moments.
+            Experience effortless, password-free login designed with reverence for every devotee.
           </p>
 
-          {/* Already logged in quick banner if session exists */}
-          {currentUser && (
-            <div className="login-existing-session-banner">
-              <Sparkles size={16} className="text-gold" />
-              <span>
-                Currently signed in as <strong>{currentUser.name}</strong>.
-              </span>
-              <Link href="/account" className="existing-session-link">
-                Go to Dashboard →
-              </Link>
+          {/* Active 29-Day Session Banner */}
+          {existingSession && (
+            <div
+              style={{
+                background: 'rgba(212, 175, 55, 0.12)',
+                border: '1.5px solid rgba(212, 175, 55, 0.4)',
+                borderRadius: '14px',
+                padding: '16px 20px',
+                marginBottom: '28px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles size={18} color="#d4af37" />
+                <span style={{ color: '#f5eedb', fontSize: '0.92rem' }}>
+                  Signed in as <strong>{existingSession.user.name}</strong> ({existingSession.user.email})
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#9db3a8' }}>
+                  ✓ Valid on this device for <strong>{existingSession.daysRemaining} more days</strong>
+                </span>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <Link
+                    href={redirectTarget}
+                    className="btn-gold"
+                    style={{
+                      padding: '6px 16px',
+                      fontSize: '0.82rem',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    Enter Sanctum →
+                  </Link>
+                  <button
+                    onClick={handleSwitchAccount}
+                    style={{
+                      background: 'none',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: '#b0a391',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Switch Account
+                  </button>
+                </div>
+              </div>
             </div>
           )}
+
+          {/* Elderly & Hassle-Free Benefits List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ background: 'rgba(212, 175, 55, 0.15)', borderRadius: '50%', padding: '6px', marginTop: '2px' }}>
+                <KeyRound size={16} color="#d4af37" />
+              </div>
+              <div>
+                <strong style={{ color: '#fcf9f2', fontSize: '0.95rem' }}>No Passwords to Remember</strong>
+                <p style={{ color: '#9db3a8', fontSize: '0.85rem', margin: '2px 0 0 0' }}>
+                  Receive a single 6-digit code via email. No forgetting passwords or recovery hassles.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ background: 'rgba(212, 175, 55, 0.15)', borderRadius: '50%', padding: '6px', marginTop: '2px' }}>
+                <CheckCircle2 size={16} color="#d4af37" />
+              </div>
+              <div>
+                <strong style={{ color: '#fcf9f2', fontSize: '0.95rem' }}>Stay Signed In for 29 Days</strong>
+                <p style={{ color: '#9db3a8', fontSize: '0.85rem', margin: '2px 0 0 0' }}>
+                  Your phone or computer remembers your sanctum access for 29 days unless you logout.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ background: 'rgba(212, 175, 55, 0.15)', borderRadius: '50%', padding: '6px', marginTop: '2px' }}>
+                <UserCheck size={16} color="#d4af37" />
+              </div>
+              <div>
+                <strong style={{ color: '#fcf9f2', fontSize: '0.95rem' }}>Instant Auto-Registration</strong>
+                <p style={{ color: '#9db3a8', fontSize: '0.85rem', margin: '2px 0 0 0' }}>
+                  First time here? No sign-up form needed. Your account is automatically activated.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Bottom Trust Indicators */}
           <div className="login-trust-strip">
@@ -196,8 +333,8 @@ export default function LoginPage() {
                 <ShieldCheck size={20} className="trust-icon" />
               </div>
               <div className="trust-text">
-                <span className="trust-title">Trusted</span>
-                <span className="trust-sub">Quality</span>
+                <span className="trust-title">Assay Certified</span>
+                <span className="trust-sub">Purity</span>
               </div>
             </div>
 
@@ -208,17 +345,17 @@ export default function LoginPage() {
                 <Leaf size={20} className="trust-icon" />
               </div>
               <div className="trust-text">
-                <span className="trust-title">Delivered</span>
-                <span className="trust-sub">with Care</span>
+                <span className="trust-title">Sacred Puja</span>
+                <span className="trust-sub">Blessed Delivery</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Glassmorphism Login Card */}
+        {/* RIGHT COLUMN: Interactive Glassmorphism Card */}
         <div className="login-right-content">
           <div className="login-glass-card">
-            {/* Top Sacred Lotus Circular Emblem */}
+            {/* Top Sacred Lotus Emblem */}
             <div className="login-lotus-emblem-wrap">
               <div className="login-lotus-badge">
                 <img
@@ -231,323 +368,276 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* VIEW 1: SIGN IN */}
-            {view === 'login' && (
-              <>
-                <div className="login-card-header">
-                  <h2 className="login-card-title">Welcome Back</h2>
-                  <p className="login-card-subtitle">
-                    Sign in to your Aamadappetti account and continue your journey of devotion.
-                  </p>
-                </div>
-
-                <form onSubmit={handleLogin} className="login-card-form">
-                  {/* Field: Email or Mobile Number */}
-                  <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="login-identifier">
-                      Email or Mobile Number
-                    </label>
-                    <div className="login-input-box">
-                      <Mail size={18} className="login-input-icon" />
-                      <input
-                        id="login-identifier"
-                        type="text"
-                        required
-                        value={emailOrPhone}
-                        onChange={(e) => setEmailOrPhone(e.target.value)}
-                        placeholder="e.g. rajesh@example.com or 9845012345"
-                        className="login-input-field"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Field: Password */}
-                  <div className="login-form-group">
-                    <div className="login-label-row">
-                      <label className="login-input-label" htmlFor="login-password">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setView('forgot')}
-                        className="login-forgot-link"
-                      >
-                        Forgot Password?
-                      </button>
-                    </div>
-                    <div className="login-input-box">
-                      <Lock size={18} className="login-input-icon" />
-                      <input
-                        id="login-password"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        className="login-input-field"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="login-password-toggle"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Checkbox: Keep me signed in */}
-                  <div className="login-checkbox-row">
-                    <label className="login-custom-checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="login-checkbox-native"
-                      />
-                      <span className="login-checkbox-custom" />
-                      <span className="login-checkbox-text">Keep me signed in</span>
-                    </label>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button type="submit" className="login-primary-btn">
-                    <span>Sign In</span>
-                    <ArrowRight size={18} />
-                  </button>
-
-                  {/* Instant Demo Access Button */}
-                  <button
-                    type="button"
-                    onClick={handleDemoLogin}
-                    className="login-demo-pill"
-                  >
-                    <Sparkles size={14} className="text-gold" />
-                    <span>Instant Demo Login (Rajesh Sharma)</span>
-                  </button>
-
-                  {/* Divider */}
-                  <div className="login-divider">
-                    <span className="login-divider-text">New to Aamadappetti?</span>
-                  </div>
-
-                  {/* Secondary CTA */}
-                  <button
-                    type="button"
-                    onClick={() => setView('register')}
-                    className="login-secondary-btn"
-                  >
-                    Create Devotee Account
-                  </button>
-                </form>
-              </>
+            {/* Notification / Alert Message */}
+            {statusMessage && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  marginBottom: '20px',
+                  background:
+                    statusMessage.type === 'success'
+                      ? 'rgba(34, 197, 94, 0.15)'
+                      : 'rgba(239, 68, 68, 0.15)',
+                  border: `1px solid ${
+                    statusMessage.type === 'success'
+                      ? 'rgba(34, 197, 94, 0.4)'
+                      : 'rgba(239, 68, 68, 0.4)'
+                  }`,
+                  color: statusMessage.type === 'success' ? '#86efac' : '#fca5a5',
+                  fontSize: '0.88rem',
+                }}
+              >
+                {statusMessage.type === 'success' ? (
+                  <CheckCircle2 size={18} />
+                ) : (
+                  <AlertCircle size={18} />
+                )}
+                <span>{statusMessage.text}</span>
+              </div>
             )}
 
-            {/* VIEW 2: REGISTER */}
-            {view === 'register' && (
+            {/* STEP 1: ENTER EMAIL FOR SACRED OTP */}
+            {step === 'enter-email' && (
               <>
                 <div className="login-card-header">
-                  <h2 className="login-card-title">Join the Sacred Circle</h2>
+                  <h2 className="login-card-title">Devotee Login</h2>
                   <p className="login-card-subtitle">
-                    Create your Aamadappetti devotee account for consecrated jewellery and temple blessings.
+                    Enter your email to receive a sacred 6-digit verification code. No password required.
                   </p>
                 </div>
 
-                <form onSubmit={handleRegister} className="login-card-form">
+                <form onSubmit={handleSendOtp} className="login-card-form">
                   <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="reg-name">
-                      Full Devotee Name
-                    </label>
-                    <div className="login-input-box">
-                      <UserIcon size={18} className="login-input-icon" />
-                      <input
-                        id="reg-name"
-                        type="text"
-                        required
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        placeholder="e.g. Smt. Ananya Krishnan"
-                        className="login-input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="reg-email">
+                    <label className="login-input-label" htmlFor="devotee-email">
                       Email Address
                     </label>
                     <div className="login-input-box">
                       <Mail size={18} className="login-input-icon" />
                       <input
-                        id="reg-email"
+                        id="devotee-email"
                         type="email"
                         required
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder="ananya@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="yourname@gmail.com"
                         className="login-input-field"
+                        autoComplete="email"
+                        autoFocus
                       />
                     </div>
-                  </div>
-
-                  <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="reg-phone">
-                      Mobile Number (Puja dispatch updates)
-                    </label>
-                    <div className="login-input-box">
-                      <Phone size={18} className="login-input-icon" />
-                      <input
-                        id="reg-phone"
-                        type="tel"
-                        required
-                        value={regPhone}
-                        onChange={(e) => setRegPhone(e.target.value)}
-                        placeholder="+91 98450 12345"
-                        className="login-input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="reg-deity">
-                      Ishta Devata (Guardian Deity)
-                    </label>
-                    <select
-                      id="reg-deity"
-                      value={regDeity}
-                      onChange={(e) => setRegDeity(e.target.value)}
-                      className="login-select-field"
-                    >
-                      <option value="Goddess Lakshmi">Goddess Lakshmi (Prosperity & Grace)</option>
-                      <option value="Lord Ganesha">Lord Ganesha (Remover of Obstacles)</option>
-                      <option value="Lord Murugan">Lord Murugan (Courage & Agamic Purity)</option>
-                      <option value="Lord Shiva">Lord Shiva (Cosmic Consciousness)</option>
-                      <option value="Lord Venkateswara">Lord Venkateswara (Tirupati Balaji)</option>
-                      <option value="Goddess Saraswati">Goddess Saraswati (Wisdom & Knowledge)</option>
-                    </select>
-                  </div>
-
-                  <div className="login-form-group">
-                    <label className="login-input-label" htmlFor="reg-password">
-                      Create Sacred Passcode
-                    </label>
-                    <div className="login-input-box">
-                      <Lock size={18} className="login-input-icon" />
-                      <input
-                        id="reg-password"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Minimum 6 characters"
-                        className="login-input-field"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="login-password-toggle"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button type="submit" className="login-primary-btn">
-                    <span>Create Devotee Account</span>
-                    <ArrowRight size={18} />
-                  </button>
-
-                  <div className="login-divider">
-                    <span className="login-divider-text">Already registered?</span>
+                    <span style={{ fontSize: '0.78rem', color: '#9db3a8', marginTop: '6px', display: 'block' }}>
+                      We will email your 6-digit code with our sacred gold temple badge.
+                    </span>
                   </div>
 
                   <button
-                    type="button"
-                    onClick={() => setView('login')}
-                    className="login-secondary-btn"
+                    type="submit"
+                    disabled={isLoading}
+                    className="login-submit-btn"
+                    style={{
+                      opacity: isLoading ? 0.7 : 1,
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
                   >
-                    Sign In to Existing Account
+                    {isLoading ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        <span>Sending Sacred Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Sacred OTP</span>
+                        <ArrowRight size={18} />
+                      </>
+                    )}
                   </button>
                 </form>
               </>
             )}
 
-            {/* VIEW 3: FORGOT PASSWORD */}
-            {view === 'forgot' && (
+            {/* STEP 2: ENTER 6-DIGIT OTP */}
+            {step === 'enter-otp' && (
               <>
                 <div className="login-card-header">
-                  <h2 className="login-card-title">Reset Sacred Passcode</h2>
+                  <h2 className="login-card-title">Enter Sacred Code</h2>
                   <p className="login-card-subtitle">
-                    Enter your registered email or phone to receive a sanctified verification link.
+                    We sent a 6-digit verification code to:
+                    <br />
+                    <strong style={{ color: '#d4af37' }}>{email}</strong>
                   </p>
                 </div>
 
-                {recoverySent ? (
-                  <div className="login-success-state">
-                    <CheckCircle2 size={44} className="text-gold" />
-                    <h3>Verification Dispatched</h3>
-                    <p>
-                      A sanctified reset link has been dispatched to <strong>{forgotInput}</strong>.
-                      Redirecting to sign-in...
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleForgot} className="login-card-form">
-                    <div className="login-form-group">
-                      <label className="login-input-label" htmlFor="forgot-id">
-                        Registered Email or Mobile
-                      </label>
-                      <div className="login-input-box">
-                        <Mail size={18} className="login-input-icon" />
+                <form onSubmit={handleVerifyOtp} className="login-card-form">
+                  {/* 6 Digit Individual Inputs */}
+                  <div className="login-form-group">
+                    <label className="login-input-label" style={{ textAlign: 'center', display: 'block' }}>
+                      Enter 6-Digit Code
+                    </label>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        margin: '12px 0 16px 0',
+                      }}
+                    >
+                      {otp.map((digit, idx) => (
                         <input
-                          id="forgot-id"
+                          key={idx}
+                          ref={(el) => {
+                            otpInputRefs.current[idx] = el;
+                          }}
                           type="text"
-                          required
-                          value={forgotInput}
-                          onChange={(e) => setForgotInput(e.target.value)}
-                          placeholder="e.g. rajesh@example.com"
-                          className="login-input-field"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) => handleOtpChange(idx, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                          onFocus={() => setActiveOtpIndex(idx)}
+                          style={{
+                            width: '46px',
+                            height: '56px',
+                            textAlign: 'center',
+                            fontSize: '1.4rem',
+                            fontWeight: 700,
+                            color: '#fcf9f2',
+                            background: 'rgba(5, 22, 15, 0.9)',
+                            border:
+                              activeOtpIndex === idx
+                                ? '2px solid #d4af37'
+                                : '1px solid rgba(212, 175, 55, 0.35)',
+                            borderRadius: '10px',
+                            outline: 'none',
+                            boxShadow:
+                              activeOtpIndex === idx
+                                ? '0 0 12px rgba(212, 175, 55, 0.3)'
+                                : 'none',
+                            transition: 'all 0.2s',
+                          }}
                         />
-                      </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <button type="submit" className="login-primary-btn">
-                      <span>Send Recovery Link</span>
-                      <ArrowRight size={18} />
+                  <button
+                    type="submit"
+                    disabled={isLoading || otp.join('').length !== 6}
+                    className="login-submit-btn"
+                    style={{
+                      opacity: isLoading || otp.join('').length !== 6 ? 0.6 : 1,
+                      cursor: isLoading || otp.join('').length !== 6 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    {isLoading ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        <span>Verifying Sanctum Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Verify & Enter Sanctum</span>
+                        <ArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+
+                  {/* Resend and Change Email options */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '16px',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep('enter-email');
+                        setStatusMessage(null);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#9db3a8',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                    >
+                      ← Change Email
                     </button>
-
-                    <div className="login-divider">
-                      <span className="login-divider-text">Remember your password?</span>
-                    </div>
 
                     <button
                       type="button"
-                      onClick={() => setView('login')}
-                      className="login-secondary-btn"
+                      disabled={cooldown > 0 || isLoading}
+                      onClick={handleSendOtp}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: cooldown > 0 ? '#6a7d74' : '#d4af37',
+                        fontWeight: 600,
+                        cursor: cooldown > 0 ? 'not-allowed' : 'pointer',
+                        padding: 0,
+                      }}
                     >
-                      Back to Sign In
+                      {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Sacred OTP'}
                     </button>
-                  </form>
-                )}
+                  </div>
+                </form>
               </>
             )}
 
-            {/* Card Security Footer */}
-            <div className="login-card-security-footer">
-              <span className="security-item">
-                <Lock size={13} />
-                <span>Secure Login</span>
-              </span>
-              <span className="security-divider">|</span>
-              <span className="security-item">
-                <ShieldCheck size={13} />
-                <span>Your Data is Safe</span>
-              </span>
+            {/* Reassurance Footer */}
+            <div
+              style={{
+                marginTop: '24px',
+                paddingTop: '18px',
+                borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+                textAlign: 'center',
+                fontSize: '0.8rem',
+                color: '#7f8f87',
+                lineHeight: 1.5,
+              }}
+            >
+              🔒 Stored securely on your device for <strong>29 days</strong>.
+              <br />
+              Zero passwords to remember. Handcrafted with reverence.
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: '80vh',
+            background: 'radial-gradient(circle at top, #141f17 0%, #03100a 100%)',
+          }}
+        />
+      }
+    >
+      <LoginForm />
+    </React.Suspense>
   );
 }

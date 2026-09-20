@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem } from '@/types';
+import { toast } from 'sonner';
 
 interface CartContextType {
   cart: CartItem[];
@@ -76,12 +77,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prevCart, { product, quantity }];
     });
+    toast.success(`Added "${product.name}" to your sacred bag`);
     showNotification(`Added "${product.name}" to your sacred bag`);
     setIsCartOpen(true);
   };
 
   const removeFromCart = (productId: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
+    toast.info('Item removed from sacred bag');
   };
 
   const updateQuantity = (productId: string, quantity: number) => {

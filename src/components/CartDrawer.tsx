@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
+import { devoteeAuthService } from '@/services/devoteeAuthService';
 
 export default function CartDrawer() {
   const pathname = usePathname();
@@ -146,7 +147,12 @@ export default function CartDrawer() {
               style={{ width: '100%', padding: '14px', fontSize: '1rem', cursor: 'pointer' }}
               onClick={() => {
                 setIsCartOpen(false);
-                router.push('/checkout');
+                const session = devoteeAuthService.getStoredSession();
+                if (session) {
+                  router.push('/checkout');
+                } else {
+                  router.push('/login?redirect=/checkout');
+                }
               }}
             >
               <span>Proceed to Checkout</span>

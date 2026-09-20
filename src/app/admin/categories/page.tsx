@@ -19,12 +19,14 @@ import { CATEGORIES } from '@/data/products';
 import { Category } from '@/types';
 import { categoriesService } from '@/services/categoriesService';
 import { cmsService } from '@/services/cmsService';
+import { toast } from 'sonner';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminCategoriesPage() {
+  const { confirm } = useConfirm();
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -39,8 +41,11 @@ export default function AdminCategoriesPage() {
   const [formCount, setFormCount] = useState(0);
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
+    if (type === 'error') {
+      toast.error(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   const loadCategories = async () => {
@@ -99,7 +104,7 @@ export default function AdminCategoriesPage() {
 
     setIsUploading(true);
     try {
-      showToast('Uploading collection artwork...');
+      showToast('Uploading category artwork...');
       const res = await cmsService.uploadMedia(file);
       setFormImage(res.url);
       showToast('Artwork uploaded successfully!');
@@ -113,14 +118,14 @@ export default function AdminCategoriesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
-      showToast('Collection Name is required', 'error');
+      showToast('Category Name is required', 'error');
       return;
     }
 
     setIsSaving(true);
     try {
       const rawSlug = formSlug.trim() || formName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const slug = rawSlug || `col-${Date.now()}`;
+      const slug = rawSlug || `cat-${Date.now()}`;
       const id = slug;
 
       const newCategory: Partial<Category> = {
@@ -136,9 +141,9 @@ export default function AdminCategoriesPage() {
       const created = await categoriesService.create(newCategory);
       setCategories((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
       setIsAddModalOpen(false);
-      showToast(`Created collection "${created.name}" in database!`);
+      showToast(`Created category "${created.name}" in database!`);
     } catch (err: any) {
-      showToast(err.message || 'Failed to save collection to database', 'error');
+      showToast(err.message || 'Failed to save category to database', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -162,7 +167,7 @@ export default function AdminCategoriesPage() {
 
       setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       setEditingCategory(null);
-      showToast(`Updated collection "${updated.name}"`);
+      showToast(`Updated category "${updated.name}"`);
 
       await categoriesService.update(updated.id, updated);
     } catch {
@@ -173,17 +178,23 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (cat: Category) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${cat.name}"? This action will remove the category from PostgreSQL and the live catalog.`
-    );
-    if (!confirmDelete) return;
+    const ok = await confirm({
+      title: 'Delete Category',
+      message: `Are you sure you want to delete "${cat.name}"?`,
+      description: 'This action will remove the category from PostgreSQL and the live catalogue.',
+      confirmText: 'Yes, Delete Category',
+      cancelText: 'No, Keep Category',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
 
     try {
       setCategories((prev) => prev.filter((c) => c.id !== cat.id));
-      showToast(`Deleted collection "${cat.name}"`);
+      showToast(`Deleted category "${cat.name}"`);
       await categoriesService.delete(cat.id);
     } catch {
-      showToast(`Failed to delete collection from database`, 'error');
+      showToast(`Failed to delete category from database`, 'error');
     }
   };
 
@@ -201,24 +212,7 @@ export default function AdminCategoriesPage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div
-          className="admin-toast"
-          style={{
-            borderColor: toastMessage.type === 'error' ? '#ef4444' : '#10b981',
-            background: toastMessage.type === 'error' ? '#fef2f2' : '#f0fdf4',
-            color: toastMessage.type === 'error' ? '#991b1b' : '#065f46',
-          }}
-        >
-          {toastMessage.type === 'error' ? (
-            <AlertCircle size={18} color="#ef4444" />
-          ) : (
-            <CheckCircle2 size={18} color="#10b981" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
-      )}
+
 
       {/* Page Header */}
       <div
@@ -241,10 +235,10 @@ export default function AdminCategoriesPage() {
               fontWeight: 700,
             }}
           >
-            Divine Collections &amp; Deities
+            Jewellery Categories
           </h1>
           <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '4px' }}>
-            Manage collection categories, Tamil nomenclature, artwork, and deity spiritual descriptions.
+            Manage jewellery product categories (Pendants, Chains, Bracelets, Rings, Pooja Essentials), artwork, and live catalog filters.
           </p>
         </div>
 
@@ -262,7 +256,7 @@ export default function AdminCategoriesPage() {
           }}
         >
           <Plus size={16} />
-          <span>Add New Collection</span>
+          <span>Add New Category</span>
         </button>
       </div>
 
@@ -280,7 +274,7 @@ export default function AdminCategoriesPage() {
         >
           <h2 className="admin-card-title">
             <Layers size={20} color="#0d5438" />
-            Active Collections ({filteredCategories.length})
+            Active Jewellery Categories ({filteredCategories.length})
           </h2>
 
           <div style={{ position: 'relative', width: '280px' }}>
@@ -296,7 +290,7 @@ export default function AdminCategoriesPage() {
             />
             <input
               type="text"
-              placeholder="Search collections or deities..."
+              placeholder="Search jewellery categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="admin-form-input"
@@ -310,10 +304,8 @@ export default function AdminCategoriesPage() {
             <thead>
               <tr>
                 <th>Image</th>
-                <th>Collection Name</th>
-                <th>Tamil Name (தமிழ்)</th>
+                <th>Category Name</th>
                 <th>URL Slug</th>
-                <th>Item Count</th>
                 <th>Description</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
@@ -321,14 +313,14 @@ export default function AdminCategoriesPage() {
             <tbody>
               {filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
                     {isLoading ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         <Loader2 size={18} className="animate-spin" />
-                        <span>Loading collections from database...</span>
+                        <span>Loading categories from database...</span>
                       </div>
                     ) : (
-                      <span>No collections found matching &quot;{searchQuery}&quot;.</span>
+                      <span>No categories found matching &quot;{searchQuery}&quot;.</span>
                     )}
                   </td>
                 </tr>
@@ -355,17 +347,9 @@ export default function AdminCategoriesPage() {
                       <span style={{ fontSize: '0.75rem', color: '#64748b' }}>ID: {cat.id}</span>
                     </td>
                     <td>
-                      <span style={{ color: '#0d5438', fontWeight: 600 }}>{cat.tamilName || '—'}</span>
-                    </td>
-                    <td>
                       <code style={{ fontSize: '0.78rem', color: '#64748b' }}>/collections/{cat.slug}</code>
                     </td>
-                    <td>
-                      <span className="admin-status-badge admin-status-blue">
-                        {cat.itemCount} items
-                      </span>
-                    </td>
-                    <td style={{ maxWidth: '300px', fontSize: '0.8rem', color: '#475569', lineHeight: '1.4' }}>
+                    <td style={{ maxWidth: '340px', fontSize: '0.8rem', color: '#475569', lineHeight: '1.4' }}>
                       {cat.description}
                     </td>
                     <td style={{ textAlign: 'right' }}>
@@ -374,7 +358,7 @@ export default function AdminCategoriesPage() {
                           href={`/collections/${cat.slug}`}
                           target="_blank"
                           className="admin-btn admin-btn-sm admin-btn-secondary"
-                          title="View collection live"
+                          title="View category live"
                         >
                           <ExternalLink size={13} />
                         </Link>
@@ -382,7 +366,7 @@ export default function AdminCategoriesPage() {
                           type="button"
                           className="admin-btn admin-btn-sm admin-btn-gold"
                           onClick={() => openEditModal(cat)}
-                          title="Edit collection details"
+                          title="Edit category details"
                         >
                           <Edit size={13} />
                           <span>Edit</span>
@@ -391,7 +375,7 @@ export default function AdminCategoriesPage() {
                           type="button"
                           className="admin-btn admin-btn-sm admin-btn-danger"
                           onClick={() => handleDelete(cat)}
-                          title="Delete collection"
+                          title="Delete category"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -405,7 +389,7 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
 
-      {/* ================= MODAL: ADD NEW COLLECTION ================= */}
+      {/* ================= MODAL: ADD NEW CATEGORY ================= */}
       {isAddModalOpen && (
         <div className="admin-modal-overlay" onClick={() => setIsAddModalOpen(false)}>
           <div
@@ -430,9 +414,9 @@ export default function AdminCategoriesPage() {
                   <Plus size={16} />
                 </div>
                 <div>
-                  <h2 className="admin-modal-title">Add New Divine Collection</h2>
+                  <h2 className="admin-modal-title">Add New Jewellery Category</h2>
                   <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>
-                    Creates a category in Neon PostgreSQL and synchronizes with the live storefront.
+                    Creates a category in PostgreSQL and synchronizes with the live catalog filter.
                   </p>
                 </div>
               </div>
@@ -447,16 +431,16 @@ export default function AdminCategoriesPage() {
 
             <form onSubmit={handleCreate}>
               <div className="admin-modal-body">
-                {/* Collection Name & Tamil Name */}
+                {/* Category Name & URL Slug */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="admin-form-group">
                     <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Collection Name (English) *
+                      Category Name (English) *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Murugan Jewellery"
+                      placeholder="e.g. Temple Rings"
                       value={formName}
                       onChange={(e) => handleNameChange(e.target.value, true)}
                       className="admin-form-input"
@@ -465,43 +449,14 @@ export default function AdminCategoriesPage() {
 
                   <div className="admin-form-group">
                     <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Tamil Name (தமிழ்)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. முருகன் வேல் ஆபரணங்கள்"
-                      value={formTamilName}
-                      onChange={(e) => setFormTamilName(e.target.value)}
-                      className="admin-form-input"
-                    />
-                  </div>
-                </div>
-
-                {/* Slug & Item Count */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
                       URL Slug *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. murugan-jewellery"
+                      placeholder="e.g. rings or pooja-items"
                       value={formSlug}
                       onChange={(e) => setFormSlug(e.target.value)}
-                      className="admin-form-input"
-                    />
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Initial Item Count
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formCount}
-                      onChange={(e) => setFormCount(Number(e.target.value))}
                       className="admin-form-input"
                     />
                   </div>
@@ -526,7 +481,7 @@ export default function AdminCategoriesPage() {
                       marginBottom: '10px',
                     }}
                   >
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Collection Artwork / Image</span>
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Category Artwork / Image</span>
                     <label style={{ cursor: 'pointer' }}>
                       <input
                         type="file"
@@ -575,7 +530,7 @@ export default function AdminCategoriesPage() {
                       required
                       value={formImage}
                       onChange={(e) => setFormImage(e.target.value)}
-                      placeholder="e.g. /assets/cat_murugan.png or https://..."
+                      placeholder="e.g. /assets/cat_rings.png or https://..."
                       className="admin-form-input"
                       style={{ flexGrow: 1, height: '40px' }}
                     />
@@ -585,11 +540,11 @@ export default function AdminCategoriesPage() {
                 {/* Description */}
                 <div className="admin-form-group">
                   <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                    Spiritual Description &amp; Deity Significance
+                    Category Description &amp; Specifications
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="Describe the divine energy, Agamic mantras, and deity symbolism of this collection..."
+                    placeholder="Describe this jewellery category and craftsmanship details..."
                     value={formDesc}
                     onChange={(e) => setFormDesc(e.target.value)}
                     className="admin-form-textarea"
@@ -620,7 +575,7 @@ export default function AdminCategoriesPage() {
         </div>
       )}
 
-      {/* ================= MODAL: EDIT COLLECTION ================= */}
+      {/* ================= MODAL: EDIT CATEGORY ================= */}
       {editingCategory && (
         <div className="admin-modal-overlay" onClick={() => setEditingCategory(null)}>
           <div
@@ -645,9 +600,9 @@ export default function AdminCategoriesPage() {
                   <Edit size={16} />
                 </div>
                 <div>
-                  <h2 className="admin-modal-title">Edit Collection: {editingCategory.name}</h2>
+                  <h2 className="admin-modal-title">Edit Category: {editingCategory.name}</h2>
                   <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>
-                    Updates category details in Neon PostgreSQL and the live storefront.
+                    Updates category details in PostgreSQL and the storefront catalog filter.
                   </p>
                 </div>
               </div>
@@ -662,11 +617,11 @@ export default function AdminCategoriesPage() {
 
             <form onSubmit={handleSaveEdit}>
               <div className="admin-modal-body">
-                {/* Collection Name & Tamil Name */}
+                {/* Category Name & URL Slug */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="admin-form-group">
                     <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Collection Name (English) *
+                      Category Name (English) *
                     </label>
                     <input
                       type="text"
@@ -679,21 +634,6 @@ export default function AdminCategoriesPage() {
 
                   <div className="admin-form-group">
                     <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Tamil Name (தமிழ்)
-                    </label>
-                    <input
-                      type="text"
-                      value={formTamilName}
-                      onChange={(e) => setFormTamilName(e.target.value)}
-                      className="admin-form-input"
-                    />
-                  </div>
-                </div>
-
-                {/* Slug & Item Count */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
                       URL Slug *
                     </label>
                     <input
@@ -701,19 +641,6 @@ export default function AdminCategoriesPage() {
                       required
                       value={formSlug}
                       onChange={(e) => setFormSlug(e.target.value)}
-                      className="admin-form-input"
-                    />
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                      Item Count
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formCount}
-                      onChange={(e) => setFormCount(Number(e.target.value))}
                       className="admin-form-input"
                     />
                   </div>
@@ -738,7 +665,7 @@ export default function AdminCategoriesPage() {
                       marginBottom: '10px',
                     }}
                   >
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Collection Artwork / Image</span>
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Category Artwork / Image</span>
                     <label style={{ cursor: 'pointer' }}>
                       <input
                         type="file"
@@ -796,7 +723,7 @@ export default function AdminCategoriesPage() {
                 {/* Description */}
                 <div className="admin-form-group">
                   <label className="admin-form-label" style={{ fontWeight: 600, color: '#1e293b' }}>
-                    Description &amp; Divine Significance
+                    Description &amp; Details
                   </label>
                   <textarea
                     rows={3}

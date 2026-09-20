@@ -9,7 +9,6 @@ import {
   TrendingUp,
   BookMarked,
   Flame,
-  Heart,
   Sparkles,
 } from 'lucide-react';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';

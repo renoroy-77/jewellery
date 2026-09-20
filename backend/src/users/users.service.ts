@@ -6,10 +6,26 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDevoteeUserDto } from './dto/create-user.dto';
 import { UpdateDevoteeUserDto } from './dto/update-user.dto';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async resolveDevotee(idOrEmail: string) {
+    const isEmail = idOrEmail.includes('@');
+    const user = await this.prisma.devoteeUser.findFirst({
+      where: isEmail
+        ? { email: { equals: idOrEmail.trim(), mode: 'insensitive' } }
+        : { id: idOrEmail },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Devotee "${idOrEmail}" not found`);
+    }
+    return user;
+  }
 
   async findAll(search?: string) {
     const where: any = {};
@@ -24,6 +40,9 @@ export class UsersService {
 
     const devotees = await this.prisma.devoteeUser.findMany({
       where,
+      include: {
+        addresses: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -51,8 +70,13 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.devoteeUser.findUnique({
-      where: { id },
+    const user = await this.prisma.devoteeUser.findFirst({
+      where: id.includes('@') ? { email: id } : { id },
+      include: {
+        addresses: {
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+        },
+      },
     });
 
     if (!user) {
@@ -72,7 +96,7 @@ export class UsersService {
 
   async create(dto: CreateDevoteeUserDto) {
     const existing = await this.prisma.devoteeUser.findUnique({
-      where: { email: dto.email },
+      where: { email: dto.email.toLowerCase().trim() },
     });
 
     if (existing) {
@@ -91,10 +115,13 @@ export class UsersService {
       data: {
         id: userId,
         name: dto.name,
-        email: dto.email,
+        email: dto.email.toLowerCase().trim(),
         phone: dto.phone,
         shippingAddress: dto.shippingAddress,
         memberSince,
+      },
+      include: {
+        addresses: true,
       },
     });
   }
@@ -108,6 +135,7 @@ export class UsersService {
     return this.prisma.devoteeUser.update({
       where: { id },
       data: dto,
+      include: { addresses: true },
     });
   }
 
@@ -119,6 +147,141 @@ export class UsersService {
 
     return this.prisma.devoteeUser.delete({
       where: { id },
+    });
+  }
+
+  // ==========================================
+  // E-COMMERCE ADDRESS BOOK MANAGEMENT
+  // ==========================================
+
+  async getAddresses(idOrEmail: string) {
+    const devotee = await this.resolveDevotee(idOrEmail);
+    return this.prisma.devoteeAddress.findMany({
+      where: { devoteeId: devotee.id },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async addAddress(idOrEmail: string, dto: CreateAddressDto) {
+    const devotee = await this.resolveDevotee(idOrEmail);
+
+    // If this address is set to default or is the first address, clear existing defaults
+    const existingCount = await this.prisma.devoteeAddress.count({
+      where: { devoteeId: devotee.id },
+    });
+
+    const isDefault = dto.isDefault || existingCount === 0;
+
+    if (isDefault) {
+      await this.prisma.devoteeAddress.updateMany({
+        where: { devoteeId: devotee.id },
+        data: { isDefault: false },
+      });
+    }
+
+    const created = await this.prisma.devoteeAddress.create({
+      data: {
+        devoteeId: devotee.id,
+        label: dto.label || 'Home / Puja Room',
+        recipientName: dto.recipientName,
+        phone: dto.phone,
+        streetAddress: dto.streetAddress,
+        city: dto.city,
+        state: dto.state || 'Tamil Nadu',
+        pincode: dto.pincode,
+        isDefault,
+      },
+    });
+
+    // Also update devotee main contact phone/address if currently empty
+    if (!devotee.phone && dto.phone) {
+      await this.prisma.devoteeUser.update({
+        where: { id: devotee.id },
+        data: {
+          phone: dto.phone,
+          shippingAddress: `${dto.streetAddress}, ${dto.city}, ${dto.state || 'Tamil Nadu'} - ${dto.pincode}`,
+        },
+      });
+    }
+
+    return created;
+  }
+
+  async updateAddress(idOrEmail: string, addressId: string, dto: UpdateAddressDto) {
+    const devotee = await this.resolveDevotee(idOrEmail);
+
+    const address = await this.prisma.devoteeAddress.findFirst({
+      where: { id: addressId, devoteeId: devotee.id },
+    });
+
+    if (!address) {
+      throw new NotFoundException(`Address #${addressId} not found for this devotee`);
+    }
+
+    if (dto.isDefault) {
+      await this.prisma.devoteeAddress.updateMany({
+        where: { devoteeId: devotee.id },
+        data: { isDefault: false },
+      });
+    }
+
+    return this.prisma.devoteeAddress.update({
+      where: { id: addressId },
+      data: dto,
+    });
+  }
+
+  async deleteAddress(idOrEmail: string, addressId: string) {
+    const devotee = await this.resolveDevotee(idOrEmail);
+
+    const address = await this.prisma.devoteeAddress.findFirst({
+      where: { id: addressId, devoteeId: devotee.id },
+    });
+
+    if (!address) {
+      throw new NotFoundException(`Address #${addressId} not found`);
+    }
+
+    await this.prisma.devoteeAddress.delete({
+      where: { id: addressId },
+    });
+
+    // If deleted address was default, make the most recent remaining address default
+    if (address.isDefault) {
+      const nextRemaining = await this.prisma.devoteeAddress.findFirst({
+        where: { devoteeId: devotee.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (nextRemaining) {
+        await this.prisma.devoteeAddress.update({
+          where: { id: nextRemaining.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
+    return { success: true, message: 'Address removed successfully' };
+  }
+
+  async setDefaultAddress(idOrEmail: string, addressId: string) {
+    const devotee = await this.resolveDevotee(idOrEmail);
+
+    const address = await this.prisma.devoteeAddress.findFirst({
+      where: { id: addressId, devoteeId: devotee.id },
+    });
+
+    if (!address) {
+      throw new NotFoundException(`Address #${addressId} not found`);
+    }
+
+    await this.prisma.devoteeAddress.updateMany({
+      where: { devoteeId: devotee.id },
+      data: { isDefault: false },
+    });
+
+    return this.prisma.devoteeAddress.update({
+      where: { id: addressId },
+      data: { isDefault: true },
     });
   }
 }

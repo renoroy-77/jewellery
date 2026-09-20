@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 
 export class CreateOrderDto {
   @ApiPropertyOptional({ example: 'ORD-98425' })
@@ -42,11 +42,13 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional({ example: 2499 })
   @IsNumber()
+  @Min(0)
   @IsOptional()
   subtotal?: number;
 
   @ApiPropertyOptional({ example: 0 })
   @IsNumber()
+  @Min(0)
   @IsOptional()
   shippingFee?: number;
 
@@ -55,10 +57,17 @@ export class CreateOrderDto {
   @IsOptional()
   referralCodeUsed?: string;
 
-  @ApiProperty({ example: 2499 })
+  @ApiPropertyOptional({ example: 100 })
   @IsNumber()
-  @IsNotEmpty()
-  totalAmount: number;
+  @Min(0)
+  @IsOptional()
+  walletDiscount?: number;
+
+  @ApiPropertyOptional({ example: 2499 })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  totalAmount?: number;
 
   @ApiPropertyOptional({ example: 'Pending', default: 'Pending' })
   @IsString()

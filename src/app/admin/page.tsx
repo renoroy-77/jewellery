@@ -29,12 +29,12 @@ import { INITIAL_ORDERS, OrderCMS, UserRecord, INITIAL_USERS } from '@/data/cmsD
 import { BLOG_POSTS } from '@/data/blog';
 import { dashboardService, DashboardStatsResponse } from '@/services/dashboardService';
 import { devoteesService } from '@/services/devoteesService';
+import { toast } from 'sonner';
 
 export default function AdminDashboardPage() {
   const [orders, setOrders] = useState<OrderCMS[]>(INITIAL_ORDERS);
   const [users, setUsers] = useState<UserRecord[]>(INITIAL_USERS);
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // New User Creation Modal State
@@ -80,10 +80,10 @@ export default function AdminDashboardPage() {
     try {
       const created = await devoteesService.create(newUser);
       setUsers((prev) => [created, ...prev]);
-      setToastMessage(`Created registered user "${created.name}" successfully!`);
+      toast.success(`Created registered user "${created.name}" successfully!`);
     } catch {
       setUsers((prev) => [newUser, ...prev]);
-      setToastMessage(`Created user "${newUser.name}" (local fallback)`);
+      toast.info(`Created user "${newUser.name}" (local fallback)`);
     }
 
     setNewUserName('');
@@ -91,7 +91,6 @@ export default function AdminDashboardPage() {
     setNewUserPhone('');
     setNewUserAddress('');
     setIsCreateUserModalOpen(false);
-    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const pendingOrdersCount =
@@ -104,13 +103,6 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="admin-toast">
-          <CheckCircle2 size={18} color="#059669" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
       {/* Page Header */}
       <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>

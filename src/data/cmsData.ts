@@ -38,6 +38,7 @@ export interface OrderCMS {
   shippingFee?: number;
   referralCodeUsed?: string;
   referralDiscount?: number;
+  walletDiscount?: number;
   totalAmount: number;
   status: 'Pending' | 'Consecrated' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled';
   shippingAddress: string;
@@ -216,7 +217,6 @@ export const CONSULTATION_SERVICES = [
   {
     id: 'custom-craft',
     title: 'Custom Agamic Temple Jewellery Crafting',
-    tamilTitle: 'பாரம்பரிய கோயில் நகை தனிப்பயனாக்கம்',
     subtitle: 'Direct 1-on-1 design consultation with our Master Sthapati',
     duration: '45 mins',
     mode: 'video' as const,
@@ -228,7 +228,6 @@ export const CONSULTATION_SERVICES = [
   {
     id: 'consecration',
     title: 'Talisman Consecration & Sanctum Prana Pratishtha',
-    tamilTitle: 'புனித பிராண பிரதிஷ்டை & அர்ச்சனை முன்பதிவு',
     subtitle: 'Personalized temple energization with your Janma Nakshatra & Gotra',
     duration: '30 mins',
     mode: 'video' as const,
@@ -240,7 +239,6 @@ export const CONSULTATION_SERVICES = [
   {
     id: 'astrological',
     title: 'Nakshatra & Panchaloham Astrological Guidance',
-    tamilTitle: 'ஜன்ம நட்சத்திர பஞ்சலோக ஆலோசனை',
     subtitle: 'Identify the ideal deity, alloy ratio & planetary harmony for you',
     duration: '30 mins',
     mode: 'phone' as const,
@@ -252,7 +250,6 @@ export const CONSULTATION_SERVICES = [
   {
     id: 'showroom-visit',
     title: 'VIP Heritage Showroom Private Viewing & Trial',
-    tamilTitle: 'கோயில் பட்டறை & காட்சியக நேரடி பார்வை',
     subtitle: 'Exclusive in-person private trial in our Madurai / Chennai atelier',
     duration: '60 mins',
     mode: 'in-person' as const,

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Heart, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
+import { ShoppingBag, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
 import { productsService } from '@/services/productsService';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/types';
@@ -12,7 +12,7 @@ interface ShopCatalogProps {
 }
 
 export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) {
-  const { addToCart, wishlist, toggleWishlist, isInWishlist } = useCart();
+  const { addToCart } = useCart();
 
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
@@ -127,11 +127,6 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
     setTimeout(() => setAddedProductId(null), 1500);
   };
 
-  const handleToggleWishlist = (product: Product, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product.id);
-  };
 
   const resetFilters = () => {
     setSelectedType('all');
@@ -305,7 +300,7 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
           ) : (
             <div className="ecom-product-grid">
               {filteredProducts.map((product) => {
-                const isWishlisted = isInWishlist(product.id);
+
                 const isJustAdded = addedProductId === product.id;
                 const discountPercent = product.originalPrice
                   ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -330,19 +325,6 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
                           <span className="ecom-purity-tag">5-Metal Panchaloham</span>
                         </div>
 
-                        {/* Wishlist Button */}
-                        <button
-                          onClick={(e) => handleToggleWishlist(product, e)}
-                          className={`ecom-wishlist-btn ${isWishlisted ? 'active' : ''}`}
-                          aria-label="Add to wishlist"
-                          title={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-                        >
-                          <Heart
-                            size={18}
-                            fill={isWishlisted ? '#dfba6c' : 'none'}
-                            color={isWishlisted ? '#dfba6c' : '#ffffff'}
-                          />
-                        </button>
                       </div>
 
                       {/* Product Content */}

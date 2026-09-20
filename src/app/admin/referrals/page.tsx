@@ -28,19 +28,20 @@ import {
   AdminReferralSettings,
   ReferralRecord,
 } from '@/services/referralsService';
+import { toast } from 'sonner';
 
 export default function AdminReferralsPage() {
   const [settings, setSettings] = useState<AdminReferralSettings>({
     id: 'default',
     enabled: true,
-    refereeDiscountRupees: 100,
-    referrerRewardRupees: 200,
+    refereeDiscountRupees: 50,
+    referrerRewardRupees: 100,
     minOrderSubtotal: 500,
   });
 
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'REWARDED' | 'PENDING' | 'REVERSED'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'DELIVERED' | 'PENDING' | 'CANCELLED'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -69,8 +70,11 @@ export default function AdminReferralsPage() {
   };
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
+    if (type === 'error') {
+      toast.error(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   const handleSaveSettings = async (e?: React.FormEvent) => {
@@ -100,26 +104,30 @@ export default function AdminReferralsPage() {
   };
 
   const filteredReferrals = referrals.filter((r) => {
-    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+    const s = r.status as string;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      s === statusFilter ||
+      (statusFilter === 'DELIVERED' && (s === 'DELIVERED' || s === 'REWARDED')) ||
+      (statusFilter === 'CANCELLED' && (s === 'CANCELLED' || s === 'REVERSED'));
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       !q ||
       r.refereeEmail.toLowerCase().includes(q) ||
       r.orderId.toLowerCase().includes(q) ||
       (r.referrerName && r.referrerName.toLowerCase().includes(q)) ||
-      (r.referrerCode && r.referrerCode.toLowerCase().includes(q)) ||
-      (r.rewardCoupon && r.rewardCoupon.toLowerCase().includes(q));
+      (r.referrerCode && r.referrerCode.toLowerCase().includes(q));
 
     return matchesStatus && matchesSearch;
   });
 
   const totalRewardsGranted = referrals
-    .filter((r) => r.status === 'REWARDED')
+    .filter((r) => r.status === 'DELIVERED' || (r.status as string) === 'REWARDED' || r.walletCredited)
     .reduce((sum, r) => sum + (r.rewardAmount || 0), 0);
 
   const pendingCount = referrals.filter((r) => r.status === 'PENDING').length;
-  const rewardedCount = referrals.filter((r) => r.status === 'REWARDED').length;
-  const reversedCount = referrals.filter((r) => r.status === 'REVERSED').length;
+  const deliveredCount = referrals.filter((r) => r.status === 'DELIVERED' || (r.status as string) === 'REWARDED' || r.walletCredited).length;
+  const cancelledCount = referrals.filter((r) => r.status === 'CANCELLED' || (r.status as string) === 'REVERSED').length;
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '60px' }}>
@@ -279,7 +287,7 @@ export default function AdminReferralsPage() {
             </div>
             <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 500, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <CheckCircle2 size={13} />
-              <span>{rewardedCount} orders verified &amp; rewarded</span>
+              <span>{deliveredCount} orders delivered &amp; rewarded</span>
             </div>
           </div>
         </div>
@@ -321,12 +329,12 @@ export default function AdminReferralsPage() {
               ₹{totalRewardsGranted.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '6px' }}>
-              Single-use referrer coupons issued
+              Credited directly to referrers&apos; Sanctum Wallets
             </div>
           </div>
         </div>
 
-        {/* Card 3: Pending Verification */}
+        {/* Card 3: Pending Delivery */}
         <div
           style={{
             background: '#ffffff',
@@ -341,7 +349,7 @@ export default function AdminReferralsPage() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Pending Verification
+              Pending Delivery
             </span>
             <div
               style={{
@@ -363,7 +371,7 @@ export default function AdminReferralsPage() {
               {pendingCount}
             </div>
             <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '6px' }}>
-              Orders awaiting fulfillment/payment
+              Orders awaiting delivery before wallet credit
             </div>
           </div>
         </div>
@@ -405,7 +413,7 @@ export default function AdminReferralsPage() {
               ₹{settings.refereeDiscountRupees} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748b' }}>off friend</span>
             </div>
             <div style={{ fontSize: '0.8rem', color: '#0d5438', fontWeight: 600, marginTop: '4px' }}>
-              + ₹{settings.referrerRewardRupees} voucher for devotee
+              + ₹{settings.referrerRewardRupees} wallet credit on delivery
             </div>
           </div>
         </div>
@@ -565,7 +573,7 @@ export default function AdminReferralsPage() {
             {/* 3. Referrer Reward */}
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
-                Referrer Reward Coupon (₹)
+                Referrer Reward (Wallet Credit) (₹)
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b' }}>
@@ -584,7 +592,7 @@ export default function AdminReferralsPage() {
                 />
               </div>
               <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px', margin: '6px 0 0' }}>
-                Single-use coupon automatically generated for the referrer upon order payment.
+                Store credit automatically credited to the referrer&apos;s Sanctum Wallet once the order status is Delivered.
               </p>
             </div>
 
@@ -644,9 +652,9 @@ export default function AdminReferralsPage() {
             {(
               [
                 { key: 'all', label: 'All Referrals', count: referrals.length },
-                { key: 'REWARDED', label: 'Rewarded', count: rewardedCount },
-                { key: 'PENDING', label: 'Pending', count: pendingCount },
-                { key: 'REVERSED', label: 'Reversed', count: reversedCount },
+                { key: 'DELIVERED', label: 'Delivered & Credited', count: deliveredCount },
+                { key: 'PENDING', label: 'Pending Delivery', count: pendingCount },
+                { key: 'CANCELLED', label: 'Cancelled', count: cancelledCount },
               ] as const
             ).map((tab) => {
               const isActive = statusFilter === tab.key;
@@ -698,7 +706,7 @@ export default function AdminReferralsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search email, order, or coupon..."
+              placeholder="Search email, order, or referrer..."
               className="admin-form-input"
               style={{ paddingLeft: '36px', height: '38px', fontSize: '0.85rem' }}
             />
@@ -715,7 +723,7 @@ export default function AdminReferralsPage() {
                 <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Invited Friend</th>
                 <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order ID</th>
                 <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Referrer Reward Coupon</th>
+                <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reward Method &amp; Wallet Status</th>
                 <th style={{ padding: '12px 18px', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>
                   Reward (₹)
                 </th>
@@ -745,7 +753,7 @@ export default function AdminReferralsPage() {
                         No referral activity matching current filter
                       </div>
                       <p style={{ color: '#64748b', fontSize: '0.82rem', margin: 0, maxWidth: '420px' }}>
-                        Devotees receive their personal referral code on their account page. When a friend uses the code at checkout, the verified record will appear here.
+                        Devotees receive their personal referral link on their account page. When a friend uses the link at checkout, the verified record will appear here.
                       </p>
                     </div>
                   </td>
@@ -830,7 +838,7 @@ export default function AdminReferralsPage() {
 
                     {/* Status Pill */}
                     <td style={{ padding: '14px 18px' }}>
-                      {item.status === 'REWARDED' && (
+                      {(item.status === 'DELIVERED' || (item.status as string) === 'REWARDED' || item.walletCredited) && (
                         <span
                           style={{
                             display: 'inline-flex',
@@ -846,10 +854,10 @@ export default function AdminReferralsPage() {
                           }}
                         >
                           <CheckCircle2 size={13} />
-                          <span>REWARDED</span>
+                          <span>DELIVERED &amp; CREDITED</span>
                         </span>
                       )}
-                      {item.status === 'PENDING' && (
+                      {item.status === 'PENDING' && !item.walletCredited && (
                         <span
                           style={{
                             display: 'inline-flex',
@@ -865,10 +873,10 @@ export default function AdminReferralsPage() {
                           }}
                         >
                           <Clock size={13} />
-                          <span>PENDING</span>
+                          <span>AWAITING DELIVERY</span>
                         </span>
                       )}
-                      {item.status === 'REVERSED' && (
+                      {(item.status === 'CANCELLED' || (item.status as string) === 'REVERSED') && (
                         <span
                           style={{
                             display: 'inline-flex',
@@ -884,48 +892,43 @@ export default function AdminReferralsPage() {
                           }}
                         >
                           <XCircle size={13} />
-                          <span>REVERSED</span>
+                          <span>CANCELLED</span>
                         </span>
                       )}
                     </td>
 
-                    {/* Referrer Coupon */}
+                    {/* Reward Method & Wallet Status */}
                     <td style={{ padding: '14px 18px' }}>
-                      {item.rewardCoupon ? (
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(item.rewardCoupon!)}
+                      {item.walletCredited || item.status === 'DELIVERED' ? (
+                        <span
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
                             padding: '4px 10px',
                             borderRadius: '6px',
-                            border: '1px dashed #d4af37',
-                            background: '#fffdf5',
-                            color: '#92400e',
-                            fontWeight: 700,
-                            fontFamily: 'monospace',
-                            fontSize: '0.82rem',
-                            cursor: 'pointer',
+                            background: '#ecfdf5',
+                            border: '1px solid #a7f3d0',
+                            color: '#065f46',
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
                           }}
-                          title="Click to copy coupon code"
                         >
-                          <span>{item.rewardCoupon}</span>
-                          {copiedCoupon === item.rewardCoupon ? (
-                            <Check size={12} color="#059669" />
-                          ) : (
-                            <Copy size={12} color="#b45309" />
-                          )}
-                        </button>
+                          <Coins size={14} color="#059669" />
+                          <span>Sanctum Wallet Balance</span>
+                        </span>
+                      ) : item.status === 'CANCELLED' || (item.status as string) === 'REVERSED' ? (
+                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Ineligible / Cancelled</span>
                       ) : (
-                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Generating...</span>
+                        <span style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: 500 }}>
+                          Credited Upon Delivery
+                        </span>
                       )}
                     </td>
 
                     {/* Reward Amount */}
-                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: '#047857', fontSize: '0.95rem' }}>
-                      +₹{item.rewardAmount || 200}
+                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: item.walletCredited || item.status === 'DELIVERED' ? '#059669' : '#0f172a', fontSize: '0.95rem' }}>
+                      +₹{item.rewardAmount || 100}
                     </td>
                   </tr>
                 ))

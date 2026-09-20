@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { BookOpen, Edit, Plus, Trash2, CheckCircle2, ExternalLink, X, Search, FileText } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '@/data/blog';
 import { blogService } from '@/services/blogService';
+import { toast } from 'sonner';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminBlogPage() {
+  const { confirm } = useConfirm();
   const [posts, setPosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,9 +35,12 @@ export default function AdminBlogPage() {
   const [formExcerpt, setFormExcerpt] = useState('');
   const [formAuthor, setFormAuthor] = useState('Master Sthapati R. Shanmugam');
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    if (type === 'error' || msg.toLowerCase().includes('warning') || msg.toLowerCase().includes('failed')) {
+      toast.error(msg);
+    } else {
+      toast.success(msg);
+    }
   };
 
   const openCreate = () => {
@@ -140,12 +145,21 @@ export default function AdminBlogPage() {
     });
   };
 
-  const handleDelete = (id: string, title: string) => {
-    if (confirm(`Are you sure you want to delete article "${title}"?`)) {
-      setPosts((prev) => prev.filter((p) => p.id !== id));
-      showToast(`Deleted article "${title}"`);
-      blogService.delete(id).catch(() => {});
-    }
+  const handleDelete = async (id: string, title: string) => {
+    const ok = await confirm({
+      title: 'Delete Blog Article',
+      message: `Are you sure you want to delete article "${title}"?`,
+      description: 'This will remove the publication from the live knowledge portal.',
+      confirmText: 'Yes, Delete Article',
+      cancelText: 'No, Keep Article',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
+
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+    showToast(`Deleted article "${title}"`);
+    blogService.delete(id).catch(() => {});
   };
 
   const filteredPosts = posts.filter((p) => {
@@ -160,12 +174,7 @@ export default function AdminBlogPage() {
 
   return (
     <div>
-      {toastMessage && (
-        <div className="admin-toast">
-          <CheckCircle2 size={18} color="#059669" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+
 
       {/* Header */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>

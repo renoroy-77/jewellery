@@ -30,10 +30,10 @@ export interface ReferralRecord {
   refereeEmail: string;
   refereePhone?: string | null;
   orderId: string;
-  status: 'PENDING' | 'REWARDED' | 'REVERSED';
+  status: 'PENDING' | 'DELIVERED' | 'CANCELLED';
   rewardAmount: number;
-  rewardCoupon?: string | null;
-  rewardCouponUsed?: boolean;
+  rewardType: string;
+  walletCredited: boolean;
   createdAt: string;
 }
 
@@ -42,23 +42,29 @@ export interface UserReferralSummary {
   name: string;
   email: string;
   referralCode: string;
+  shareUrl: string;
+  walletBalance: number;
   friendsReferred: number;
   rewardsEarned: number;
-  activeRewardCoupons: Array<{
-    coupon: string;
-    amount: number;
-    orderId: string;
-  }>;
   refereeDiscount: number;
   referrerReward: number;
+  lockedReferrerName?: string | null;
   referrals: Array<{
     id: string;
     refereeEmail: string;
     orderId: string;
-    status: 'PENDING' | 'REWARDED' | 'REVERSED';
+    status: string;
     rewardAmount: number;
-    rewardCoupon?: string | null;
-    rewardCouponUsed?: boolean;
+    walletCredited: boolean;
+    createdAt: string;
+  }>;
+  ledger?: Array<{
+    id: string;
+    amount: number;
+    type: string;
+    referenceId?: string | null;
+    description?: string | null;
+    balanceAfter: number;
     createdAt: string;
   }>;
 }
@@ -75,7 +81,7 @@ export const referralsService = {
     } catch {
       return {
         enabled: true,
-        refereeDiscountRupees: 100,
+        refereeDiscountRupees: 50,
         minOrderSubtotal: 500,
       };
     }
@@ -170,17 +176,18 @@ export const referralsService = {
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return await res.json();
     } catch {
-      const pseudoCode = `BHAKTI-${email.slice(0, 3).toUpperCase() || '7K9'}`;
+      const pseudoCode = `DIVINE${email.slice(0, 3).toUpperCase() || '108'}`;
       return {
         userId: 'USR-TEMP',
         name: email.split('@')[0] || 'Devotee',
         email,
         referralCode: pseudoCode,
+        shareUrl: `${API_BASE_URL}/?ref=${pseudoCode}`,
+        walletBalance: 0,
         friendsReferred: 0,
         rewardsEarned: 0,
-        activeRewardCoupons: [],
-        refereeDiscount: 100,
-        referrerReward: 200,
+        refereeDiscount: 50,
+        referrerReward: 100,
         referrals: [],
       };
     }
@@ -207,4 +214,45 @@ export const referralsService = {
       return [];
     }
   },
+
+  /**
+   * Lock a devotee to their first referrer
+   */
+  async lockReferral(payload: {
+    devoteeId?: string;
+    email?: string;
+    referralCode: string;
+  }): Promise<{ locked: boolean; message: string; referrerName?: string }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/referrals/lock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return await res.json();
+    } catch {
+      return { locked: false, message: 'Failed to connect to referral server' };
+    }
+  },
+
+  /**
+   * Redeem wallet balance at checkout
+   */
+  async redeemWallet(payload: {
+    devoteeId?: string;
+    email?: string;
+    amount: number;
+  }): Promise<{ success: boolean; newBalance?: number; message?: string }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/referrals/wallet/redeem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return await res.json();
+    } catch {
+      return { success: false, message: 'Failed to connect to wallet server' };
+    }
+  },
 };
+

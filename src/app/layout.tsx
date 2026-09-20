@@ -6,6 +6,8 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
+import { ConfirmProvider } from '@/context/ConfirmContext';
+import GlobalToaster from '@/components/GlobalToaster';
 
 export const viewport: Viewport = {
   themeColor: '#05160f',
@@ -36,10 +38,13 @@ export default function RootLayout({
       <body>
         <LanguageProvider>
           <CartProvider>
-            <Header />
-            <main id="main-content">{children}</main>
-            <Footer />
-            <CartDrawer />
+            <ConfirmProvider>
+              <Header />
+              <main id="main-content">{children}</main>
+              <Footer />
+              <CartDrawer />
+              <GlobalToaster />
+            </ConfirmProvider>
           </CartProvider>
         </LanguageProvider>
       </body>

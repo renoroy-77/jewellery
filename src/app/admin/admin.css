@@ -45,7 +45,7 @@
   top: 0;
   height: 100vh;
   flex-shrink: 0;
-  z-index: 50;
+  z-index: 100;
   transition: transform 0.3s ease;
 }
 
@@ -105,6 +105,23 @@
   font-weight: 500;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  cursor: pointer !important;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
+
+.admin-nav-item > * {
+  pointer-events: none;
+}
+
+.admin-nav-item:active {
+  transform: scale(0.98);
+}
+
+.admin-sidebar-mobile-overlay {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 .admin-nav-item:hover {
@@ -910,6 +927,16 @@
 
 /* Tablet & Mobile Screens (<= 900px) */
 @media (max-width: 900px) {
+  .admin-sidebar-mobile-overlay {
+    display: block !important;
+    pointer-events: auto !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 990;
+    backdrop-filter: blur(2px);
+  }
+
   .admin-sidebar {
     position: fixed;
     left: 0;
@@ -919,7 +946,7 @@
     max-width: 85vw;
     height: 100vh;
     transform: translateX(-100%);
-    z-index: 50;
+    z-index: 999;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -1161,3 +1188,35 @@
     font-size: 0.82rem;
   }
 }
+
+/* ==========================================================================
+   ADMIN SPLIT SCREEN LOGIN RESPONSIVENESS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .admin-split-layout-container {
+    flex-direction: column !important;
+  }
+
+  .admin-login-left-pane {
+    min-height: 380px !important;
+    padding: 32px 24px !important;
+    flex: none !important;
+  }
+
+  .admin-login-right-pane {
+    padding: 24px 16px !important;
+    flex: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-login-left-pane {
+    display: none !important;
+  }
+
+  .admin-login-right-pane {
+    padding: 20px 12px !important;
+    min-height: 100vh !important;
+  }
+}
+

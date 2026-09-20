@@ -3,25 +3,27 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Sparkles, ArrowLeft } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, ChevronDown, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
 import { Product } from '@/types';
 import { productsService } from '@/services/productsService';
 import { cmsService } from '@/services/cmsService';
 import { INITIAL_ANNOUNCEMENTS, AnnouncementCMS } from '@/data/cmsData';
+import { devoteeAuthService, DevoteeUserProfile } from '@/services/devoteeAuthService';
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const isSubPage = pathname !== '/';
-  const { totalItems, wishlist, setIsCartOpen } = useCart();
-  const { t, locale, setLocale } = useTranslation();
+  const { totalItems, setIsCartOpen } = useCart();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [announcement, setAnnouncement] = useState<AnnouncementCMS>(INITIAL_ANNOUNCEMENTS);
+  const [loggedDevotee, setLoggedDevotee] = useState<DevoteeUserProfile | null>(null);
 
   React.useEffect(() => {
     cmsService
@@ -30,6 +32,15 @@ export default function Header() {
         if (data) setAnnouncement(data);
       })
       .catch(() => {});
+
+    const updateDevotee = () => {
+      const sess = devoteeAuthService.getStoredSession();
+      setLoggedDevotee(sess ? sess.user : null);
+    };
+
+    updateDevotee();
+    window.addEventListener('aamadappetti_auth_change', updateDevotee);
+    return () => window.removeEventListener('aamadappetti_auth_change', updateDevotee);
   }, []);
 
   // If on admin route, suppress the consumer store header
@@ -208,19 +219,26 @@ export default function Header() {
             <Link
               href="/account"
               className={`header-icon-btn header-user-btn ${pathname === '/account' ? 'active-user' : ''}`}
-              aria-label="Devotee Account & Profile"
+              aria-label={loggedDevotee ? `Signed in as ${loggedDevotee.name}` : "Devotee Account & Profile"}
+              title={loggedDevotee ? `Signed in as ${loggedDevotee.name} (Active 29-Day Session)` : "Devotee Login"}
+              style={{ position: 'relative' }}
             >
               <User size={19} />
+              {loggedDevotee && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '6px',
+                    right: '6px',
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: '#d4af37',
+                    boxShadow: '0 0 6px #d4af37',
+                  }}
+                />
+              )}
             </Link>
-
-            <button
-              className="header-icon-btn"
-              onClick={() => setIsCartOpen(true)}
-              aria-label="View Wishlist"
-            >
-              <Heart size={19} />
-              {wishlist.length > 0 && <span className="badge-count">{wishlist.length}</span>}
-            </button>
 
             <button
               className="header-icon-btn cart-icon-btn"
@@ -329,54 +347,6 @@ export default function Header() {
                 <span>{t('nav.contact', 'Contact')}</span>
                 <span className="mobile-nav-arrow">›</span>
               </Link>
-
-              {/* Mobile Language Switcher */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 16px',
-                  borderTop: '1px solid rgba(212, 175, 55, 0.15)',
-                  marginTop: '6px',
-                }}
-              >
-                <span style={{ fontSize: '0.85rem', color: '#b8c7bf' }}>Website Language</span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setLocale('en')}
-                    style={{
-                      background: locale === 'en' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.05)',
-                      color: locale === 'en' ? '#05160f' : '#fcf9f2',
-                      border: '1px solid rgba(212,175,55,0.3)',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    English
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLocale('ta')}
-                    style={{
-                      background: locale === 'ta' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.05)',
-                      color: locale === 'ta' ? '#05160f' : '#fcf9f2',
-                      border: '1px solid rgba(212,175,55,0.3)',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    தமிழ்
-                  </button>
-                </div>
-              </div>
 
               <Link
                 href="/account"

@@ -20,6 +20,7 @@ import {
 import { INITIAL_ORDERS, OrderCMS, UserRecord, INITIAL_USERS } from '@/data/cmsData';
 import { devoteesService, DevoteeWithOrders } from '@/services/devoteesService';
 import { ordersService } from '@/services/ordersService';
+import { toast } from 'sonner';
 
 function AdminUsersContent() {
   const searchParams = useSearchParams();
@@ -28,7 +29,6 @@ function AdminUsersContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // New User Modal State
@@ -55,9 +55,12 @@ function AdminUsersContent() {
     }
   }, [searchParams]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    if (type === 'error' || msg.toLowerCase().includes('failed') || msg.toLowerCase().includes('error')) {
+      toast.error(msg);
+    } else {
+      toast.success(msg);
+    }
   };
 
   const handleCopyAddress = (id: string, addr: string) => {
@@ -122,13 +125,7 @@ function AdminUsersContent() {
 
   return (
     <div>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="admin-toast">
-          <CheckCircle2 size={18} color="#059669" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+
 
       {/* Header */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>

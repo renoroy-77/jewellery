@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { CmsModule } from './cms/cms.module';
 import { MediaModule } from './media/media.module';
@@ -13,6 +14,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReferralsModule } from './referrals/referrals.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { ReferralsModule } from './referrals/referrals.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
+    MailModule,
     CmsModule,
     MediaModule,
     AuthModule,

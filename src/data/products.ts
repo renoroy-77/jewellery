@@ -2,94 +2,97 @@ import { Product, Category } from '@/types';
 
 export const CATEGORIES: Category[] = [
   {
-    id: 'ganesha',
-    slug: 'ganesha-jewellery',
-    name: 'Ganesha Jewellery',
-    tamilName: 'விநாயகர் ஆபரணங்கள்',
+    id: 'pendants',
+    slug: 'pendants',
+    name: 'Pendants & Lockets',
     image: '/assets/cat_ganesha.png',
-    itemCount: 24,
-    description: 'Auspicious Lord Ganesha pendants and lockets cast in sacred 5-metal Panchaloham for obstacle removal and prosperity.',
-  },
-  {
-    id: 'murugan',
-    slug: 'murugan-jewellery',
-    name: 'Murugan Jewellery',
-    tamilName: 'முருகன் வேல்',
-    image: '/assets/cat_murugan.png',
-    itemCount: 18,
-    description: 'Divine Murugan Vel and peacock pendants symbolizing courage, spiritual victory, and protection.',
-  },
-  {
-    id: 'shiva',
-    slug: 'shiva-jewellery',
-    name: 'Shiva Jewellery',
-    tamilName: 'சிவ பெருமான்',
-    image: '/assets/cat_shiva.png',
-    itemCount: 16,
-    description: 'Shiva Lingam, Trishul, and Rudraksha lockets imbued with cosmic energy and meditative peace.',
-  },
-  {
-    id: 'lakshmi',
-    slug: 'lakshmi-jewellery',
-    name: 'Lakshmi Jewellery',
-    tamilName: 'மகாலட்சுமி',
-    image: '/assets/cat_lakshmi.png',
-    itemCount: 22,
-    description: 'Graceful Mahalakshmi pendants radiating abundance, fortune, and eternal feminine grace.',
-  },
-  {
-    id: 'devi',
-    slug: 'devi-jewellery',
-    name: 'Devi Jewellery',
-    tamilName: 'சக்தி ஆபரணங்கள்',
-    image: '/assets/cat_devi.png',
-    itemCount: 15,
-    description: 'Sacred Shakthi, Durga, and Meenakshi Amman motifs offering divine protection and empowerment.',
-  },
-  {
-    id: 'spiritual',
-    slug: 'spiritual-symbols',
-    name: 'Spiritual Symbols',
-    tamilName: 'ஆன்மீக சின்னங்கள்',
-    image: '/assets/cat_spiritual.png',
-    itemCount: 30,
-    description: 'Sacred Om, Sri Yantra, and Swastik symbols cast with traditional Vedic precision.',
+    itemCount: 5,
+    description: 'Auspicious consecrated deity pendants and lockets cast in sacred 5-metal Panchaloham for obstacle removal and prosperity.',
   },
   {
     id: 'chains',
-    slug: 'chains-necklaces',
+    slug: 'chains',
     name: 'Chains & Necklaces',
-    tamilName: 'மாலைகள்',
     image: '/assets/cat_chains.png',
-    itemCount: 28,
-    description: 'Heavy traditional handmade Panchaloham rope, thali, and temple chains crafted for durability.',
+    itemCount: 1,
+    description: 'Heavy traditional handmade Panchaloham rope, thali, and temple chains crafted for durability and daily sanctity.',
   },
   {
     id: 'bracelets',
     slug: 'bracelets',
-    name: 'Bracelets',
-    tamilName: 'காப்புகள்',
+    name: 'Bracelets & Kadas',
     image: '/assets/cat_bracelets.png',
-    itemCount: 14,
+    itemCount: 0,
     description: 'Adjustable Ayurvedic and temple kadas balancing the body’s five bio-elements (pancha boothas).',
   },
   {
     id: 'rings',
     slug: 'rings',
-    name: 'Rings',
-    tamilName: 'மோதிரங்கள்',
+    name: 'Temple Rings',
     image: '/assets/cat_rings.png',
-    itemCount: 20,
+    itemCount: 0,
     description: 'Navaratna and consecrated deity finger rings bringing planetary harmony and spiritual poise.',
   },
   {
-    id: 'pooja',
-    slug: 'pooja-essentials',
+    id: 'pooja-items',
+    slug: 'pooja-items',
     name: 'Pooja Essentials',
-    tamilName: 'பூஜை பொருட்கள்',
     image: '/assets/cat_pooja.png',
-    itemCount: 19,
+    itemCount: 0,
     description: 'Solid brass and Panchaloham traditional temple vilakku (lamps), camphor burners, and holy vessels.',
+  },
+];
+
+export interface DeityCollectionItem {
+  id: string;
+  slug: string;
+  name: string;
+  image: string;
+  deity: string;
+}
+
+export const DEITY_COLLECTIONS: DeityCollectionItem[] = [
+  {
+    id: 'ganesha',
+    slug: 'ganesha-jewellery',
+    name: 'Ganesha Jewellery',
+    image: '/assets/cat_ganesha_hq.webp',
+    deity: 'Lord Ganesha',
+  },
+  {
+    id: 'murugan',
+    slug: 'murugan-jewellery',
+    name: 'Murugan Jewellery',
+    image: '/assets/cat_murugan_hq.webp',
+    deity: 'Lord Murugan',
+  },
+  {
+    id: 'shiva',
+    slug: 'shiva-jewellery',
+    name: 'Shiva Jewellery',
+    image: '/assets/cat_shiva_hq.webp',
+    deity: 'Lord Shiva',
+  },
+  {
+    id: 'lakshmi',
+    slug: 'lakshmi-jewellery',
+    name: 'Lakshmi Jewellery',
+    image: '/assets/cat_lakshmi_hq.webp',
+    deity: 'Goddess Lakshmi',
+  },
+  {
+    id: 'devi',
+    slug: 'devi-jewellery',
+    name: 'Devi Jewellery',
+    image: '/assets/cat_devi_hq.webp',
+    deity: 'Goddess Devi',
+  },
+  {
+    id: 'spiritual',
+    slug: 'spiritual-symbols',
+    name: 'Spiritual Symbols',
+    image: '/assets/prod_om.png',
+    deity: 'Universal Brahman',
   },
 ];
 

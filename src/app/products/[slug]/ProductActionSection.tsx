@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingBag, Heart, Plus, Minus } from 'lucide-react';
+import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 
@@ -11,12 +11,11 @@ interface Props {
 
 export default function ProductActionSection({ product }: Props) {
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, toggleWishlist, isInWishlist } = useCart();
-  const isWishlisted = isInWishlist(product.id);
+  const { addToCart } = useCart();
 
   return (
     <div className="pdp-actions-wrapper">
-      <div className="pdp-action-row">
+      <div className="pdp-action-row" style={{ display: 'flex', gap: '14px', alignItems: 'stretch' }}>
         {/* Quantity Modifier */}
         <div className="pdp-qty-box">
           <button
@@ -40,28 +39,18 @@ export default function ProductActionSection({ product }: Props) {
           </button>
         </div>
 
-        {/* Add to Wishlist Button */}
+        {/* Main Add to Cart CTA */}
         <button
           type="button"
-          onClick={() => toggleWishlist(product.id)}
-          className={`btn-outline-gold pdp-wishlist-btn ${isWishlisted ? 'active' : ''}`}
-          aria-label={isWishlisted ? 'Saved in Wishlist' : 'Add to Wishlist'}
+          onClick={() => addToCart(product, quantity)}
+          className="btn-gold pdp-add-cart-cta"
+          id="pdp-add-to-cart-btn"
+          style={{ flex: 1 }}
         >
-          <Heart size={18} fill={isWishlisted ? '#d4af37' : 'none'} color="#d4af37" />
-          <span>{isWishlisted ? 'Saved' : 'Wishlist'}</span>
+          <ShoppingBag size={20} />
+          <span>Add to Sacred Bag</span>
         </button>
       </div>
-
-      {/* Main Add to Cart CTA */}
-      <button
-        type="button"
-        onClick={() => addToCart(product, quantity)}
-        className="btn-gold pdp-add-cart-cta"
-        id="pdp-add-to-cart-btn"
-      >
-        <ShoppingBag size={20} />
-        <span>Add to Sacred Bag</span>
-      </button>
     </div>
   );
 }

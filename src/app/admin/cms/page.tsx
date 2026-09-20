@@ -29,10 +29,12 @@ import {
 import { STORE_FAQS } from '@/data/products';
 import { FAQItem } from '@/types';
 import { cmsService } from '@/services/cmsService';
+import { toast } from 'sonner';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminCMSPage() {
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<'hero' | 'banners' | 'announcements' | 'faqs'>('hero');
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -61,8 +63,11 @@ export default function AdminCMSPage() {
   const [bannerTargetIdx, setBannerTargetIdx] = useState<number | null>(null);
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
+    if (type === 'error') {
+      toast.error(text);
+    } else {
+      toast.success(text);
+    }
   };
 
   // Fetch all CMS data from NestJS + PostgreSQL
@@ -151,20 +156,27 @@ export default function AdminCMSPage() {
 
   const handleDeleteHeroSlide = async (id: number) => {
     if (heroSlides.length <= 1) {
-      alert('You must maintain at least one active hero slide.');
+      toast.error('You must maintain at least one active hero slide.');
       return;
     }
-    if (!confirm('Are you sure you want to permanently delete this hero slide from PostgreSQL?')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Delete Hero Slide',
+      message: 'Are you sure you want to permanently delete this hero slide from PostgreSQL?',
+      description: 'This will remove the carousel artwork and messaging from the storefront homepage.',
+      confirmText: 'Yes, Delete Slide',
+      cancelText: 'No, Keep Slide',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
 
     try {
       await cmsService.deleteHeroSlide(id);
       setHeroSlides((prev) => prev.filter((s) => s.id !== id));
-      showToast('Deleted hero slide from database.');
+      toast.success('Deleted hero slide from database.');
     } catch (err: any) {
       console.error(err);
-      showToast('Failed to delete slide from backend', 'error');
+      toast.error('Failed to delete slide from backend');
     }
   };
 
@@ -272,6 +284,16 @@ export default function AdminCMSPage() {
   };
 
   const handleDeleteFaq = async (idx: number, id?: string) => {
+    const ok = await confirm({
+      title: 'Delete FAQ Item',
+      message: 'Are you sure you want to remove this FAQ question?',
+      confirmText: 'Yes, Remove',
+      cancelText: 'Cancel',
+      isDanger: true,
+      icon: 'trash',
+    });
+    if (!ok) return;
+
     if (id) {
       try {
         await cmsService.deleteFaq(id);
@@ -280,7 +302,7 @@ export default function AdminCMSPage() {
       }
     }
     setFaqs((prev) => prev.filter((_, i) => i !== idx));
-    showToast('Removed FAQ.');
+    toast.success('Removed FAQ item.');
   };
 
   // ================= FILE UPLOAD HANDLERS =================
@@ -310,24 +332,7 @@ export default function AdminCMSPage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className="admin-toast"
-          style={{
-            borderColor: toastMessage.type === 'error' ? '#ef4444' : '#10b981',
-            background: toastMessage.type === 'error' ? '#fef2f2' : '#f0fdf4',
-            color: toastMessage.type === 'error' ? '#991b1b' : '#065f46',
-          }}
-        >
-          {toastMessage.type === 'error' ? (
-            <AlertCircle size={18} color="#ef4444" />
-          ) : (
-            <CheckCircle2 size={18} color="#10b981" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
-      )}
+
 
       {/* Header with Live Backend Indicator */}
       <div
