@@ -450,7 +450,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Right Column: Premium Elevated White Card Login Panel */}
           <div className="admin-login-right-pane">
             <div className="admin-login-card">
-              {/* Card Header with Brand Badge and Language Selector */}
+              {/* Card Header with Brand Badge only */}
               <div className="admin-login-card-header">
                 <div className="admin-login-brand-badge">
                   <img
@@ -460,16 +460,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   />
                   <span className="admin-login-badge">ADMIN PANEL</span>
                 </div>
-
-                <button
-                  type="button"
-                  className="admin-login-lang-btn"
-                  onClick={() => setSelectedLanguage(selectedLanguage === 'English (en)' ? 'Malayalam (ml)' : 'English (en)')}
-                  title="Switch Language"
-                >
-                  <Languages size={14} color="#64748b" />
-                  <span>{selectedLanguage}</span>
-                </button>
               </div>
 
               {/* Title & Subtitle with Sacred Security Seal Icon */}
@@ -515,19 +505,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <User size={14} color="#b45309" />
                     <span>Admin Username / Email</span>
                   </label>
-                  <div className="admin-login-input-wrapper">
-                    <div className="admin-login-input-icon">
-                      <User size={16} />
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      value={usernameInput}
-                      onChange={(e) => setUsernameInput(e.target.value)}
-                      placeholder="admin"
-                      className="admin-login-input"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    placeholder="admin"
+                    className="admin-login-input admin-login-input-no-icon"
+                  />
                 </div>
 
                 {/* Password / PIN */}
@@ -537,16 +522,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <span>Password / PIN</span>
                   </label>
                   <div className="admin-login-input-wrapper">
-                    <div className="admin-login-input-icon">
-                      <Lock size={16} />
-                    </div>
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       placeholder="Enter password (e.g. admin123)"
                       value={passwordInput}
                       onChange={(e) => setPasswordInput(e.target.value)}
-                      className="admin-login-input"
+                      className="admin-login-input admin-login-input-no-icon"
                     />
                     <button
                       type="button"

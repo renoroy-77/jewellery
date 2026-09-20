@@ -1105,8 +1105,8 @@
   .admin-form-input,
   .admin-form-select,
   .admin-form-textarea,
-  input[type="text"],
-  input[type="email"],
+  input[type="text"]:not(.admin-login-input),
+  input[type="email"]:not(.admin-login-input),
   input[type="tel"],
   input[type="number"],
   input[type="search"],
@@ -1114,6 +1114,11 @@
   textarea {
     font-size: 16px !important;
     padding: 10px 12px !important;
+  }
+
+  /* Keep login inputs readable on iOS without zoom */
+  .admin-login-input {
+    font-size: 16px !important;
   }
 
   /* Tables horizontal scroll container */
@@ -1390,6 +1395,10 @@
   border-color: #0d5438;
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(13, 84, 56, 0.1);
+}
+
+.admin-login-input-no-icon {
+  padding-left: 14px !important;
 }
 
 .admin-login-eye-btn {
