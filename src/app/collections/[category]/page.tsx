@@ -26,6 +26,8 @@ const ALL_COLLECTIONS = [
   })),
 ];
 
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   return ALL_COLLECTIONS.map((cat) => ({
     category: cat.slug,
@@ -73,24 +75,52 @@ export default async function CategoryPage({ params }: Props) {
 
   // Find products matching this category slug from PostgreSQL database
   const allProducts = await productsService.getAll();
+  const catSlug = category.slug.toLowerCase();
+  const catId = category.id.toLowerCase();
+  const catName = category.name.toLowerCase();
+
   const matchedProducts = allProducts.filter((p) => {
-    if (category!.id === 'ganesha' || category!.slug === 'ganesha-jewellery') return p.deity === 'Lord Ganesha';
-    if (category!.id === 'murugan' || category!.slug === 'murugan-jewellery') return p.deity === 'Lord Murugan';
-    if (category!.id === 'shiva' || category!.slug === 'shiva-jewellery') return p.deity === 'Lord Shiva';
-    if (category!.id === 'lakshmi' || category!.slug === 'lakshmi-jewellery') return p.deity === 'Goddess Lakshmi';
-    if (category!.id === 'devi' || category!.slug === 'devi-jewellery') return p.deity === 'Goddess Devi';
-    if (category!.id === 'spiritual' || category!.slug === 'spiritual-symbols')
-      return p.tags?.includes('spiritual') || p.deity === 'Universal Brahman' || p.name.includes('Om');
-    if (category!.id === 'pendants' || category!.slug === 'pendants') return p.category === 'pendants';
-    if (category!.id === 'chains' || category!.slug === 'chains') return p.category === 'chains';
-    if (category!.id === 'bracelets' || category!.slug === 'bracelets') return p.category === 'bracelets';
-    if (category!.id === 'rings' || category!.slug === 'rings') return p.category === 'rings';
-    if (category!.id === 'pooja-items' || category!.id === 'pooja' || category!.slug === 'pooja-items') return p.category === 'pooja-items';
-    const catVal = category!.slug.toLowerCase();
-    const catId = category!.id.toLowerCase();
     const pCat = (p.category || '').toLowerCase();
     const pDeity = (p.deity || '').toLowerCase();
-    return pCat === catVal || pCat === catId || pDeity.includes(catVal) || pDeity.includes(catId);
+
+    // 1. Direct match on category slug, id, or name (covers categories set by admin)
+    if (
+      pCat === catSlug ||
+      pCat === catId ||
+      pCat === catName ||
+      pCat.replace(/-/g, ' ') === catName ||
+      catSlug.includes(pCat) ||
+      pCat.includes(catId)
+    ) {
+      return true;
+    }
+
+    // 2. Deity matching for deity-specific collections
+    if (catId === 'ganesha' || catSlug.includes('ganesha')) {
+      return pDeity.includes('ganesha') || p.name.toLowerCase().includes('ganesha');
+    }
+    if (catId === 'murugan' || catSlug.includes('murugan')) {
+      return pDeity.includes('murugan') || p.name.toLowerCase().includes('murugan') || p.name.toLowerCase().includes('vel');
+    }
+    if (catId === 'shiva' || catSlug.includes('shiva')) {
+      return pDeity.includes('shiva') || p.name.toLowerCase().includes('shiva') || p.name.toLowerCase().includes('trishul') || p.name.toLowerCase().includes('rudraksha');
+    }
+    if (catId === 'lakshmi' || catSlug.includes('lakshmi')) {
+      return pDeity.includes('lakshmi') || p.name.toLowerCase().includes('lakshmi');
+    }
+    if (catId === 'devi' || catSlug.includes('devi')) {
+      return pDeity.includes('devi') || pDeity.includes('durga') || p.name.toLowerCase().includes('devi');
+    }
+    if (catId === 'spiritual' || catSlug.includes('spiritual')) {
+      return p.tags?.includes('spiritual') || pDeity.includes('brahman') || p.name.toLowerCase().includes('om');
+    }
+
+    // 3. Fallback matching
+    return (
+      pDeity.includes(catId) ||
+      pDeity.includes(catSlug) ||
+      catName.includes(pDeity)
+    );
   });
 
   const breadcrumbs = [

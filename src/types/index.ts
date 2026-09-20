@@ -3,7 +3,7 @@ export interface Product {
   slug: string;
   name: string;
   deity: string;
-  category: 'pendants' | 'chains' | 'rings' | 'bracelets' | 'pooja-items';
+  category: string;
   price: number;
   originalPrice?: number;
   rating: number;

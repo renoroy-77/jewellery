@@ -21,75 +21,83 @@ async function main() {
   }
 
   // 2. Categories
-  const categoriesCount = await prisma.category.count();
-  if (categoriesCount === 0) {
-    console.log('Seeding 7 product categories...');
-    await prisma.category.createMany({
-      data: [
-        {
-          id: 'ganesha',
-          slug: 'ganesha-jewellery',
-          name: 'Ganesha Jewellery',
-          tamilName: 'விநாயகர் ஆபரணங்கள்',
-          image: '/assets/cat_ganesha.png',
-          itemCount: 24,
-          description: 'Auspicious Lord Ganesha pendants and lockets cast in sacred 5-metal Panchaloham for obstacle removal and prosperity.',
-        },
-        {
-          id: 'murugan',
-          slug: 'murugan-jewellery',
-          name: 'Murugan Jewellery',
-          tamilName: 'முருகன் வேல்',
-          image: '/assets/cat_murugan.png',
-          itemCount: 18,
-          description: 'Divine Murugan Vel and peacock pendants symbolizing courage, spiritual victory, and protection.',
-        },
-        {
-          id: 'shiva',
-          slug: 'shiva-jewellery',
-          name: 'Shiva Jewellery',
-          tamilName: 'சிவ பெருமான்',
-          image: '/assets/cat_shiva.png',
-          itemCount: 16,
-          description: 'Shiva Lingam, Trishul, and Rudraksha lockets imbued with cosmic energy and meditative peace.',
-        },
-        {
-          id: 'lakshmi',
-          slug: 'lakshmi-jewellery',
-          name: 'Lakshmi Jewellery',
-          tamilName: 'மகாலட்சுமி',
-          image: '/assets/cat_lakshmi.png',
-          itemCount: 22,
-          description: 'Graceful Mahalakshmi pendants radiating abundance, fortune, and eternal feminine grace.',
-        },
-        {
-          id: 'devi',
-          slug: 'devi-jewellery',
-          name: 'Devi Jewellery',
-          tamilName: 'சக்தி ஆபரணங்கள்',
-          image: '/assets/cat_devi.png',
-          itemCount: 15,
-          description: 'Sacred Shakthi, Durga, and Meenakshi Amman motifs offering divine protection and empowerment.',
-        },
-        {
-          id: 'spiritual',
-          slug: 'spiritual-symbols',
-          name: 'Spiritual Symbols',
-          tamilName: 'ஆன்மீக சின்னங்கள்',
-          image: '/assets/cat_spiritual.png',
-          itemCount: 30,
-          description: 'Sacred Om, Sri Yantra, and Swastik symbols cast with traditional Vedic precision.',
-        },
-        {
-          id: 'chains',
-          slug: 'chains-necklaces',
-          name: 'Chains & Necklaces',
-          tamilName: 'மாலைகள் & சங்கிலிகள்',
-          image: '/assets/cat_chains.png',
-          itemCount: 14,
-          description: 'Dense, hand-linked Panchaloham chains crafted with traditional south Indian links.',
-        },
-      ],
+  const categoryList = [
+    {
+      id: 'ganesha',
+      slug: 'ganesha-jewellery',
+      name: 'Ganesha Jewellery',
+      tamilName: 'விநாயகர் ஆபரணங்கள்',
+      image: '/assets/cat_ganesha.png',
+      itemCount: 24,
+      description: 'Auspicious Lord Ganesha pendants and lockets cast in sacred 5-metal Panchaloham for obstacle removal and prosperity.',
+    },
+    {
+      id: 'murugan',
+      slug: 'murugan-jewellery',
+      name: 'Murugan Jewellery',
+      tamilName: 'முருகன் வேல்',
+      image: '/assets/cat_murugan.png',
+      itemCount: 18,
+      description: 'Divine Murugan Vel and peacock pendants symbolizing courage, spiritual victory, and protection.',
+    },
+    {
+      id: 'shiva',
+      slug: 'shiva-jewellery',
+      name: 'Shiva Jewellery',
+      tamilName: 'சிவ பெருமான்',
+      image: '/assets/cat_shiva.png',
+      itemCount: 16,
+      description: 'Shiva Lingam, Trishul, and Rudraksha lockets imbued with cosmic energy and meditative peace.',
+    },
+    {
+      id: 'lakshmi',
+      slug: 'lakshmi-jewellery',
+      name: 'Lakshmi Jewellery',
+      tamilName: 'மகாலட்சுமி',
+      image: '/assets/cat_lakshmi.png',
+      itemCount: 22,
+      description: 'Graceful Mahalakshmi pendants radiating abundance, fortune, and eternal feminine grace.',
+    },
+    {
+      id: 'devi',
+      slug: 'devi-jewellery',
+      name: 'Devi Jewellery',
+      tamilName: 'சக்தி ஆபரணங்கள்',
+      image: '/assets/cat_devi.png',
+      itemCount: 15,
+      description: 'Sacred Shakthi, Durga, and Meenakshi Amman motifs offering divine protection and empowerment.',
+    },
+    {
+      id: 'spiritual',
+      slug: 'spiritual-symbols',
+      name: 'Spiritual Symbols',
+      tamilName: 'ஆன்மீக சின்னங்கள்',
+      image: '/assets/cat_spiritual.png',
+      itemCount: 30,
+      description: 'Sacred Om, Sri Yantra, and Swastik symbols cast with traditional Vedic precision.',
+    },
+    {
+      id: 'chains',
+      slug: 'chains-necklaces',
+      name: 'Chains & Necklaces',
+      tamilName: 'மாலைகள் & சங்கிலிகள்',
+      image: '/assets/cat_chains.png',
+      itemCount: 14,
+      description: 'Dense, hand-linked Panchaloham chains crafted with traditional south Indian links.',
+    },
+  ];
+
+  for (const cat of categoryList) {
+    await prisma.category.upsert({
+      where: { id: cat.id },
+      update: {
+        name: cat.name,
+        tamilName: cat.tamilName,
+        slug: cat.slug,
+        image: cat.image,
+        description: cat.description,
+      },
+      create: cat,
     });
   }
 
@@ -118,7 +126,7 @@ async function main() {
           metalCopper: '65.0%',
           metalZinc: '15.0%',
           metalIron: '5.0%',
-          purityCertificate: 'Govt. Approved Panchaloham Lab Certified',
+          purityCertificate: 'Authentic Temple Guild Certified',
           dimensions: '3.8 cm Height x 2.4 cm Width',
           weight: '14.8 grams',
           consecrationDetails: 'Prana Pratishtha performed at traditional temple shrine before packaging.',
@@ -402,7 +410,7 @@ async function main() {
             { productId: 'prod-007', productName: 'Traditional Panchaloham Rope Chain', price: 3299, quantity: 1 },
           ],
           totalAmount: 5798,
-          status: 'Consecrated',
+          status: 'Processing',
           shippingAddress: 'Flat 402, Sai Sannidhi Apartments, T. Nagar, Chennai - 600017',
           date: '2026-09-17',
           trackingNumber: 'DTDC-IN-8891240',

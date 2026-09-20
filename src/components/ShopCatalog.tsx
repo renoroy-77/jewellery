@@ -4,8 +4,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
 import { productsService } from '@/services/productsService';
+import { categoriesService } from '@/services/categoriesService';
 import { useCart } from '@/context/CartContext';
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
 
 interface ShopCatalogProps {
   initialProducts?: Product[];
@@ -16,6 +17,8 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
 
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
+
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     productsService
@@ -28,6 +31,15 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
         console.error('Failed to load products from database:', err);
         setLoading(false);
       });
+
+    categoriesService
+      .getAll()
+      .then((cats) => {
+        if (Array.isArray(cats) && cats.length > 0) {
+          setCategories(cats);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Filters State
@@ -39,7 +51,7 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
-  // Jewellery Types (Dynamically calculated from live database products)
+  // Jewellery Types (Dynamically calculated from backend categories + products)
   const baseTypes = [
     { label: 'Pendants & Lockets', value: 'pendants' },
     { label: 'Chains & Necklaces', value: 'chains' },
@@ -47,22 +59,46 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
     { label: 'Temple Rings', value: 'rings' },
   ];
 
+  const backendTypes = categories.map((c) => ({
+    label: c.name,
+    value: c.slug || c.id,
+  }));
+
   const productCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
   const customCats = productCats
-    .filter((c) => !baseTypes.some((b) => b.value.toLowerCase() === c.toLowerCase()))
+    .filter(
+      (c) =>
+        !baseTypes.some((b) => b.value.toLowerCase() === c.toLowerCase()) &&
+        !backendTypes.some((b) => b.value.toLowerCase() === c.toLowerCase())
+    )
     .map((c) => ({
       label: c.charAt(0).toUpperCase() + c.slice(1).replace(/-/g, ' '),
       value: c,
     }));
 
-  const allCategoryOptions = [...baseTypes, ...customCats];
+  const allCategoryOptions = [
+    ...baseTypes,
+    ...backendTypes.filter((bt) => !baseTypes.some((b) => b.value.toLowerCase() === bt.value.toLowerCase())),
+    ...customCats,
+  ];
 
   const JEWELLERY_TYPES = [
     { label: 'All Sacred Jewellery', value: 'all', count: products.length },
     ...allCategoryOptions.map((t) => ({
       label: t.label,
       value: t.value,
-      count: products.filter((p) => p.category?.toLowerCase() === t.value.toLowerCase()).length,
+      count: products.filter((p) => {
+        const cat = (p.category || '').toLowerCase();
+        const deity = (p.deity || '').toLowerCase();
+        const target = t.value.toLowerCase();
+        return (
+          cat === target ||
+          cat.includes(target) ||
+          target.includes(cat) ||
+          deity.includes(target) ||
+          t.label.toLowerCase().includes(cat)
+        );
+      }).length,
     })),
   ];
 
@@ -78,7 +114,18 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
 
     // Filter by Jewellery Type
     if (selectedType !== 'all') {
-      list = list.filter((p) => p.category.toLowerCase() === selectedType.toLowerCase());
+      const target = selectedType.toLowerCase();
+      list = list.filter((p) => {
+        const cat = (p.category || '').toLowerCase();
+        const deity = (p.deity || '').toLowerCase();
+        return (
+          cat === target ||
+          cat.replace(/-/g, ' ') === target ||
+          target.includes(cat) ||
+          cat.includes(target) ||
+          deity.includes(target)
+        );
+      });
     }
 
     // Filter by Price Range

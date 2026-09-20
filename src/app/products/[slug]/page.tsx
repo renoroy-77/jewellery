@@ -13,10 +13,12 @@ import {
 } from 'lucide-react';
 import { CATEGORIES } from '@/data/products';
 import { productsService } from '@/services/productsService';
+import { categoriesService } from '@/services/categoriesService';
 import { constructMetadata, getProductSchema, getBreadcrumbSchema, siteConfig } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import BackButton from '@/components/BackButton';
 import ProductActionSection from './ProductActionSection';
+import ProductGallery from './ProductGallery';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -64,11 +66,15 @@ export default async function ProductDetailPage({ params }: Props) {
     notFound();
   }
 
-  const matchingCategory = CATEGORIES.find(
+  const liveCategories = await categoriesService.getAll().catch(() => CATEGORIES);
+  const allKnownCategories = Array.isArray(liveCategories) && liveCategories.length > 0 ? liveCategories : CATEGORIES;
+  const matchingCategory = allKnownCategories.find(
     (c) =>
       c.id === product.category ||
+      c.slug === product.category ||
       c.slug.includes(product.category) ||
-      product.deity.toLowerCase().includes(c.id)
+      product.deity.toLowerCase().includes(c.id) ||
+      (c.name && c.name.toLowerCase() === product.category?.toLowerCase())
   );
 
   const breadcrumbs = [
@@ -125,39 +131,17 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* Main Product Showcase Grid */}
           <div className="pdp-grid">
             {/* Gallery Column */}
-            <div className="pdp-gallery">
-              <div className="pdp-main-image">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  loading="eager"
-                />
-              </div>
-
-              {product.images.length > 1 && (
-                <div className="pdp-thumbnails">
-                  {product.images.map((img, i) => (
-                    <div
-                      key={i}
-                      className="pdp-thumb-item"
-                    >
-                      <img
-                        src={img}
-                        alt={`${product.name} detail angle ${i + 1}`}
-                        className="pdp-thumb-img"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ProductGallery images={product.images} productName={product.name} />
 
             {/* Details Column */}
             <div className="pdp-details">
-              <span className="pdp-badge">
-                <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
-                {product.metalComposition.purityCertificate}
-              </span>
+              {product.metalComposition?.purityCertificate &&
+                product.metalComposition.purityCertificate !== 'Govt. Approved Panchaloham Lab Certified' && (
+                <span className="pdp-badge">
+                  <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
+                  {product.metalComposition.purityCertificate}
+                </span>
+              )}
 
               <h1 className="pdp-title">{product.name}</h1>
 

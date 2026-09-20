@@ -17,6 +17,8 @@ import {
   Loader2,
   Database,
   Upload,
+  Star,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { CATEGORIES, PRODUCTS } from '@/data/products';
 import { Category, Product } from '@/types';
@@ -44,13 +46,15 @@ export default function AdminProductsPage() {
   // Form State
   const [formName, setFormName] = useState('');
   const [formDeity, setFormDeity] = useState('');
-  const [formCategory, setFormCategory] = useState<Product['category']>('pendants');
+  const [formCategory, setFormCategory] = useState<string>('pendants');
   const [formPrice, setFormPrice] = useState(2499);
   const [formOriginalPrice, setFormOriginalPrice] = useState(2999);
   const [formInStock, setFormInStock] = useState(true);
   const [formFeatured, setFormFeatured] = useState(false);
   const [formDescription, setFormDescription] = useState('');
-  const [formImageUrl, setFormImageUrl] = useState('/assets/prod_ganesha_hq.webp');
+  const [formImages, setFormImages] = useState<string[]>(['/assets/prod_ganesha_hq.webp']);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [formGoldComp, setFormGoldComp] = useState('2.5%');
   const [formSilverComp, setFormSilverComp] = useState('12.5%');
   const [formCopperComp, setFormCopperComp] = useState('65.0%');
@@ -125,13 +129,14 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
     setFormName('');
     setFormDeity('Lord Ganesha');
-    setFormCategory('pendants');
+    setFormCategory(categories.length > 0 ? (categories[0].slug || categories[0].id) : 'pendants');
     setFormPrice(2499);
     setFormOriginalPrice(2999);
     setFormInStock(true);
     setFormFeatured(false);
     setFormDescription('Authentic consecrated Panchaloham jewellery handcrafted by temple sthapatis.');
-    setFormImageUrl('/assets/prod_ganesha_hq.webp');
+    setFormImages(['/assets/prod_ganesha_hq.webp']);
+    setNewImageUrl('');
     setFormGoldComp('2.5%');
     setFormSilverComp('12.5%');
     setFormCopperComp('65.0%');
@@ -147,13 +152,25 @@ export default function AdminProductsPage() {
     setEditingProduct(product);
     setFormName(product.name);
     setFormDeity(product.deity);
-    setFormCategory(product.category);
+    // Intelligently match existing product.category against categories list
+    const matchedCategory = categories.find(
+      (c) =>
+        c.id === product.category ||
+        c.slug === product.category ||
+        c.name.toLowerCase() === product.category?.toLowerCase() ||
+        c.slug.includes(product.category)
+    );
+    setFormCategory(matchedCategory ? (matchedCategory.slug || matchedCategory.id) : (product.category || 'pendants'));
     setFormPrice(product.price);
     setFormOriginalPrice(product.originalPrice || product.price + 500);
     setFormInStock(product.inStock);
     setFormFeatured(product.featured || false);
     setFormDescription(product.description);
-    setFormImageUrl(product.images?.[0] || '/assets/prod_ganesha_hq.webp');
+    const initialImages = Array.isArray(product.images) && product.images.length > 0
+      ? [...product.images]
+      : ['/assets/prod_ganesha_hq.webp'];
+    setFormImages(initialImages);
+    setNewImageUrl('');
     setFormGoldComp(product.metalComposition?.gold || '2.5%');
     setFormSilverComp(product.metalComposition?.silver || '12.5%');
     setFormCopperComp(product.metalComposition?.copper || '65.0%');
@@ -165,6 +182,71 @@ export default function AdminProductsPage() {
     setIsModalOpen(true);
   };
 
+  const handleAddImageUrl = () => {
+    const url = newImageUrl.trim();
+    if (!url) return;
+    if (formImages.includes(url)) {
+      showToast('This image is already in the list', 'error');
+      return;
+    }
+    setFormImages((prev) => {
+      const filtered = prev.filter(img => img !== '/assets/prod_ganesha_hq.webp' || prev.length > 1);
+      return [...filtered, url];
+    });
+    setNewImageUrl('');
+    showToast('Added image to list!');
+  };
+
+  const handleSetMainImage = (index: number) => {
+    if (index === 0) return;
+    setFormImages((prev) => {
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [target, ...rest];
+    });
+    showToast('Set as main product photo!');
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (formImages.length <= 1) {
+      showToast('Product must have at least one photo', 'error');
+      return;
+    }
+    setFormImages((prev) => prev.filter((_, i) => i !== index));
+    showToast('Photo removed');
+  };
+
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingImages(true);
+    try {
+      showToast(`Uploading ${files.length} photo${files.length > 1 ? 's' : ''}...`);
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const res = await cmsService.uploadMedia(file);
+        if (res && res.url) {
+          newUrls.push(res.url);
+        }
+      }
+
+      if (newUrls.length > 0) {
+        setFormImages((prev) => {
+          const filtered = prev.filter(img => img !== '/assets/prod_ganesha_hq.webp' || prev.length > 1);
+          return [...filtered, ...newUrls];
+        });
+        showToast(`Uploaded ${newUrls.length} photo${newUrls.length > 1 ? 's' : ''}!`);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Image upload failed', 'error');
+    } finally {
+      setIsUploadingImages(false);
+      e.target.value = '';
+    }
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -173,10 +255,19 @@ export default function AdminProductsPage() {
       return;
     }
 
+    const validImages = formImages.map((s) => s.trim()).filter(Boolean);
+    const finalImages = validImages.length > 0 ? validImages : ['/assets/prod_ganesha_hq.webp'];
+
     setIsSaving(true);
     try {
       if (editingProduct) {
         // Update existing product
+        const purity =
+          editingProduct.metalComposition?.purityCertificate &&
+          editingProduct.metalComposition.purityCertificate !== 'Govt. Approved Panchaloham Lab Certified'
+            ? editingProduct.metalComposition.purityCertificate
+            : 'Authentic Temple Guild Certified';
+
         const updatedPayload: Partial<Product> = {
           name: formName.trim(),
           deity: formDeity.trim(),
@@ -186,7 +277,7 @@ export default function AdminProductsPage() {
           inStock: formInStock,
           featured: formFeatured,
           description: formDescription.trim(),
-          images: [formImageUrl.trim()],
+          images: finalImages,
           dimensions: formDimensions.trim(),
           weight: formWeight.trim(),
           consecrationDetails: formConsecration.trim(),
@@ -196,14 +287,14 @@ export default function AdminProductsPage() {
             copper: formCopperComp,
             zinc: formZincComp,
             iron: formIronComp,
-            purityCertificate: editingProduct.metalComposition?.purityCertificate || 'Government Assay Certified',
+            purityCertificate: purity,
           },
         };
 
         const result = await productsService.update(editingProduct.id, updatedPayload);
         setProducts((prev) => prev.map((p) => (p.id === result.id ? result : p)));
         setIsModalOpen(false);
-        showToast(`Saved changes for "${result.name}" in PostgreSQL!`);
+        showToast(`Saved changes for "${result.name}" with ${finalImages.length} photos in PostgreSQL!`);
       } else {
         // Add new product
         const newPayload: Partial<Product> = {
@@ -215,7 +306,7 @@ export default function AdminProductsPage() {
           inStock: formInStock,
           featured: formFeatured,
           description: formDescription.trim(),
-          images: [formImageUrl.trim()],
+          images: finalImages,
           dimensions: formDimensions.trim(),
           weight: formWeight.trim(),
           consecrationDetails: formConsecration.trim(),
@@ -227,7 +318,7 @@ export default function AdminProductsPage() {
             copper: formCopperComp,
             zinc: formZincComp,
             iron: formIronComp,
-            purityCertificate: 'Government Assay Certified',
+            purityCertificate: 'Authentic Temple Guild Certified',
           },
         };
 
@@ -274,20 +365,6 @@ export default function AdminProductsPage() {
     } catch (err: any) {
       console.error(err);
       showToast('Failed to toggle stock status', 'error');
-    }
-  };
-
-  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      showToast('Uploading image to media server...');
-      const res = await cmsService.uploadMedia(file);
-      setFormImageUrl(res.url);
-      showToast('Uploaded image and updated URL!');
-    } catch (err: any) {
-      showToast(err.message || 'Image upload failed', 'error');
     }
   };
 
@@ -654,10 +731,16 @@ export default function AdminProductsPage() {
                     </label>
                     <select
                       value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value as Product['category'])}
+                      onChange={(e) => setFormCategory(e.target.value)}
                       className="admin-form-select"
                       style={{ height: '42px' }}
                     >
+                      {/* If current formCategory doesn't match any option, include it so it's not lost */}
+                      {formCategory && !categories.some((c) => (c.slug || c.id) === formCategory || c.name.toLowerCase() === formCategory.toLowerCase()) && (
+                        <option value={formCategory}>
+                          Current: {formCategory}
+                        </option>
+                      )}
                       {categories.map((cat) => (
                         <option key={cat.id || cat.slug} value={cat.slug || cat.id}>
                           {cat.name} {cat.tamilName ? `(${cat.tamilName})` : ''}
@@ -744,77 +827,230 @@ export default function AdminProductsPage() {
                   </label>
                 </div>
 
-                {/* Image URL & Upload */}
+                {/* Multiple Product Photos & Upload */}
                 <div
                   className="admin-form-group"
                   style={{
                     background: '#f8fafc',
-                    padding: '16px',
-                    borderRadius: '10px',
+                    padding: '18px',
+                    borderRadius: '12px',
                     border: '1px dashed #cbd5e1',
                   }}
                 >
-                  <label
-                    className="admin-form-label"
+                  <div
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      marginBottom: '10px',
+                      marginBottom: '14px',
+                      flexWrap: 'wrap',
+                      gap: '10px',
                     }}
                   >
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>Product Image URL or Path</span>
-                    <label style={{ cursor: 'pointer' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
+                          Product Photos ({formImages.length})
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            background: '#ecfdf5',
+                            color: '#065f46',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            border: '1px solid #a7f3d0',
+                          }}
+                        >
+                          First photo is Main Photo
+                        </span>
+                      </div>
+                      <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                        Add multiple photos for the customer gallery. You can set any photo as the main photo.
+                      </p>
+                    </div>
+
+                    <label style={{ cursor: isUploadingImages ? 'not-allowed' : 'pointer' }}>
                       <input
                         type="file"
+                        multiple
                         accept="image/*"
+                        disabled={isUploadingImages}
                         style={{ display: 'none' }}
                         onChange={handleImageFileUpload}
                       />
                       <span
                         className="admin-btn admin-btn-sm admin-btn-secondary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Upload size={13} />
-                        <span>Upload File</span>
-                      </span>
-                    </label>
-                  </label>
-
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {formImageUrl && (
-                      <div
                         style={{
-                          width: '46px',
-                          height: '46px',
-                          borderRadius: '8px',
-                          border: '1px solid #e2e8f0',
-                          background: '#ffffff',
-                          display: 'flex',
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                          flexShrink: 0,
+                          gap: '6px',
+                          opacity: isUploadingImages ? 0.7 : 1,
                         }}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={formImageUrl}
-                          alt="Preview"
-                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                          onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
-                        />
-                      </div>
-                    )}
+                        {isUploadingImages ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                        <span>{isUploadingImages ? 'Uploading...' : 'Upload Photos'}</span>
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Add Image by URL row */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
                     <input
                       type="text"
-                      required
-                      value={formImageUrl}
-                      onChange={(e) => setFormImageUrl(e.target.value)}
-                      placeholder="e.g. /assets/prod_ganesha_hq.webp or https://..."
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddImageUrl();
+                        }
+                      }}
+                      placeholder="Paste image URL (e.g. /assets/prod_ganesha_hq.webp or https://...)"
                       className="admin-form-input"
-                      style={{ flexGrow: 1, height: '40px' }}
+                      style={{ height: '38px', fontSize: '0.84rem', flex: 1 }}
                     />
+                    <button
+                      type="button"
+                      onClick={handleAddImageUrl}
+                      className="admin-btn admin-btn-sm admin-btn-gold"
+                      style={{ height: '38px', padding: '0 14px', whiteSpace: 'nowrap' }}
+                    >
+                      <Plus size={14} />
+                      <span>Add Photo</span>
+                    </button>
+                  </div>
+
+                  {/* Visual Grid of Images */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                      gap: '12px',
+                    }}
+                  >
+                    {formImages.map((imgUrl, index) => {
+                      const isMain = index === 0;
+                      return (
+                        <div
+                          key={`${imgUrl}-${index}`}
+                          style={{
+                            position: 'relative',
+                            borderRadius: '10px',
+                            border: isMain ? '2px solid #0d5438' : '1px solid #e2e8f0',
+                            background: '#ffffff',
+                            overflow: 'hidden',
+                            boxShadow: isMain ? '0 4px 10px rgba(13, 84, 56, 0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}
+                        >
+                          <div
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              paddingTop: '100%',
+                              background: '#04140d',
+                            }}
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Photo ${index + 1}`}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                              }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                              }}
+                            />
+                            {isMain && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: '6px',
+                                  left: '6px',
+                                  background: '#0d5438',
+                                  color: '#fcd34d',
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                }}
+                              >
+                                <Star size={10} fill="#fcd34d" />
+                                <span>Main</span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              title="Delete photo"
+                              style={{
+                                position: 'absolute',
+                                top: '6px',
+                                right: '6px',
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '50%',
+                                background: 'rgba(239, 68, 68, 0.9)',
+                                color: '#ffffff',
+                                border: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          <div
+                            style={{
+                              padding: '8px',
+                              background: '#f8fafc',
+                              borderTop: '1px solid #f1f5f9',
+                              display: 'flex',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {isMain ? (
+                              <span style={{ fontSize: '0.72rem', color: '#0d5438', fontWeight: 700 }}>
+                                Primary Photo
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSetMainImage(index)}
+                                style={{
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: '#2563eb',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  textDecoration: 'underline',
+                                }}
+                              >
+                                Set as Main
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

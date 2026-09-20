@@ -117,7 +117,7 @@ export const PRODUCTS: Product[] = [
       copper: '65.0%',
       zinc: '15.0%',
       iron: '5.0%',
-      purityCertificate: 'Govt. Approved Panchaloham Lab Certified',
+      purityCertificate: 'Authentic Temple Guild Certified',
     },
     dimensions: '3.8 cm Height x 2.4 cm Width',
     weight: '14.8 grams',

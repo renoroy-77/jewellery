@@ -22,7 +22,10 @@ function mapBackendToProduct(p: any): Product {
       copper: p.metalCopper || '65.0%',
       zinc: p.metalZinc || '15.0%',
       iron: p.metalIron || '5.0%',
-      purityCertificate: p.purityCertificate || 'Government Assay Certified',
+      purityCertificate:
+        p.purityCertificate === 'Govt. Approved Panchaloham Lab Certified'
+          ? 'Authentic Temple Guild Certified'
+          : p.purityCertificate || 'Authentic Temple Guild Certified',
     },
     dimensions: p.dimensions || undefined,
     weight: p.weight || undefined,
