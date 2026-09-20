@@ -448,102 +448,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Right Column: Premium Elevated White Card Login Panel */}
-          <div
-            style={{
-              flex: '1',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '36px 28px',
-              position: 'relative',
-            }}
-            className="admin-login-right-pane"
-          >
-            <div
-              style={{
-                width: '100%',
-                maxWidth: '490px',
-                background: '#ffffff',
-                borderRadius: '24px',
-                padding: '40px 36px',
-                boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 35px rgba(212, 175, 55, 0.15)',
-                border: '1px solid rgba(212, 175, 55, 0.25)',
-                position: 'relative',
-              }}
-            >
-              {/* Card Header with Logo and Language Selector */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '28px',
-                }}
-              >
-                <img
-                  src="/assets/brand_logo_gold.png"
-                  alt="Aamadappetti Logo"
-                  style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
-                />
+          <div className="admin-login-right-pane">
+            <div className="admin-login-card">
+              {/* Card Header with Brand Badge and Language Selector */}
+              <div className="admin-login-card-header">
+                <div className="admin-login-brand-badge">
+                  <img
+                    src="/assets/brand_logo_gold.png"
+                    alt="Aamadappetti"
+                    className="admin-login-brand-logo"
+                  />
+                  <span className="admin-login-badge">ADMIN PANEL</span>
+                </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    fontSize: '0.8rem',
-                    color: '#475569',
-                    fontWeight: 500,
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                  }}
+                <button
+                  type="button"
+                  className="admin-login-lang-btn"
                   onClick={() => setSelectedLanguage(selectedLanguage === 'English (en)' ? 'Malayalam (ml)' : 'English (en)')}
                   title="Switch Language"
                 >
                   <Languages size={14} color="#64748b" />
                   <span>{selectedLanguage}</span>
-                </div>
+                </button>
               </div>
 
-              {/* Title & Subtitle */}
-              <div style={{ marginBottom: '24px' }}>
-                <h2
-                  style={{
-                    fontFamily: 'var(--font-serif, "Cinzel", "Playfair Display", serif)',
-                    color: '#0f172a',
-                    fontSize: '1.65rem',
-                    fontWeight: 700,
-                    margin: '0 0 8px 0',
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  Admin Sanctum Access
-                </h2>
-                <p style={{ color: '#64748b', fontSize: '0.88rem', margin: 0, lineHeight: 1.5 }}>
-                  Authenticate with your administrator credentials to enter the temple management console.
+              {/* Title & Subtitle with Sacred Security Seal Icon */}
+              <div className="admin-login-title-section">
+                <div className="admin-login-heading-row">
+                  <div className="admin-login-icon-badge">
+                    <ShieldCheck size={22} color="#059669" />
+                  </div>
+                  <div>
+                    <h2 className="admin-login-title">
+                      Admin Panel Login
+                    </h2>
+                    <span className="admin-login-sub-tag">Panchaloha Sanctum Console</span>
+                  </div>
+                </div>
+                <p className="admin-login-desc">
+                  Authenticate with your administrator credentials to enter the store management console.
                 </p>
               </div>
 
               {/* Logout Notice Banner */}
               {logoutNotice && (
-                <div
-                  style={{
-                    marginBottom: '20px',
-                    padding: '12px 16px',
-                    background: '#ecfdf5',
-                    border: '1px solid #86efac',
-                    borderRadius: '10px',
-                    color: '#065f46',
-                    fontSize: '0.86rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '10px',
-                  }}
-                >
+                <div className="admin-login-notice-banner">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <CheckCircle2 size={18} color="#059669" />
                     <span>Admin session successfully locked &amp; logged out.</span>
@@ -559,34 +508,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               )}
 
               {/* Login Form */}
-              <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <form onSubmit={handleLogin} className="admin-login-form">
                 {/* Admin Username / Email */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label
-                    style={{
-                      fontSize: '0.83rem',
-                      fontWeight: 600,
-                      color: '#334155',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
+                <div className="admin-login-field-group">
+                  <label className="admin-login-field-label">
                     <User size={14} color="#b45309" />
                     <span>Admin Username / Email</span>
                   </label>
-                  <div style={{ position: 'relative' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: '#94a3b8',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
+                  <div className="admin-login-input-wrapper">
+                    <div className="admin-login-input-icon">
                       <User size={16} />
                     </div>
                     <input
@@ -595,51 +525,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       value={usernameInput}
                       onChange={(e) => setUsernameInput(e.target.value)}
                       placeholder="admin"
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px 12px 42px',
-                        borderRadius: '10px',
-                        border: '1.5px solid #e2e8f0',
-                        fontSize: '0.94rem',
-                        color: '#0f172a',
-                        backgroundColor: '#f8fafc',
-                        outline: 'none',
-                        transition: 'all 0.2s',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = '#0d5438')}
-                      onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                      className="admin-login-input"
                     />
                   </div>
                 </div>
 
                 {/* Password / PIN */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label
-                    style={{
-                      fontSize: '0.83rem',
-                      fontWeight: 600,
-                      color: '#334155',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
+                <div className="admin-login-field-group">
+                  <label className="admin-login-field-label">
                     <Lock size={14} color="#b45309" />
                     <span>Password / PIN</span>
                   </label>
-                  <div style={{ position: 'relative' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: '#94a3b8',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
+                  <div className="admin-login-input-wrapper">
+                    <div className="admin-login-input-icon">
                       <Lock size={16} />
                     </div>
                     <input
@@ -648,37 +546,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       placeholder="Enter password (e.g. admin123)"
                       value={passwordInput}
                       onChange={(e) => setPasswordInput(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 42px 12px 42px',
-                        borderRadius: '10px',
-                        border: '1.5px solid #e2e8f0',
-                        fontSize: '0.94rem',
-                        color: '#0f172a',
-                        backgroundColor: '#f8fafc',
-                        outline: 'none',
-                        transition: 'all 0.2s',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = '#0d5438')}
-                      onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                      className="admin-login-input"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: 'absolute',
-                        right: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        color: '#94a3b8',
-                        cursor: 'pointer',
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
+                      className="admin-login-eye-btn"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -686,26 +559,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 {/* Remember Me & Forgot Password */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    fontSize: '0.83rem',
-                  }}
-                >
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#475569' }}>
+                <div className="admin-login-meta-row">
+                  <label className="admin-login-checkbox-label">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      style={{ accentColor: '#0d5438', cursor: 'pointer', width: '15px', height: '15px' }}
+                      className="admin-login-checkbox"
                     />
                     <span>Remember this device</span>
                   </label>
                   <span
                     onClick={() => toast.info('Default admin credentials: Username "admin" / Passcode "admin123"')}
-                    style={{ color: '#0d5438', fontWeight: 600, cursor: 'pointer' }}
+                    className="admin-login-forgot"
                   >
                     Forgot password?
                   </span>
@@ -713,18 +579,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Error Banner */}
                 {authError && (
-                  <div
-                    style={{
-                      background: '#fef2f2',
-                      border: '1px solid #fecaca',
-                      color: '#dc2626',
-                      fontSize: '0.84rem',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      textAlign: 'center',
-                      fontWeight: 500,
-                    }}
-                  >
+                  <div className="admin-login-error-banner">
                     {authError}
                   </div>
                 )}
@@ -733,77 +588,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{
-                    width: '100%',
-                    padding: '14px 20px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #072e1e 0%, #0d5438 100%)',
-                    color: '#ffffff',
-                    border: '1px solid #10b981',
-                    fontSize: '0.98rem',
-                    fontWeight: 600,
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    boxShadow: '0 4px 14px rgba(13, 84, 56, 0.35)',
-                    transition: 'all 0.2s',
-                    marginTop: '4px',
-                  }}
+                  className="admin-login-submit-btn"
                 >
                   {isSubmitting ? (
                     <Loader2 size={18} className="animate-spin" />
                   ) : (
                     <Lock size={17} color="#fcd34d" />
                   )}
-                  <span>{isSubmitting ? 'Authenticating Access...' : 'Unlock Management Console'}</span>
+                  <span>{isSubmitting ? 'Authenticating Access...' : 'Unlock Admin Panel'}</span>
                   {!isSubmitting && <ArrowRight size={17} style={{ marginLeft: '4px' }} />}
                 </button>
               </form>
 
               {/* Demo Credentials Box */}
-              <div
-                style={{
-                  marginTop: '22px',
-                  padding: '14px 16px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '0.82rem',
-                  color: '#64748b',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ marginBottom: '10px' }}>
-                  Default credentials: <strong style={{ color: '#0f172a' }}>admin</strong> / <strong style={{ color: '#0f172a' }}>admin123</strong>
+              <div className="admin-login-demo-box">
+                <div className="admin-login-demo-text">
+                  Default credentials: <strong>admin</strong> / <strong>admin123</strong>
                 </div>
                 <button
                   type="button"
                   onClick={handleQuickUnlock}
                   disabled={isSubmitting}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#0d5438',
-                    border: '1px solid #cbd5e1',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#e2e8f0';
-                    e.currentTarget.style.borderColor = '#94a3b8';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#f1f5f9';
-                    e.currentTarget.style.borderColor = '#cbd5e1';
-                  }}
+                  className="admin-login-quick-btn"
                 >
                   <Sparkles size={14} color="#b45309" />
                   <span>Auto-Fill &amp; Quick Unlock</span>
@@ -811,18 +617,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
 
               {/* Bottom Security Assurance Tag */}
-              <div
-                style={{
-                  marginTop: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  color: '#64748b',
-                  fontSize: '0.78rem',
-                  fontWeight: 500,
-                }}
-              >
+              <div className="admin-login-security-tag">
                 <ShieldCheck size={15} color="#059669" />
                 <span>Secure • Private • Authorized Access Only</span>
               </div>
