@@ -24,16 +24,26 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  @UseGuards(AdminAuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all devotee orders with status filter & search (Admin Only)' })
+  @ApiOperation({ summary: 'Get devotee orders with status filter & search (Admin or Devotee Owner)' })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
   findAll(
     @Query('status') status?: string,
     @Query('search') search?: string,
+    @Req() req?: any,
   ) {
-    return this.ordersService.findAll({ status, search });
+    if (req?.isAdmin) {
+      return this.ordersService.findAll({ status, search });
+    }
+    if (req?.user?.email) {
+      return this.ordersService.findAll({ status, search: req.user.email });
+    }
+    if (search && search.trim().length >= 3) {
+      return this.ordersService.findAll({ status, search: search.trim() });
+    }
+    return [];
   }
 
   @Get(':id')

@@ -209,12 +209,10 @@ export default function AccountPage() {
     // 2. Fetch devotee orders
     try {
       setIsLoadingOrders(true);
-      const allOrders = await ordersService.getAll({ search: devotee.email });
-      const userOrders = allOrders.filter(
-        (o) => o.email?.toLowerCase() === devotee.email?.toLowerCase(),
-      );
+      const userOrders = await ordersService.getDevoteeOrders(devotee.email || devotee.id);
       setOrders(userOrders);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load devotee orders', err);
     } finally {
       setIsLoadingOrders(false);
     }

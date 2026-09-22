@@ -40,13 +40,51 @@ export const ordersService = {
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         return data;
       }
       return INITIAL_ORDERS;
     } catch {
       return INITIAL_ORDERS;
     }
+  },
+
+  /**
+   * Get consecrated orders placed by a specific devotee
+   */
+  async getDevoteeOrders(emailOrDevoteeId: string): Promise<OrderCMS[]> {
+    if (!emailOrDevoteeId) return [];
+    try {
+      // 1. Direct fetch via devotee profile endpoint (embeds live orders array from database)
+      const profileRes = await fetch(`${API_BASE_URL}/api/users/${encodeURIComponent(emailOrDevoteeId)}`, {
+        headers: getAuthHeaders(false),
+        cache: 'no-store',
+      });
+      if (profileRes.ok) {
+        const pData = await profileRes.json();
+        if (Array.isArray(pData?.orders)) {
+          return pData.orders;
+        }
+      }
+    } catch {}
+
+    try {
+      // 2. Fetch via orders search endpoint
+      const url = new URL(`${API_BASE_URL}/api/orders`);
+      url.searchParams.set('search', emailOrDevoteeId);
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(false),
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          return data;
+        }
+      }
+    } catch {}
+
+    return [];
   },
 
   async getById(id: string): Promise<OrderCMS | null> {
