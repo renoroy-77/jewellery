@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
@@ -80,14 +81,42 @@ export class PaymentsService {
       customer_phone: cleanPhone,
     };
 
+    // Resolve valid absolute frontend URL for Cashfree redirection
+    let frontendUrl =
+      process.env.FRONTEND_URL ||
+      this.configService.get<string>('FRONTEND_URL') ||
+      '';
+    if (!frontendUrl || frontendUrl === '*' || !frontendUrl.startsWith('http')) {
+      const cors =
+        process.env.CORS_ORIGIN ||
+        this.configService.get<string>('CORS_ORIGIN') ||
+        '';
+      if (cors && cors !== '*' && cors.startsWith('http')) {
+        frontendUrl = cors;
+      } else {
+        frontendUrl = 'https://jewellery-gamma-eight.vercel.app';
+      }
+    }
+    const returnUrl =
+      dto.returnUrl && dto.returnUrl.startsWith('http')
+        ? dto.returnUrl
+        : `${frontendUrl}/order-success?order_id={order_id}&method=cashfree`;
+
+    let backendUrl =
+      process.env.BACKEND_PUBLIC_URL ||
+      this.configService.get<string>('BACKEND_PUBLIC_URL') ||
+      'https://astro.bloodme.in';
+    backendUrl = backendUrl.replace(/\/+$/, '');
+    const notifyUrl = `${backendUrl}/api/payments/cashfree/webhook`;
+
     const orderPayload = {
       order_id: orderId,
       order_amount: orderAmount,
       order_currency: currency,
       customer_details: customerDetails,
       order_meta: {
-        return_url: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/order-success?order_id={order_id}&method=cashfree`,
-        notify_url: `${process.env.BACKEND_PUBLIC_URL || 'https://astro.bloodme.in'}/api/payments/cashfree/webhook`,
+        return_url: returnUrl,
+        notify_url: notifyUrl,
       },
       order_note: dto.notes?.sankalpam || 'Sacred Temple Jewellery Order',
       order_tags: dto.notes
@@ -140,10 +169,20 @@ export class PaymentsService {
           };
         } else {
           const errText = await res.text();
-          this.logger.warn(`Cashfree API returned error ${res.status}: ${errText}. Using sandbox simulation fallback.`);
+          this.logger.error(`Cashfree API returned error ${res.status}: ${errText}`);
+          let parsedErrMsg = errText;
+          try {
+            const errObj = JSON.parse(errText);
+            parsedErrMsg = errObj.message || errText;
+          } catch {}
+          throw new BadRequestException(`Cashfree Payment Error: ${parsedErrMsg}`);
         }
       } catch (err: any) {
-        this.logger.warn(`Cashfree network issue: ${err.message}. Using sandbox simulation fallback.`);
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+        this.logger.error(`Cashfree network or processing error: ${err.message}`);
+        throw new InternalServerErrorException(`Payment gateway error: ${err.message}`);
       }
     }
 

@@ -36,17 +36,20 @@ export const paymentsService = {
     notesOrCustomer?: Record<string, any>,
     legacyNotes?: Record<string, any>,
   ): Promise<CashfreeOrderResponse> {
-    // Support either createOrder(amount, notes) or createOrder(amount, customerDetails, notes)
     const customerDetails =
       notesOrCustomer?.customerPhone || notesOrCustomer?.customerEmail
         ? notesOrCustomer
         : {
-            customerName: notesOrCustomer?.devoteeName,
+            customerName: notesOrCustomer?.customerName || notesOrCustomer?.devoteeName || 'Devotee Customer',
             customerEmail: notesOrCustomer?.email,
             customerPhone: notesOrCustomer?.phone,
           };
 
     const notes = legacyNotes || notesOrCustomer || {};
+    const returnUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/order-success?order_id={order_id}&method=cashfree`
+        : undefined;
 
     const res = await fetch(`${API_BASE_URL}/api/payments/cashfree/create-order`, {
       method: 'POST',
@@ -58,12 +61,18 @@ export const paymentsService = {
         currency: 'INR',
         receipt: `rcpt_${Date.now()}`,
         customerDetails,
+        returnUrl,
         notes,
       }),
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to initialize Cashfree payment gateway (${res.statusText})`);
+      let errMsg = res.statusText;
+      try {
+        const errJson = await res.json();
+        errMsg = errJson.message || errMsg;
+      } catch {}
+      throw new Error(errMsg);
     }
 
     return res.json();

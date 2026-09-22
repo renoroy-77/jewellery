@@ -48,6 +48,11 @@ export class CreateCashfreeOrderDto {
   @IsOptional()
   customerDetails?: CustomerDetailsDto;
 
+  @ApiPropertyOptional({ example: 'https://jewellery-gamma-eight.vercel.app/order-success?order_id={order_id}' })
+  @IsString()
+  @IsOptional()
+  returnUrl?: string;
+
   @ApiPropertyOptional({ example: { devoteeName: 'Ananya Sundaram', email: 'ananya@temple.org' } })
   @IsOptional()
   notes?: Record<string, any>;
