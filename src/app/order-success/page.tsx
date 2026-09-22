@@ -23,8 +23,8 @@ import { OrderCMS } from '@/data/cmsData';
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId') || 'ORD-98425';
-  const method = searchParams.get('method') || 'razorpay';
+  const orderId = searchParams.get('orderId') || searchParams.get('order_id') || 'ORD-98425';
+  const method = searchParams.get('method') || 'cashfree';
 
   const [order, setOrder] = useState<OrderCMS | null>(null);
   const [loading, setLoading] = useState(true);
@@ -171,7 +171,7 @@ function OrderSuccessContent() {
           <div>
             <div style={{ fontSize: '0.78rem', color: '#8fa59b' }}>Payment Status</div>
             <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#4ade80' }}>
-              {method.includes('cod') ? 'Cash on Delivery (Pending)' : 'Paid Online (Razorpay)'}
+              {method.includes('cod') ? 'Cash on Delivery (Pending)' : 'Paid Online (Cashfree)'}
             </div>
           </div>
 

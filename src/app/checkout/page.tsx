@@ -118,7 +118,7 @@ export default function CheckoutPage() {
   });
 
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
+  const [paymentMethod, setPaymentMethod] = useState<'cashfree' | 'cod'>('cashfree');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -293,14 +293,14 @@ export default function CheckoutPage() {
   const walletDiscount = useWalletBalance ? maxWalletApplicable : 0;
   const grandTotal = Math.max(0, amountBeforeWallet - walletDiscount);
 
-  // Load Razorpay checkout script
-  const loadRazorpayScript = (): Promise<boolean> => {
+  // Load Cashfree checkout script v3
+  const loadCashfreeScript = (): Promise<boolean> => {
     return new Promise((resolve) => {
       if (typeof window === 'undefined') return resolve(false);
-      if ((window as any).Razorpay) return resolve(true);
+      if ((window as any).Cashfree) return resolve(true);
 
       const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
       script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
       const buyerEmail = (loggedDevotee?.email || form.email).trim().toLowerCase();
       const devoteeName = form.customerName.trim() || loggedDevotee?.name || 'Devotee';
 
-      // Razorpay Online Payment Flow
+      // Cashfree Online Payment Flow
       const notes = {
         customerName: devoteeName,
         email: buyerEmail,
@@ -425,8 +425,8 @@ export default function CheckoutPage() {
         referralCode: referralCodeToSend || '',
       };
 
-      const razorpayOrder = await paymentsService.createOrder(grandTotal, notes);
-      const isScriptLoaded = await loadRazorpayScript();
+      const cashfreeOrder = await paymentsService.createOrder(grandTotal, notes);
+      const isScriptLoaded = await loadCashfreeScript();
 
       const preparedOrderPayload = {
         devoteeName,
@@ -440,68 +440,57 @@ export default function CheckoutPage() {
         referralDiscount: referralDiscount > 0 ? referralDiscount : 0,
         walletDiscount: walletDiscount > 0 ? walletDiscount : 0,
         totalAmount: grandTotal,
-        paymentMethod: 'Razorpay UPI/Cards (Online)',
+        paymentMethod: 'Cashfree UPI/Cards (Online)',
       };
 
-      if (isScriptLoaded && (window as any).Razorpay) {
-        const options = {
-          key: razorpayOrder.keyId,
-          amount: razorpayOrder.amount,
-          currency: razorpayOrder.currency || 'INR',
-          name: 'Aamadappetti Jewellery',
-          description: 'E-Commerce Online Order Payment',
-          image: '/images/brand/logo.png',
-          order_id: razorpayOrder.id.startsWith('order_sim_') ? undefined : razorpayOrder.id,
-          handler: async function (response: any) {
+      if (isScriptLoaded && (window as any).Cashfree && cashfreeOrder.paymentSessionId) {
+        const cashfree = (window as any).Cashfree({
+          mode: cashfreeOrder.environment === 'production' ? 'production' : 'sandbox',
+        });
+
+        cashfree
+          .checkout({
+            paymentSessionId: cashfreeOrder.paymentSessionId,
+            redirectTarget: '_modal',
+          })
+          .then(async (result: any) => {
+            if (result?.error) {
+              setErrorMessage(`Payment notice: ${result.error.message || 'Payment window closed'}`);
+              setIsProcessing(false);
+              return;
+            }
+
             try {
               const verifyRes = await paymentsService.verifyPayment({
-                razorpayOrderId: response.razorpay_order_id || razorpayOrder.id,
-                razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
-                razorpaySignature: response.razorpay_signature || 'simulated_signature',
+                orderId: cashfreeOrder.orderId,
+                paymentSessionId: cashfreeOrder.paymentSessionId,
                 orderData: preparedOrderPayload,
               });
 
               await maybeSaveAddress();
               clearCart();
-              router.push(`/order-success?orderId=${verifyRes.orderId}&method=razorpay`);
+              router.push(`/order-success?orderId=${verifyRes.orderId}&method=cashfree`);
             } catch (err: any) {
               setErrorMessage(`Payment verification error: ${err.message || 'Please contact support'}`);
               setIsProcessing(false);
             }
-          },
-          prefill: {
-            name: form.customerName,
-            email: form.email,
-            contact: normalizedPhone,
-          },
-          theme: {
-            color: '#d4af37',
-          },
-          modal: {
-            ondismiss: function () {
-              setIsProcessing(false);
-            },
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on('payment.failed', function (response: any) {
-          setErrorMessage(`Payment failed: ${response.error.description || 'Transaction declined'}`);
-          setIsProcessing(false);
-        });
-        rzp.open();
+          })
+          .catch((err: any) => {
+            setErrorMessage(`Payment gateway error: ${err.message || 'Transaction could not be completed'}`);
+            setIsProcessing(false);
+          });
       } else {
         // Fallback for simulated/test environments
         const verifyRes = await paymentsService.verifyPayment({
-          razorpayOrderId: razorpayOrder.id,
-          razorpayPaymentId: `pay_sim_${Date.now()}`,
-          razorpaySignature: 'simulated_signature',
+          orderId: cashfreeOrder.orderId,
+          paymentSessionId: cashfreeOrder.paymentSessionId,
+          cfPaymentId: `cf_pay_sim_${Date.now()}`,
           orderData: preparedOrderPayload,
         });
 
         await maybeSaveAddress();
         clearCart();
-        router.push(`/order-success?orderId=${verifyRes.orderId}&method=razorpay`);
+        router.push(`/order-success?orderId=${verifyRes.orderId}&method=cashfree`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred during checkout. Please try again.');
@@ -1575,9 +1564,9 @@ export default function CheckoutPage() {
               </div>
 
               <div style={{ display: 'grid', gap: '14px' }}>
-                {/* Razorpay Option */}
+                {/* Cashfree Option */}
                 <label
-                  onClick={() => setPaymentMethod('razorpay')}
+                  onClick={() => setPaymentMethod('cashfree')}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -1585,11 +1574,11 @@ export default function CheckoutPage() {
                     padding: '18px',
                     borderRadius: '10px',
                     background:
-                      paymentMethod === 'razorpay'
+                      paymentMethod === 'cashfree'
                         ? 'rgba(212, 175, 55, 0.1)'
                         : 'rgba(2, 12, 8, 0.6)',
                     border:
-                      paymentMethod === 'razorpay'
+                      paymentMethod === 'cashfree'
                         ? '2px solid #d4af37'
                         : '1px solid rgba(212, 175, 55, 0.2)',
                     cursor: 'pointer',
@@ -1599,9 +1588,9 @@ export default function CheckoutPage() {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    id="radio-razorpay"
-                    checked={paymentMethod === 'razorpay'}
-                    onChange={() => setPaymentMethod('razorpay')}
+                    id="radio-cashfree"
+                    checked={paymentMethod === 'cashfree'}
+                    onChange={() => setPaymentMethod('cashfree')}
                     style={{ marginTop: '4px', accentColor: '#d4af37' }}
                   />
                   <div style={{ flex: 1 }}>
@@ -1614,7 +1603,7 @@ export default function CheckoutPage() {
                       }}
                     >
                       <span style={{ fontWeight: 600, color: '#fcf9f2', fontSize: '1rem' }}>
-                        Razorpay Secure Gateway (Recommended)
+                        Cashfree Secure Gateway (Recommended)
                       </span>
                       <span
                         style={{
@@ -1661,7 +1650,7 @@ export default function CheckoutPage() {
               <span>
                 {isProcessing
                   ? 'Connecting to Payment Gateway...'
-                  : `Proceed to Pay ₹${grandTotal.toLocaleString('en-IN')} via Razorpay`}
+                  : `Proceed to Pay ₹${grandTotal.toLocaleString('en-IN')} via Cashfree`}
               </span>
             </button>
           </form>

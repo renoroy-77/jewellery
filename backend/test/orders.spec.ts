@@ -642,7 +642,7 @@ describe('Orders Module & Edge Cases (E2E / Supertest)', () => {
           totalAmount: calculatedTotal,
           status: 'Pending',
           shippingAddress: '55, Temple Car St, Kanchipuram, Tamil Nadu - 631502',
-          paymentMethod: 'Razorpay UPI',
+          paymentMethod: 'Cashfree UPI',
         })
         .expect(201);
 

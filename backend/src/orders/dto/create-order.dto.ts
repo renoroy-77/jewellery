@@ -89,7 +89,7 @@ export class CreateOrderDto {
   @IsOptional()
   trackingNumber?: string;
 
-  @ApiProperty({ example: 'Razorpay UPI (Verified)', default: 'Razorpay UPI' })
+  @ApiProperty({ example: 'Cashfree UPI (Verified)', default: 'Cashfree UPI' })
   @IsString()
   @IsNotEmpty()
   paymentMethod: string;

@@ -2,8 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CreateOrderDto } from '../../orders/dto/create-order.dto';
 
-export class VerifyPaymentDto {
-  @ApiPropertyOptional({ example: 'order_1727000000000_1234' })
+export class VerifyCashfreePaymentDto {
+  @ApiProperty({ example: 'order_1727000000000_1234' })
   @IsString()
   @IsOptional()
   orderId?: string;
@@ -18,17 +18,18 @@ export class VerifyPaymentDto {
   @IsOptional()
   paymentSessionId?: string;
 
-  @ApiPropertyOptional({ example: 'order_DBJOWzybf0sJbb' })
+  // Backwards compatibility aliases
+  @ApiPropertyOptional({ example: 'order_1727000000000_1234' })
   @IsString()
   @IsOptional()
   razorpayOrderId?: string;
 
-  @ApiPropertyOptional({ example: 'pay_DBJOPgqqQjig8M' })
+  @ApiPropertyOptional({ example: 'pay_123456' })
   @IsString()
   @IsOptional()
   razorpayPaymentId?: string;
 
-  @ApiPropertyOptional({ example: '9a97d740c06ab8...' })
+  @ApiPropertyOptional({ example: 'signature_xyz' })
   @IsString()
   @IsOptional()
   razorpaySignature?: string;
@@ -37,3 +38,5 @@ export class VerifyPaymentDto {
   @IsOptional()
   orderData?: Partial<CreateOrderDto>;
 }
+
+export { VerifyCashfreePaymentDto as VerifyPaymentDto };

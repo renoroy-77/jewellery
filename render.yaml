@@ -22,7 +22,11 @@ services:
         value: 8815074421:AAHaESvwmDUVCxA7-Yke-XeGFE0_G7HnbzI
       - key: TELEGRAM_CHAT_ID
         value: "1621012627"
-      - key: RAZORPAY_KEY_ID
-        value: rzp_test_Sr6D04pinNyoBv
-      - key: RAZORPAY_KEY_SECRET
-        value: CAnL39TNG3i83jUxJMGQkq6g
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false
+      - key: CASHFREE_ENV
+        value: sandbox
+      - key: CASHFREE_API_VERSION
+        value: 2023-08-01

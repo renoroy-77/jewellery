@@ -1,28 +1,54 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
-export interface RazorpayOrderResponse {
+export interface CashfreeOrderResponse {
+  success: boolean;
+  orderId: string;
+  paymentSessionId: string;
+  cfOrderId?: string;
+  orderStatus?: string;
+  orderAmount: number;
+  currency: string;
+  environment?: string;
+  appId?: string;
+  // Legacy compatibility
   id: string;
   amount: number;
-  currency: string;
-  keyId: string;
-  status: string;
-  receipt?: string;
-  notes?: Record<string, any>;
+  keyId?: string;
 }
 
-export interface VerifyPaymentPayload {
-  razorpayOrderId: string;
-  razorpayPaymentId: string;
-  razorpaySignature: string;
+export interface VerifyCashfreePaymentPayload {
+  orderId: string;
+  cfPaymentId?: string;
+  paymentSessionId?: string;
   orderData?: any;
+  // Legacy aliases
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
 }
 
 export const paymentsService = {
   /**
-   * Create Razorpay payment order on the backend
+   * Create Cashfree payment order on the backend
    */
-  async createOrder(amount: number, notes?: Record<string, any>): Promise<RazorpayOrderResponse> {
-    const res = await fetch(`${API_BASE_URL}/api/payments/razorpay/create-order`, {
+  async createOrder(
+    amount: number,
+    notesOrCustomer?: Record<string, any>,
+    legacyNotes?: Record<string, any>,
+  ): Promise<CashfreeOrderResponse> {
+    // Support either createOrder(amount, notes) or createOrder(amount, customerDetails, notes)
+    const customerDetails =
+      notesOrCustomer?.customerPhone || notesOrCustomer?.customerEmail
+        ? notesOrCustomer
+        : {
+            customerName: notesOrCustomer?.devoteeName,
+            customerEmail: notesOrCustomer?.email,
+            customerPhone: notesOrCustomer?.phone,
+          };
+
+    const notes = legacyNotes || notesOrCustomer || {};
+
+    const res = await fetch(`${API_BASE_URL}/api/payments/cashfree/create-order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,22 +57,23 @@ export const paymentsService = {
         amount,
         currency: 'INR',
         receipt: `rcpt_${Date.now()}`,
-        notes: notes || {},
+        customerDetails,
+        notes,
       }),
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to initialize payment gateway (${res.statusText})`);
+      throw new Error(`Failed to initialize Cashfree payment gateway (${res.statusText})`);
     }
 
     return res.json();
   },
 
   /**
-   * Verify payment signature and commit order to database
+   * Verify Cashfree payment and commit order to database
    */
-  async verifyPayment(payload: VerifyPaymentPayload) {
-    const res = await fetch(`${API_BASE_URL}/api/payments/razorpay/verify`, {
+  async verifyPayment(payload: VerifyCashfreePaymentPayload) {
+    const res = await fetch(`${API_BASE_URL}/api/payments/cashfree/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,3 +88,6 @@ export const paymentsService = {
     return res.json();
   },
 };
+
+export type RazorpayOrderResponse = CashfreeOrderResponse;
+export type VerifyPaymentPayload = VerifyCashfreePaymentPayload;
