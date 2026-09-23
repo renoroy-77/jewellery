@@ -17,6 +17,7 @@ import {
   Lock,
   LogOut,
   Sparkles,
+  MessageSquare,
   ShieldCheck,
   CheckCircle2,
   Users,
@@ -26,6 +27,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
+  Truck,
 } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
 import { adminAuthService, AdminUser } from '@/services/adminAuthService';
@@ -64,6 +66,11 @@ const NAV_ITEMS: NavItem[] = [
     icon: Palette,
   },
   {
+    label: 'Shipping & Packaging',
+    href: '/admin/cms?tab=shipping',
+    icon: Truck,
+  },
+  {
     label: 'Orders Tracker',
     href: '/admin/orders',
     icon: ShoppingBag,
@@ -77,6 +84,11 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Referrals & Rewards',
     href: '/admin/referrals',
     icon: Sparkles,
+  },
+  {
+    label: 'Inquiries & Leads',
+    href: '/admin/inquiries',
+    icon: MessageSquare,
   },
   {
     label: 'Blog & Articles',
@@ -112,6 +124,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const authed = adminAuthService.isAuthenticated();
       if (authed) {
         const user = adminAuthService.getCurrentUser();
+        if (user && (user.name === 'Chief Sthapati' || !user.name)) {
+          user.name = 'Administrator';
+          try {
+            localStorage.setItem('aamadappetti_admin_user', JSON.stringify(user));
+          } catch {}
+        }
         setCurrentUser(user);
         setIsAuthenticated(true);
 
@@ -162,26 +180,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } catch (err: any) {
       setAuthError(err.message || 'Invalid credentials. Default passcode is admin123');
       toast.error('Invalid admin credentials. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleQuickUnlock = async () => {
-    setUsernameInput('admin');
-    setPasswordInput('admin123');
-    setAuthError('');
-    setIsSubmitting(true);
-    try {
-      const res = await adminAuthService.login('admin', 'admin123');
-      if (res.success) {
-        setIsAuthenticated(true);
-        setCurrentUser(res.user);
-        toast.success('Admin portal unlocked!');
-      }
-    } catch (err: any) {
-      setAuthError(err.message || 'Quick unlock failed');
-      toast.error('Quick unlock failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -582,22 +580,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </button>
               </form>
 
-              {/* Demo Credentials Box */}
-              <div className="admin-login-demo-box">
-                <div className="admin-login-demo-text">
-                  Default credentials: <strong>admin</strong> / <strong>admin123</strong>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleQuickUnlock}
-                  disabled={isSubmitting}
-                  className="admin-login-quick-btn"
-                >
-                  <Sparkles size={14} color="#b45309" />
-                  <span>Auto-Fill &amp; Quick Unlock</span>
-                </button>
-              </div>
-
               {/* Bottom Security Assurance Tag */}
               <div className="admin-login-security-tag">
                 <ShieldCheck size={15} color="#059669" />
@@ -660,11 +642,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               fontWeight: 700,
             }}
           >
-            {currentUser?.name?.charAt(0) || 'C'}
+            {currentUser?.name && currentUser.name !== 'Chief Sthapati' ? currentUser.name.charAt(0) : 'A'}
           </div>
           <div style={{ overflow: 'hidden' }}>
             <div style={{ color: '#fcf9f2', fontSize: '0.82rem', fontWeight: 600, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentUser?.name || 'Chief Sthapati'}
+              {currentUser?.name && currentUser.name !== 'Chief Sthapati' ? currentUser.name : 'Administrator'}
             </div>
             <div style={{ color: '#d4af37', fontSize: '0.72rem' }}>
               {currentUser?.role || 'SUPERADMIN'}
@@ -754,7 +736,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className="admin-user-tag" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ShieldCheck size={16} color="#d4af37" />
-              <span>{currentUser?.name || 'Chief Sthapati (SuperAdmin)'}</span>
+              <span>{currentUser?.name && currentUser.name !== 'Chief Sthapati' ? currentUser.name : 'Administrator'}</span>
             </div>
 
             {/* Topbar Logout Button */}

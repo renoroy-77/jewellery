@@ -319,7 +319,7 @@ export class AuthService {
       user: {
         id: admin?.id || 'admin-master-id',
         username: admin?.username || 'admin',
-        name: admin?.name || 'Chief Sthapati',
+        name: admin?.name || 'Administrator',
         role: admin?.role || 'SUPERADMIN',
         email: admin?.email || 'admin@aamadappetti.com',
         lastLogin: now.toISOString(),
@@ -367,7 +367,7 @@ export class AuthService {
       const admin = (await this.prisma.adminUser.findFirst()) || {
         id: 'admin-master-id',
         username: 'admin',
-        name: 'Chief Sthapati',
+        name: 'Administrator',
         role: 'SUPERADMIN',
         email: 'admin@aamadappetti.com',
       };
@@ -403,7 +403,7 @@ export class AuthService {
         return {
           id: admin?.id || 'admin-master-id',
           username: admin?.username || 'admin',
-          name: admin?.name || 'Chief Sthapati',
+          name: admin?.name || 'Administrator',
           role: admin?.role || 'SUPERADMIN',
           email: admin?.email || 'admin@aamadappetti.com',
         };

@@ -22,7 +22,7 @@ model AdminUser {
   username     String    @unique
   email        String    @unique
   passwordHash String
-  name         String    @default("Chief Sthapati")
+  name         String    @default("Administrator")
   role         String    @default("SUPERADMIN")
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())

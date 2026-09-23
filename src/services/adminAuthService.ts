@@ -62,7 +62,7 @@ export const adminAuthService = {
         const fallbackUser: AdminUser = {
           id: 'admin-local-master',
           username: 'admin',
-          name: 'Chief Sthapati',
+          name: 'Administrator',
           role: 'SUPERADMIN',
           email: 'admin@aamadappetti.com',
           lastLogin: new Date().toISOString(),

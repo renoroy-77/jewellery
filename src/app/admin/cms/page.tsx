@@ -132,6 +132,13 @@ export default function AdminCMSPage() {
 
   useEffect(() => {
     loadCmsData();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab === 'shipping') {
+        setActiveTab('shipping');
+      }
+    }
   }, []);
 
   // ================= HERO SLIDES HANDLERS =================

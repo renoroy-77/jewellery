@@ -225,6 +225,10 @@ export default function AdminDashboardPage() {
             <Palette size={14} />
             <span>Banners &amp; Alerts</span>
           </Link>
+          <Link href="/admin/cms?tab=shipping" className="admin-btn admin-btn-sm admin-btn-secondary">
+            <Truck size={14} />
+            <span>Shipping &amp; Packaging</span>
+          </Link>
           <Link href="/admin/blog" className="admin-btn admin-btn-sm admin-btn-secondary">
             <BookOpen size={14} />
             <span>Journal Articles</span>
