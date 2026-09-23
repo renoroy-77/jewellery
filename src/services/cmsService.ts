@@ -2,9 +2,15 @@ import {
   HeroSlideCMS,
   StoryBannerCMS,
   AnnouncementCMS,
+  FooterCMS,
+  AboutPageCMS,
+  CheckoutSettingsCMS,
   INITIAL_HERO_SLIDES,
   INITIAL_STORY_BANNERS,
   INITIAL_ANNOUNCEMENTS,
+  INITIAL_FOOTER_CMS,
+  INITIAL_ABOUT_CMS,
+  INITIAL_CHECKOUT_SETTINGS,
 } from '@/data/cmsData';
 import { STORE_FAQS } from '@/data/products';
 import { FAQItem } from '@/types';
@@ -190,6 +196,128 @@ export const cmsService = {
     // Return absolute URL or path accessible from frontend
     const fullUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
     return { url: fullUrl, asset: data.asset };
+  },
+
+  // ================= FOOTER CMS =================
+  async getFooter(): Promise<FooterCMS> {
+    try {
+      const res = await fetch('/api/admin/content', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.footer) return data.footer;
+      }
+    } catch {
+      // fallback
+    }
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem('aamadappetti_footer_cms') : null;
+      if (local) return JSON.parse(local);
+    } catch {}
+    return INITIAL_FOOTER_CMS;
+  },
+
+  async updateFooter(data: Partial<FooterCMS>): Promise<FooterCMS> {
+    try {
+      await fetch('/api/admin/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'footer', data }),
+      });
+    } catch {}
+    try {
+      if (typeof window !== 'undefined') {
+        const existing = await this.getFooter();
+        const merged = { ...existing, ...data };
+        localStorage.setItem('aamadappetti_footer_cms', JSON.stringify(merged));
+        return merged;
+      }
+    } catch {}
+    return { ...INITIAL_FOOTER_CMS, ...data };
+  },
+
+  // ================= ABOUT US CMS =================
+  async getAbout(): Promise<AboutPageCMS> {
+    try {
+      const res = await fetch('/api/admin/content', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.about) return data.about;
+      }
+    } catch {
+      // fallback
+    }
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem('aamadappetti_about_cms') : null;
+      if (local) return JSON.parse(local);
+    } catch {}
+    return INITIAL_ABOUT_CMS;
+  },
+
+  async updateAbout(data: Partial<AboutPageCMS>): Promise<AboutPageCMS> {
+    try {
+      await fetch('/api/admin/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'about', data }),
+      });
+    } catch {}
+    try {
+      if (typeof window !== 'undefined') {
+        const existing = await this.getAbout();
+        const merged = { ...existing, ...data };
+        localStorage.setItem('aamadappetti_about_cms', JSON.stringify(merged));
+        return merged;
+      }
+    } catch {}
+    return { ...INITIAL_ABOUT_CMS, ...data };
+  },
+
+  // ================= CHECKOUT SETTINGS =================
+  async getCheckoutSettings(): Promise<CheckoutSettingsCMS> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cms/checkout-settings`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch checkout settings');
+      const data = await res.json();
+      return data || INITIAL_CHECKOUT_SETTINGS;
+    } catch (err) {
+      console.warn('Falling back to local checkout settings:', err);
+      try {
+        const local = typeof window !== 'undefined' ? localStorage.getItem('aamadappetti_checkout_settings') : null;
+        if (local) return JSON.parse(local);
+      } catch {}
+      return INITIAL_CHECKOUT_SETTINGS;
+    }
+  },
+
+  async updateCheckoutSettings(settings: Partial<CheckoutSettingsCMS>): Promise<CheckoutSettingsCMS> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cms/checkout-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('aamadappetti_checkout_settings', JSON.stringify(updated));
+          }
+        } catch {}
+        return updated;
+      }
+    } catch (err) {
+      console.error('Error updating checkout settings on backend:', err);
+    }
+    // Fallback to localStorage
+    try {
+      if (typeof window !== 'undefined') {
+        const existing = await this.getCheckoutSettings();
+        const merged = { ...existing, ...settings };
+        localStorage.setItem('aamadappetti_checkout_settings', JSON.stringify(merged));
+        return merged;
+      }
+    } catch {}
+    return { ...INITIAL_CHECKOUT_SETTINGS, ...settings };
   },
 
   // ================= AGGREGATED STOREFRONT =================

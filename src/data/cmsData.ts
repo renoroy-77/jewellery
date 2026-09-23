@@ -54,12 +54,59 @@ export interface AnnouncementCMS {
   activePromoAlert?: string;
 }
 
+export interface FooterCMS {
+  brandTagline: string;
+  brandLogo: string;
+  address: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  sanctumHours: string;
+  assuranceNote: string;
+  socialLinks: {
+    instagram: string;
+    facebook: string;
+    youtube: string;
+    pinterest: string;
+  };
+  copyrightText: string;
+}
+
+export interface SacredMetalItem {
+  name: string;
+  element: string;
+  planet: string;
+  symbol: string;
+  color: string;
+  desc: string;
+}
+
+export interface CraftStepItem {
+  step: string;
+  title: string;
+  desc: string;
+}
+
+export interface AboutPageCMS {
+  heroKicker: string;
+  heroTitle: string;
+  heroLead: string;
+  establishedYear: string;
+  legacyTitle: string;
+  legacyParagraph1: string;
+  legacyParagraph2: string;
+  metals: SacredMetalItem[];
+  craftSteps: CraftStepItem[];
+  sanctumQuote: string;
+  sanctumQuoteAuthor: string;
+}
+
 export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
   {
     id: 1,
     kicker: 'DIVINE BEAUTY, TIMELESS TRADITION',
-    titleLine1: 'Adorn',
-    titleLine2: 'Your Faith',
+    titleLine1: 'Adorn Your Faith',
+    titleLine2: 'Sacred Panchaloham',
     subtitle: 'Authentic Panchaloham jewellery, crafted for every spiritual journey.',
     ctaText: 'Shop Now',
     ctaLink: '/collections',
@@ -100,7 +147,7 @@ export const INITIAL_STORY_BANNERS: StoryBannerCMS[] = [
     desc: 'Perfect for festivals, weddings and special occasions.',
     ctaText: 'Explore Gifts',
     ctaLink: '/collections',
-    image: '/assets/banner_sacred_gift.png',
+    image: '/assets/banner_sacred_gift.webp',
   },
   {
     id: 'banner-2',
@@ -108,7 +155,7 @@ export const INITIAL_STORY_BANNERS: StoryBannerCMS[] = [
     desc: 'A divine blend of five sacred metals for positive energy and well-being.',
     ctaText: 'Our Story',
     ctaLink: '/about',
-    image: '/assets/banner_panchaloham.png',
+    image: '/assets/banner_panchaloham.webp',
   },
 ];
 
@@ -119,99 +166,7 @@ export const INITIAL_ANNOUNCEMENTS: AnnouncementCMS = {
   activePromoAlert: 'Special Navaratri Consecration: Free Sanctum Prasadam with every order',
 };
 
-export const INITIAL_ORDERS: OrderCMS[] = [
-  {
-    id: 'ORD-98421',
-    devoteeName: 'Suresh Narayanan',
-    email: 'suresh.n@example.com',
-    phone: '+91 98410 44210',
-    items: [
-      {
-        productId: 'prod-001',
-        productName: 'Lord Ganesha Pendant',
-        price: 2499,
-        quantity: 1,
-      },
-      {
-        productId: 'prod-007',
-        productName: 'Traditional Panchaloham Rope Chain',
-        price: 3299,
-        quantity: 1,
-      },
-    ],
-    totalAmount: 5798,
-    status: 'Consecrated',
-    shippingAddress: 'Flat 402, Sai Sannidhi Apartments, T. Nagar, Chennai - 600017',
-    date: '2026-09-17',
-    trackingNumber: 'DTDC-IN-8891240',
-    paymentMethod: 'UPI (Google Pay)',
-  },
-  {
-    id: 'ORD-98422',
-    devoteeName: 'Ananya Raghavan',
-    email: 'ananya.r@example.com',
-    phone: '+91 97890 32111',
-    items: [
-      {
-        productId: 'prod-002',
-        productName: 'Murugan Divine Vel Pendant',
-        price: 2199,
-        quantity: 1,
-      },
-    ],
-    totalAmount: 2199,
-    status: 'Shipped',
-    shippingAddress: '14, Temple View Road, Malleshwaram, Bengaluru - 560003',
-    date: '2026-09-16',
-    trackingNumber: 'BLUEDART-992014',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: 'ORD-98423',
-    devoteeName: 'Dr. K. Balasubramanian',
-    email: 'kbala@example.com',
-    phone: '+91 94440 12890',
-    items: [
-      {
-        productId: 'prod-004',
-        productName: 'Mahalakshmi Ashtalakshmi Pendant',
-        price: 2899,
-        quantity: 2,
-      },
-    ],
-    totalAmount: 5798,
-    status: 'Pending',
-    shippingAddress: '88, North Car Street, Madurai - 625001',
-    date: '2026-09-18',
-    paymentMethod: 'Net Banking (HDFC)',
-  },
-  {
-    id: 'ORD-98424',
-    devoteeName: 'Meera Vijayakumar',
-    email: 'meera.v@example.com',
-    phone: '+91 98840 99882',
-    items: [
-      {
-        productId: 'prod-003',
-        productName: 'Shiva Trishul & Damru Locket',
-        price: 2399,
-        quantity: 1,
-      },
-      {
-        productId: 'prod-008',
-        productName: 'Ayurvedic Panchaloham Vala Kada',
-        price: 2599,
-        quantity: 1,
-      },
-    ],
-    totalAmount: 4998,
-    status: 'Delivered',
-    shippingAddress: '23, Gandhi Nagar, Coimbatore - 641009',
-    date: '2026-09-14',
-    trackingNumber: 'DELHIVERY-7712390',
-    paymentMethod: 'UPI (PhonePe)',
-  },
-];
+export const INITIAL_ORDERS: OrderCMS[] = [];
 
 export const CONSULTATION_SERVICES = [
   {
@@ -347,53 +302,130 @@ export interface UserRecord {
   referredBy?: string;
 }
 
-export const INITIAL_USERS: UserRecord[] = [
-  {
-    id: 'USR-101',
-    name: 'Rajesh Sharma',
-    email: 'rajesh.sharma@example.com',
-    phone: '+91 98450 12345',
-    shippingAddress: 'Flat 402, Sai Sannidhi Apartments, T. Nagar, Chennai - 600017',
-    memberSince: 'January 2025',
+export const INITIAL_USERS: UserRecord[] = [];
+
+export const INITIAL_FOOTER_CMS: FooterCMS = {
+  brandTagline: 'Faith. Tradition. Timeless Beauty.',
+  brandLogo: '/assets/brand_logo_gold.webp',
+  address: 'Heritage Temple Goldsmith Atelier, Sanctum Jewellery Studios, India',
+  email: 'support@aamadappetti.com',
+  phone: '+91 96000 00000',
+  whatsapp: '+91 96000 00000',
+  sanctumHours: 'Monday – Saturday: 9:00 AM – 6:00 PM IST',
+  assuranceNote: 'Every Panchaloham consultation is directly coordinated with master temple sthapatis and certified hallmark metal documentation.',
+  socialLinks: {
+    instagram: 'https://instagram.com/aamadappetti',
+    facebook: 'https://facebook.com/aamadappetti',
+    youtube: 'https://www.youtube.com',
+    pinterest: 'https://pinterest.com/aamadappetti',
   },
-  {
-    id: 'USR-102',
-    name: 'S. Ramachandran',
-    email: 'ramachandran@example.com',
-    phone: '+91 98401 23456',
-    shippingAddress: '42, V.O.C. Street, R.S. Puram, Coimbatore - 641002',
-    memberSince: 'March 2025',
-  },
-  {
-    id: 'USR-103',
-    name: 'Smt. Radhika Sundaram',
-    email: 'radhika.s@example.com',
-    phone: '+91 94443 89100',
-    shippingAddress: '88, North Car Street, Madurai - 625001',
-    memberSince: 'May 2025',
-  },
-  {
-    id: 'USR-104',
-    name: 'Ramesh Krishnan',
-    email: 'ramesh.k@example.com',
-    phone: '+91 97908 11223',
-    shippingAddress: '12, Srirangam Mada Street, Tiruchirappalli - 620006',
-    memberSince: 'June 2025',
-  },
-  {
-    id: 'USR-105',
-    name: 'Ananya Raghavan',
-    email: 'ananya.r@example.com',
-    phone: '+91 97890 32111',
-    shippingAddress: '14, Temple View Road, Malleshwaram, Bengaluru - 560003',
-    memberSince: 'August 2025',
-  },
-  {
-    id: 'USR-106',
-    name: 'Venkatesh Raghavan',
-    email: 'v.raghavan@example.com',
-    phone: '+91 98840 55667',
-    shippingAddress: '204, Brigade Lotus, Jayanagar, Bengaluru - 560011',
-    memberSince: 'September 2025',
-  },
-];
+  copyrightText: '© 2026 Aamadappetti Panchaloham Jewellery. All sacred rights reserved.',
+};
+
+export const INITIAL_ABOUT_CMS: AboutPageCMS = {
+  heroKicker: 'ESTD. 1984 • SACRED JEWELLERY GOLDSMITHING',
+  heroTitle: 'The Sacred Legacy of Aamadappetti',
+  heroLead: 'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple goldsmithing.',
+  establishedYear: '1984',
+  legacyTitle: 'Preserving Agamic Metallurgy & Temple Artisanship',
+  legacyParagraph1: 'Founded four decades ago in the temple heartlands of South India, Aamadappetti was born out of deep devotion to authentic Agamic craftsmanship. While modern commercial markets replaced traditional methods with hollow flash-plating, our sanctum atelier vowed to protect the sacred Panchaloham science prescribed in the Shilpa Shastras.',
+  legacyParagraph2: 'Every ring, pendant, and kada is cast using genuine five-metal alloy (Gold, Silver, Copper, Brass/Zinc, and Iron), blessed in traditional sanctums, and hallmarked for lifetime purity.',
+  metals: [
+    {
+      name: 'Gold (Pon)',
+      element: 'Fire / Agni',
+      planet: 'Sun (Surya)',
+      symbol: 'Au',
+      color: '#dfba6c',
+      desc: 'Infuses solar vitality, divine consciousness, and spiritual radiance into the aura.',
+    },
+    {
+      name: 'Silver (Velli)',
+      element: 'Water / Jala',
+      planet: 'Moon (Chandra)',
+      symbol: 'Ag',
+      color: '#e2e8f0',
+      desc: 'Cooling lunar vibrations that soothe emotional turmoil, providing peace and mental poise.',
+    },
+    {
+      name: 'Copper (Chembu)',
+      element: 'Earth / Prithvi',
+      planet: 'Mars (Mangal)',
+      symbol: 'Cu',
+      color: '#d97736',
+      desc: 'Grounds bio-electric energy, stimulates physical stamina, and dispels sluggish inertia.',
+    },
+    {
+      name: 'Brass / Zinc (Pithalai)',
+      element: 'Ether / Akasha',
+      planet: 'Mercury (Budha)',
+      symbol: 'Zn',
+      color: '#e5c07b',
+      desc: 'Enhances subtle communication, cognitive perception, and harmonic bio-rhythms.',
+    },
+    {
+      name: 'Iron (Irumbu)',
+      element: 'Air / Vayu',
+      planet: 'Saturn (Shani)',
+      symbol: 'Fe',
+      color: '#94a3b8',
+      desc: 'Forms an impermeable electromagnetic shield against psychic negativity and malefic evil eye.',
+    },
+  ],
+  craftSteps: [
+    {
+      step: '01',
+      title: 'Sacred Shilpa Shastra Dhyana',
+      desc: 'Every design begins with scriptural meditation, ensuring the deity’s lakshanas (divine proportions) strictly align with temple Agama Shastras.',
+    },
+    {
+      step: '02',
+      title: 'Beeswax Master Sculpting',
+      desc: 'Master Sthapatis hand-carve intricate details into pure forest beeswax mixed with Dammar tree resin, creating an irreplaceable bespoke prototype.',
+    },
+    {
+      step: '03',
+      title: 'Sacred Clay Mold Baking',
+      desc: 'The wax model is enveloped in seven layers of alluvial clay sourced from holy riverbanks, dried under the sun, and baked in traditional kilns.',
+    },
+    {
+      step: '04',
+      title: 'Crucible Pouring at 1,080°C',
+      desc: 'The five sacred metals are melted in exact proportions in graphite crucibles. As liquid gold alloy flows in, the wax melts away (Lost-Wax casting).',
+    },
+    {
+      step: '05',
+      title: 'Master Chiseling & Goldsmithing',
+      desc: 'Once cooled, the clay is shattered. Artisans spend over 40 hours hand-chiseled each divine attribute with micro-tools to mirror temple icons.',
+    },
+    {
+      step: '06',
+      title: 'Prana Pratishtha Temple Consecration',
+      desc: 'Before packing, each piece is energized before temple sanctums with holy theertham and Vedic chant invocations, awakening its spiritual resonance.',
+    },
+  ],
+  sanctumQuote: 'Every jewel we forge is not mere metal; it is a consecrated vessel carrying the cosmic vibrations of Vedic mantras into your daily life.',
+  sanctumQuoteAuthor: 'Master Sthapati R. Shanmugam, Chief Temple Goldsmith',
+};
+
+export const INITIAL_INQUIRIES: any[] = [];
+
+export interface CheckoutSettingsCMS {
+  id?: string;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  giftPackagingFee: number;
+  giftPackagingEnabled: boolean;
+  giftPackagingText: string;
+  expressShippingText: string;
+  updatedAt?: string;
+}
+
+export const INITIAL_CHECKOUT_SETTINGS: CheckoutSettingsCMS = {
+  shippingFee: 99.0,
+  freeShippingThreshold: 999.0,
+  giftPackagingFee: 0.0,
+  giftPackagingEnabled: true,
+  giftPackagingText: 'FREE',
+  expressShippingText: 'Insured Express Shipping',
+};

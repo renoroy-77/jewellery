@@ -35,6 +35,8 @@ import {
   DevoteeAddress,
   DevoteeUserProfile,
 } from '@/services/devoteeAuthService';
+import { cmsService } from '@/services/cmsService';
+import { CheckoutSettingsCMS, INITIAL_CHECKOUT_SETTINGS } from '@/data/cmsData';
 
 const INDIAN_STATES = [
   'Tamil Nadu',
@@ -136,6 +138,20 @@ export default function CheckoutPage() {
   const [isValidatingReferral, setIsValidatingReferral] = useState(false);
   const [useWalletBalance, setUseWalletBalance] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [checkoutSettings, setCheckoutSettings] = useState<CheckoutSettingsCMS>(INITIAL_CHECKOUT_SETTINGS);
+
+  useEffect(() => {
+    cmsService
+      .getCheckoutSettings()
+      .then((settings) => {
+        if (settings) {
+          setCheckoutSettings(settings);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load remote checkout settings, using defaults:', err);
+      });
+  }, []);
 
   // Auto-detect devotee session; redirect to dedicated /login if not authenticated
   useEffect(() => {
@@ -285,9 +301,11 @@ export default function CheckoutPage() {
   };
 
   // Delivery & Referral & Sanctum Wallet Credit calculations
-  const shippingFee = subtotal >= 999 ? 0 : 99;
+  const isFreeShipping = checkoutSettings.freeShippingThreshold > 0 && subtotal >= checkoutSettings.freeShippingThreshold;
+  const shippingFee = isFreeShipping ? 0 : Number(checkoutSettings.shippingFee ?? 99);
+  const giftPackagingFee = checkoutSettings.giftPackagingEnabled ? Number(checkoutSettings.giftPackagingFee ?? 0) : 0;
   const referralDiscount = appliedReferral?.valid ? appliedReferral.discount : 0;
-  const amountBeforeWallet = Math.max(0, subtotal + shippingFee - referralDiscount);
+  const amountBeforeWallet = Math.max(0, subtotal + shippingFee + giftPackagingFee - referralDiscount);
   const availableWallet = Math.max(0, loggedDevotee?.walletBalance || 0);
   const maxWalletApplicable = Math.min(availableWallet, amountBeforeWallet);
   const walletDiscount = useWalletBalance ? maxWalletApplicable : 0;
@@ -1766,6 +1784,26 @@ export default function CheckoutPage() {
                 <span>Items Subtotal</span>
                 <span>₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
+              {checkoutSettings.giftPackagingEnabled && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.9rem',
+                    color: '#b0c4b8',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <span>Gift Packaging</span>
+                  {giftPackagingFee === 0 ? (
+                    <span style={{ color: '#4ade80', fontWeight: 600 }}>
+                      {checkoutSettings.giftPackagingText || 'FREE'}
+                    </span>
+                  ) : (
+                    <span>₹{giftPackagingFee.toLocaleString('en-IN')}</span>
+                  )}
+                </div>
+              )}
               <div
                 style={{
                   display: 'flex',
@@ -1775,21 +1813,11 @@ export default function CheckoutPage() {
                   marginBottom: '10px',
                 }}
               >
-                <span>Gift Packaging</span>
-                <span style={{ color: '#4ade80', fontWeight: 600 }}>FREE</span>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '0.9rem',
-                  color: '#b0c4b8',
-                  marginBottom: '10px',
-                }}
-              >
-                <span>Insured Express Shipping</span>
+                <span>{checkoutSettings.expressShippingText || 'Insured Express Shipping'}</span>
                 {shippingFee === 0 ? (
-                  <span style={{ color: '#4ade80', fontWeight: 600 }}>FREE (Above ₹999)</span>
+                  <span style={{ color: '#4ade80', fontWeight: 600 }}>
+                    FREE {checkoutSettings.freeShippingThreshold > 0 ? `(Above ₹${checkoutSettings.freeShippingThreshold.toLocaleString('en-IN')})` : ''}
+                  </span>
                 ) : (
                   <span>₹{shippingFee}</span>
                 )}

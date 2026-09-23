@@ -8,6 +8,8 @@ import { AnnouncementsService } from './announcements/announcements.service';
 import { FaqsController } from './faqs/faqs.controller';
 import { FaqsService } from './faqs/faqs.service';
 import { PublicCmsController } from './public-cms.controller';
+import { CheckoutSettingsController } from './checkout-settings/checkout-settings.controller';
+import { CheckoutSettingsService } from './checkout-settings/checkout-settings.service';
 
 @Module({
   controllers: [
@@ -16,18 +18,21 @@ import { PublicCmsController } from './public-cms.controller';
     AnnouncementsController,
     FaqsController,
     PublicCmsController,
+    CheckoutSettingsController,
   ],
   providers: [
     HeroSlidesService,
     StoryBannersService,
     AnnouncementsService,
     FaqsService,
+    CheckoutSettingsService,
   ],
   exports: [
     HeroSlidesService,
     StoryBannersService,
     AnnouncementsService,
     FaqsService,
+    CheckoutSettingsService,
   ],
 })
 export class CmsModule {}

@@ -291,3 +291,17 @@ model WalletTransaction {
   @@index([devoteeId])
   @@map("wallet_transactions")
 }
+
+model CheckoutSettings {
+  id                    String   @id @default("default")
+  shippingFee           Float    @default(99.0)
+  freeShippingThreshold Float    @default(999.0)
+  giftPackagingFee      Float    @default(0.0) // 0 means FREE
+  giftPackagingEnabled  Boolean  @default(true)
+  giftPackagingText     String   @default("FREE")
+  expressShippingText   String   @default("Insured Express Shipping")
+  updatedAt             DateTime @updatedAt
+
+  @@map("checkout_settings")
+}
+

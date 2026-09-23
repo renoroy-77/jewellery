@@ -17,14 +17,23 @@ import {
   Loader2,
   Database,
   X,
+  Truck,
+  Gift,
+  Package,
 } from 'lucide-react';
 import {
   HeroSlideCMS,
   StoryBannerCMS,
   AnnouncementCMS,
+  FooterCMS,
+  AboutPageCMS,
+  CheckoutSettingsCMS,
   INITIAL_HERO_SLIDES,
   INITIAL_STORY_BANNERS,
   INITIAL_ANNOUNCEMENTS,
+  INITIAL_FOOTER_CMS,
+  INITIAL_ABOUT_CMS,
+  INITIAL_CHECKOUT_SETTINGS,
 } from '@/data/cmsData';
 import { STORE_FAQS } from '@/data/products';
 import { FAQItem } from '@/types';
@@ -34,7 +43,7 @@ import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminCMSPage() {
   const { confirm } = useConfirm();
-  const [activeTab, setActiveTab] = useState<'hero' | 'banners' | 'announcements' | 'faqs'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'banners' | 'announcements' | 'faqs' | 'shipping' | 'footer' | 'about'>('hero');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -45,6 +54,10 @@ export default function AdminCMSPage() {
   const [storyBanners, setStoryBanners] = useState<StoryBannerCMS[]>(INITIAL_STORY_BANNERS);
   const [announcements, setAnnouncements] = useState<AnnouncementCMS>(INITIAL_ANNOUNCEMENTS);
   const [faqs, setFaqs] = useState<(FAQItem & { id?: string })[]>(STORE_FAQS);
+  const [footerData, setFooterData] = useState<FooterCMS>(INITIAL_FOOTER_CMS);
+  const [aboutData, setAboutData] = useState<AboutPageCMS>(INITIAL_ABOUT_CMS);
+  const [checkoutSettings, setCheckoutSettings] = useState<CheckoutSettingsCMS>(INITIAL_CHECKOUT_SETTINGS);
+  const [simulatedSubtotal, setSimulatedSubtotal] = useState<number>(1);
 
   // Create Hero Slide Modal State
   const [isCreateSlideModalOpen, setIsCreateSlideModalOpen] = useState(false);
@@ -77,22 +90,43 @@ export default function AdminCMSPage() {
       const health = await cmsService.checkHealth();
       setBackendOnline(health.connected);
 
-      const [slidesData, bannersData, announcementData, faqsData] = await Promise.all([
+      const [slidesData, bannersData, announcementData, faqsData, footerRes, aboutRes, settingsRes] = await Promise.all([
         cmsService.getHeroSlides(),
         cmsService.getStoryBanners(),
         cmsService.getAnnouncement(),
         cmsService.getFaqs(),
+        cmsService.getFooter(),
+        cmsService.getAbout(),
+        cmsService.getCheckoutSettings(),
       ]);
 
       if (slidesData?.length) setHeroSlides(slidesData);
       if (bannersData?.length) setStoryBanners(bannersData);
       if (announcementData) setAnnouncements(announcementData);
       if (faqsData?.length) setFaqs(faqsData);
+      if (footerRes) setFooterData(footerRes);
+      if (aboutRes) setAboutData(aboutRes);
+      if (settingsRes) setCheckoutSettings(settingsRes);
     } catch (err) {
       console.error('Error fetching CMS data:', err);
       showToast('Using local fallback data. NestJS server may be offline.', 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ================= CHECKOUT SHIPPING & PACKAGING HANDLER =================
+  const handleSaveCheckoutSettings = async () => {
+    setIsSaving(true);
+    try {
+      const updated = await cmsService.updateCheckoutSettings(checkoutSettings);
+      setCheckoutSettings(updated);
+      showToast('Shipping & Packaging settings saved successfully to PostgreSQL database!');
+    } catch (err) {
+      console.error('Failed to save checkout settings:', err);
+      showToast('Failed to save checkout settings.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -330,6 +364,32 @@ export default function AdminCMSPage() {
     }
   };
 
+  // ================= FOOTER CMS HANDLERS =================
+  const handleSaveFooter = async () => {
+    setIsSaving(true);
+    try {
+      await cmsService.updateFooter(footerData);
+      showToast('Saved Footer & Contact Information to CMS!');
+    } catch {
+      showToast('Failed to save footer settings', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ================= ABOUT US CMS HANDLERS =================
+  const handleSaveAbout = async () => {
+    setIsSaving(true);
+    try {
+      await cmsService.updateAbout(aboutData);
+      showToast('Saved About Us Page content to CMS!');
+    } catch {
+      showToast('Failed to save About Us settings', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
 
@@ -430,6 +490,27 @@ export default function AdminCMSPage() {
           onClick={() => setActiveTab('faqs')}
         >
           FAQs Management ({faqs.length})
+        </button>
+        <button
+          type="button"
+          className={`translation-tab-btn ${activeTab === 'shipping' ? 'active' : ''}`}
+          onClick={() => setActiveTab('shipping')}
+        >
+          Shipping &amp; Packaging
+        </button>
+        <button
+          type="button"
+          className={`translation-tab-btn ${activeTab === 'footer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('footer')}
+        >
+          Footer &amp; Contact Info
+        </button>
+        <button
+          type="button"
+          className={`translation-tab-btn ${activeTab === 'about' ? 'active' : ''}`}
+          onClick={() => setActiveTab('about')}
+        >
+          About Us Page
         </button>
       </div>
 
@@ -938,6 +1019,942 @@ export default function AdminCMSPage() {
           </div>
         </div>
       )}
+
+      {/* ================= TAB 5: FOOTER & CONTACT DETAILS ================= */}
+      {activeTab === 'footer' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="admin-card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', color: '#0f172a', margin: 0, fontWeight: 600 }}>
+                  Footer &amp; Customer Support Configuration
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '0.86rem', marginTop: '4px' }}>
+                  Update brand tagline, atelier addresses, direct contact helplines, WhatsApp support, and social media channels.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveFooter}
+                disabled={isSaving}
+                className="admin-btn admin-btn-gold"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                <span>Save Footer CMS</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+              {/* Brand Tagline */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Brand Tagline</label>
+                <input
+                  type="text"
+                  value={footerData.brandTagline}
+                  onChange={(e) => setFooterData({ ...footerData, brandTagline: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="e.g. Faith. Tradition. Timeless Beauty."
+                />
+              </div>
+
+              {/* Logo Path */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Brand Logo Asset</label>
+                <input
+                  type="text"
+                  value={footerData.brandLogo}
+                  onChange={(e) => setFooterData({ ...footerData, brandLogo: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="/assets/brand_logo_gold.png"
+                />
+              </div>
+
+              {/* Atelier Address */}
+              <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="admin-form-label">Atelier &amp; Studio Address</label>
+                <input
+                  type="text"
+                  value={footerData.address}
+                  onChange={(e) => setFooterData({ ...footerData, address: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="Heritage Temple Goldsmith Atelier, Sanctum Jewellery Studios, India"
+                />
+              </div>
+
+              {/* Support Email */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Customer Support Email</label>
+                <input
+                  type="email"
+                  value={footerData.email}
+                  onChange={(e) => setFooterData({ ...footerData, email: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="support@aamaclappetti.in"
+                />
+              </div>
+
+              {/* Helpline Phone */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Helpline Phone Number</label>
+                <input
+                  type="text"
+                  value={footerData.phone}
+                  onChange={(e) => setFooterData({ ...footerData, phone: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="+91 96000 00000"
+                />
+              </div>
+
+              {/* WhatsApp Number */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Direct WhatsApp Business Number</label>
+                <input
+                  type="text"
+                  value={footerData.whatsapp}
+                  onChange={(e) => setFooterData({ ...footerData, whatsapp: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="+91 96000 00000"
+                />
+              </div>
+
+              {/* Sanctum Operating Hours */}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Sanctum Consulting Hours</label>
+                <input
+                  type="text"
+                  value={footerData.sanctumHours}
+                  onChange={(e) => setFooterData({ ...footerData, sanctumHours: e.target.value })}
+                  className="admin-form-input"
+                  placeholder="Monday – Saturday: 9:00 AM – 6:00 PM IST"
+                />
+              </div>
+
+              {/* Assurance Note */}
+              <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="admin-form-label">Sacred Artisan Assurance Note</label>
+                <textarea
+                  rows={2}
+                  value={footerData.assuranceNote}
+                  onChange={(e) => setFooterData({ ...footerData, assuranceNote: e.target.value })}
+                  className="admin-form-textarea"
+                />
+              </div>
+
+              {/* Copyright Text */}
+              <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="admin-form-label">Copyright Notice</label>
+                <input
+                  type="text"
+                  value={footerData.copyrightText}
+                  onChange={(e) => setFooterData({ ...footerData, copyrightText: e.target.value })}
+                  className="admin-form-input"
+                />
+              </div>
+            </div>
+
+            {/* Social Links Section */}
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
+              <h4 style={{ fontSize: '1rem', color: '#0f172a', marginBottom: '14px', fontWeight: 600 }}>
+                Official Social Media Channels
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Instagram Profile URL</label>
+                  <input
+                    type="url"
+                    value={footerData.socialLinks.instagram}
+                    onChange={(e) =>
+                      setFooterData({
+                        ...footerData,
+                        socialLinks: { ...footerData.socialLinks, instagram: e.target.value },
+                      })
+                    }
+                    className="admin-form-input"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Facebook Page URL</label>
+                  <input
+                    type="url"
+                    value={footerData.socialLinks.facebook}
+                    onChange={(e) =>
+                      setFooterData({
+                        ...footerData,
+                        socialLinks: { ...footerData.socialLinks, facebook: e.target.value },
+                      })
+                    }
+                    className="admin-form-input"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">YouTube Channel URL</label>
+                  <input
+                    type="url"
+                    value={footerData.socialLinks.youtube}
+                    onChange={(e) =>
+                      setFooterData({
+                        ...footerData,
+                        socialLinks: { ...footerData.socialLinks, youtube: e.target.value },
+                      })
+                    }
+                    className="admin-form-input"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Pinterest / Alternate URL</label>
+                  <input
+                    type="url"
+                    value={footerData.socialLinks.pinterest}
+                    onChange={(e) =>
+                      setFooterData({
+                        ...footerData,
+                        socialLinks: { ...footerData.socialLinks, pinterest: e.target.value },
+                      })
+                    }
+                    className="admin-form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 6: ABOUT US PAGE ================= */}
+      {activeTab === 'about' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="admin-card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', color: '#0f172a', margin: 0, fontWeight: 600 }}>
+                  About Us &amp; Temple Heritage Content
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '0.86rem', marginTop: '4px' }}>
+                  Manage the narrative of our 40-year legacy, the 5 Sacred Metals breakdown, and the 6 Agamic Craft Steps.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Link
+                  href="/about"
+                  target="_blank"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                >
+                  <span>Preview Page</span>
+                  <ExternalLink size={14} />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSaveAbout}
+                  disabled={isSaving}
+                  className="admin-btn admin-btn-gold"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  <span>Save About CMS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Hero Section Fields */}
+            <h4 style={{ fontSize: '1rem', color: '#0d5438', marginBottom: '14px', fontWeight: 600 }}>
+              1. Hero Spotlight &amp; Establishment
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Hero Kicker Tag</label>
+                <input
+                  type="text"
+                  value={aboutData.heroKicker}
+                  onChange={(e) => setAboutData({ ...aboutData, heroKicker: e.target.value })}
+                  className="admin-form-input"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label className="admin-form-label">Hero Main Title</label>
+                <input
+                  type="text"
+                  value={aboutData.heroTitle}
+                  onChange={(e) => setAboutData({ ...aboutData, heroTitle: e.target.value })}
+                  className="admin-form-input"
+                />
+              </div>
+
+              <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="admin-form-label">Hero Lead Narrative</label>
+                <textarea
+                  rows={2}
+                  value={aboutData.heroLead}
+                  onChange={(e) => setAboutData({ ...aboutData, heroLead: e.target.value })}
+                  className="admin-form-textarea"
+                />
+              </div>
+            </div>
+
+            {/* Legacy & History Section */}
+            <h4 style={{ fontSize: '1rem', color: '#0d5438', marginBottom: '14px', fontWeight: 600 }}>
+              2. Heritage Story &amp; Agamic Metallurgy
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '24px' }}>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Legacy Section Headline</label>
+                <input
+                  type="text"
+                  value={aboutData.legacyTitle}
+                  onChange={(e) => setAboutData({ ...aboutData, legacyTitle: e.target.value })}
+                  className="admin-form-input"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label className="admin-form-label">Story Paragraph 1 (Tradition &amp; Origins)</label>
+                <textarea
+                  rows={3}
+                  value={aboutData.legacyParagraph1}
+                  onChange={(e) => setAboutData({ ...aboutData, legacyParagraph1: e.target.value })}
+                  className="admin-form-textarea"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label className="admin-form-label">Story Paragraph 2 (Sanctum Hallmarking)</label>
+                <textarea
+                  rows={3}
+                  value={aboutData.legacyParagraph2}
+                  onChange={(e) => setAboutData({ ...aboutData, legacyParagraph2: e.target.value })}
+                  className="admin-form-textarea"
+                />
+              </div>
+            </div>
+
+            {/* 5 Sacred Metals */}
+            <h4 style={{ fontSize: '1rem', color: '#0d5438', marginBottom: '14px', fontWeight: 600 }}>
+              3. The 5 Sacred Metals (Panchaloham Energy Attributes)
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              {aboutData.metals.map((metal, idx) => (
+                <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '10px' }}>
+                    <div>
+                      <label className="admin-form-label">Metal Name</label>
+                      <input
+                        type="text"
+                        value={metal.name}
+                        onChange={(e) => {
+                          const copy = [...aboutData.metals];
+                          copy[idx] = { ...copy[idx], name: e.target.value };
+                          setAboutData({ ...aboutData, metals: copy });
+                        }}
+                        className="admin-form-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="admin-form-label">Vedic Element</label>
+                      <input
+                        type="text"
+                        value={metal.element}
+                        onChange={(e) => {
+                          const copy = [...aboutData.metals];
+                          copy[idx] = { ...copy[idx], element: e.target.value };
+                          setAboutData({ ...aboutData, metals: copy });
+                        }}
+                        className="admin-form-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="admin-form-label">Ruling Planetary Force</label>
+                      <input
+                        type="text"
+                        value={metal.planet}
+                        onChange={(e) => {
+                          const copy = [...aboutData.metals];
+                          copy[idx] = { ...copy[idx], planet: e.target.value };
+                          setAboutData({ ...aboutData, metals: copy });
+                        }}
+                        className="admin-form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="admin-form-label">Spiritual &amp; Bio-electric Resonance</label>
+                    <textarea
+                      rows={2}
+                      value={metal.desc}
+                      onChange={(e) => {
+                        const copy = [...aboutData.metals];
+                        copy[idx] = { ...copy[idx], desc: e.target.value };
+                        setAboutData({ ...aboutData, metals: copy });
+                      }}
+                      className="admin-form-textarea"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 6 Agamic Craft Steps */}
+            <h4 style={{ fontSize: '1rem', color: '#0d5438', marginBottom: '14px', fontWeight: 600 }}>
+              4. The 6 Lost-Wax Agamic Craft Steps
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              {aboutData.craftSteps.map((step, idx) => (
+                <div key={idx} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px', marginBottom: '10px' }}>
+                    <div>
+                      <label className="admin-form-label">Step</label>
+                      <input
+                        type="text"
+                        value={step.step}
+                        onChange={(e) => {
+                          const copy = [...aboutData.craftSteps];
+                          copy[idx] = { ...copy[idx], step: e.target.value };
+                          setAboutData({ ...aboutData, craftSteps: copy });
+                        }}
+                        className="admin-form-input"
+                        style={{ textAlign: 'center', fontWeight: 700 }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="admin-form-label">Step Title</label>
+                      <input
+                        type="text"
+                        value={step.title}
+                        onChange={(e) => {
+                          const copy = [...aboutData.craftSteps];
+                          copy[idx] = { ...copy[idx], title: e.target.value };
+                          setAboutData({ ...aboutData, craftSteps: copy });
+                        }}
+                        className="admin-form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="admin-form-label">Step Description</label>
+                    <textarea
+                      rows={2}
+                      value={step.desc}
+                      onChange={(e) => {
+                        const copy = [...aboutData.craftSteps];
+                        copy[idx] = { ...copy[idx], desc: e.target.value };
+                        setAboutData({ ...aboutData, craftSteps: copy });
+                      }}
+                      className="admin-form-textarea"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Sanctum Pledge & Quote */}
+            <h4 style={{ fontSize: '1rem', color: '#0d5438', marginBottom: '14px', fontWeight: 600 }}>
+              5. Sanctum Atelier Quote &amp; Artisan Signature
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="admin-form-label">Artisan Quote</label>
+                <textarea
+                  rows={2}
+                  value={aboutData.sanctumQuote}
+                  onChange={(e) => setAboutData({ ...aboutData, sanctumQuote: e.target.value })}
+                  className="admin-form-textarea"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label className="admin-form-label">Quote Attributed To</label>
+                <input
+                  type="text"
+                  value={aboutData.sanctumQuoteAuthor}
+                  onChange={(e) => setAboutData({ ...aboutData, sanctumQuoteAuthor: e.target.value })}
+                  className="admin-form-input"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= TAB 5: SHIPPING & GIFT PACKAGING ================= */}
+      {activeTab === 'shipping' && (
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Package size={22} color="#b45309" />
+                <h2
+                  style={{
+                    fontSize: '1.25rem',
+                    color: '#0f172a',
+                    margin: 0,
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 600,
+                  }}
+                >
+                  Checkout Shipping &amp; Gift Packaging Master
+                </h2>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                Live controls for delivery charges, free delivery thresholds, and gift packaging options across the checkout portal.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  color: '#166534',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                }}
+              >
+                <Database size={13} />
+                <span>PostgreSQL DB Synced</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveCheckoutSettings}
+                disabled={isSaving}
+                className="admin-btn admin-btn-gold"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                <span>Save Settings</span>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: '24px' }}>
+            {/* Left Column: Form Controls */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Card 1: Gift Packaging Control */}
+              <div className="admin-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    padding: '14px 18px',
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Gift size={18} color="#059669" />
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
+                      Gift Packaging Controls
+                    </h3>
+                  </div>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <input
+                      type="checkbox"
+                      checked={checkoutSettings.giftPackagingEnabled}
+                      onChange={(e) =>
+                        setCheckoutSettings({
+                          ...checkoutSettings,
+                          giftPackagingEnabled: e.target.checked,
+                        })
+                      }
+                      style={{ width: '16px', height: '16px', accentColor: '#059669', cursor: 'pointer' }}
+                    />
+                    <span>{checkoutSettings.giftPackagingEnabled ? 'Enabled at Checkout' : 'Disabled'}</span>
+                  </label>
+                </div>
+
+                <div className="admin-card-body" style={{ padding: '18px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">
+                        Badge / Display Label
+                      </label>
+                      <input
+                        type="text"
+                        value={checkoutSettings.giftPackagingText || 'FREE'}
+                        placeholder="e.g. FREE, Complimentary"
+                        onChange={(e) =>
+                          setCheckoutSettings({
+                            ...checkoutSettings,
+                            giftPackagingText: e.target.value,
+                          })
+                        }
+                        className="admin-form-input"
+                      />
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                        Displayed on checkout row when fee is ₹0 (e.g. FREE)
+                      </span>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">
+                        Gift Packaging Fee (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={checkoutSettings.giftPackagingFee}
+                        onChange={(e) =>
+                          setCheckoutSettings({
+                            ...checkoutSettings,
+                            giftPackagingFee: Math.max(0, Number(e.target.value) || 0),
+                          })
+                        }
+                        className="admin-form-input"
+                      />
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                        Set to 0 for 100% complimentary packaging
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Insured Express Shipping Control */}
+              <div className="admin-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    padding: '14px 18px',
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <Truck size={18} color="#b45309" />
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
+                    Insured Express Shipping Controls
+                  </h3>
+                </div>
+
+                <div className="admin-card-body" style={{ padding: '18px' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">
+                      Shipping Display Label
+                    </label>
+                    <input
+                      type="text"
+                      value={checkoutSettings.expressShippingText || 'Insured Express Shipping'}
+                      placeholder="e.g. Insured Express Shipping"
+                      onChange={(e) =>
+                        setCheckoutSettings({
+                          ...checkoutSettings,
+                          expressShippingText: e.target.value,
+                        })
+                      }
+                      className="admin-form-input"
+                    />
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                      Shown on checkout and order confirmation
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '14px' }}>
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">
+                        Standard Shipping Fee (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={checkoutSettings.shippingFee}
+                        onChange={(e) =>
+                          setCheckoutSettings({
+                            ...checkoutSettings,
+                            shippingFee: Math.max(0, Number(e.target.value) || 0),
+                          })
+                        }
+                        className="admin-form-input"
+                      />
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                        Default delivery fee (e.g. ₹99)
+                      </span>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">
+                        Free Shipping Min. Subtotal (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={checkoutSettings.freeShippingThreshold}
+                        onChange={(e) =>
+                          setCheckoutSettings({
+                            ...checkoutSettings,
+                            freeShippingThreshold: Math.max(0, Number(e.target.value) || 0),
+                          })
+                        }
+                        className="admin-form-input"
+                      />
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                        Orders equal to or above this amount get ₹0 delivery
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: '16px',
+                      background: '#fffbeb',
+                      border: '1px solid #fde68a',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                      fontSize: '0.82rem',
+                      color: '#92400e',
+                      lineHeight: '1.5',
+                    }}
+                  >
+                    <strong>Pricing rule active: </strong>
+                    If cart subtotal is under ₹{checkoutSettings.freeShippingThreshold.toLocaleString('en-IN')}, customers are charged <strong>₹{checkoutSettings.shippingFee}</strong>.
+                    Cart totals of ₹{checkoutSettings.freeShippingThreshold.toLocaleString('en-IN')} or more automatically get <strong>FREE delivery</strong>.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Live Interactive Storefront Preview */}
+            <div>
+              <div
+                style={{
+                  background: '#041c14',
+                  border: '1px solid rgba(212, 175, 55, 0.35)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  color: '#ffffff',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+                  position: 'sticky',
+                  top: '20px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }}></span>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#d4af37', fontWeight: 600 }}>
+                      Live Storefront Simulation
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.72rem', color: '#b0c4b8' }}>
+                    /checkout preview
+                  </span>
+                </div>
+
+                {/* Subtotal Simulator Controls */}
+                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '0.78rem', color: '#b0c4b8', margin: 0 }}>
+                      Simulate Cart Subtotal:
+                    </label>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fef08a' }}>
+                      ₹{simulatedSubtotal.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {[1, 500, 999, 1499].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setSimulatedSubtotal(val)}
+                        style={{
+                          background: simulatedSubtotal === val ? '#d4af37' : 'rgba(255,255,255,0.1)',
+                          color: simulatedSubtotal === val ? '#041c14' : '#ffffff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '3px 8px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ₹{val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Replicated Order Summary UI */}
+                <h4
+                  style={{
+                    fontSize: '1rem',
+                    fontFamily: 'var(--font-serif)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    color: '#ffffff',
+                    margin: '0 0 16px 0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span>Order Summary</span>
+                  <span style={{ fontSize: '0.75rem', color: '#b0c4b8' }}>1 Item</span>
+                </h4>
+
+                {/* Simulated Product Card */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '6px',
+                      background: 'rgba(212, 175, 55, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    🪔
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                      Lord Ganesha Pendant
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Qty: 1 × ₹{simulatedSubtotal.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#d4af37' }}>
+                    ₹{simulatedSubtotal.toLocaleString('en-IN')}
+                  </div>
+                </div>
+
+                {/* Summary Lines */}
+                {(() => {
+                  const simIsFreeShipping =
+                    checkoutSettings.freeShippingThreshold > 0 &&
+                    simulatedSubtotal >= checkoutSettings.freeShippingThreshold;
+                  const simShippingFee = simIsFreeShipping ? 0 : Number(checkoutSettings.shippingFee || 0);
+                  const simGiftFee = checkoutSettings.giftPackagingEnabled
+                    ? Number(checkoutSettings.giftPackagingFee || 0)
+                    : 0;
+                  const simTotal = simulatedSubtotal + simShippingFee + simGiftFee;
+
+                  return (
+                    <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.15)', paddingTop: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#b0c4b8', marginBottom: '10px' }}>
+                        <span>Items Subtotal</span>
+                        <span>₹{simulatedSubtotal.toLocaleString('en-IN')}</span>
+                      </div>
+
+                      {checkoutSettings.giftPackagingEnabled && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#b0c4b8', marginBottom: '10px' }}>
+                          <span>Gift Packaging</span>
+                          {simGiftFee === 0 ? (
+                            <span style={{ color: '#4ade80', fontWeight: 600 }}>
+                              {checkoutSettings.giftPackagingText || 'FREE'}
+                            </span>
+                          ) : (
+                            <span>₹{simGiftFee.toLocaleString('en-IN')}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#b0c4b8', marginBottom: '14px' }}>
+                        <span>{checkoutSettings.expressShippingText || 'Insured Express Shipping'}</span>
+                        {simShippingFee === 0 ? (
+                          <span style={{ color: '#4ade80', fontWeight: 600 }}>
+                            FREE {checkoutSettings.freeShippingThreshold > 0 ? `(Above ₹${checkoutSettings.freeShippingThreshold.toLocaleString('en-IN')})` : ''}
+                          </span>
+                        ) : (
+                          <span>₹{simShippingFee}</span>
+                        )}
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          borderTop: '1px solid rgba(212, 175, 55, 0.25)',
+                          paddingTop: '14px',
+                          marginBottom: '20px',
+                        }}
+                      >
+                        <span style={{ fontSize: '1rem', fontWeight: 600, color: '#ffffff' }}>Total Payable</span>
+                        <span style={{ fontSize: '1.45rem', fontWeight: 700, color: '#d4af37', fontFamily: 'var(--font-serif)' }}>
+                          ₹{simTotal.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          background: 'linear-gradient(135deg, #d4af37, #b45309)',
+                          color: '#041c14',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          cursor: 'not-allowed',
+                          opacity: 0.9,
+                        }}
+                      >
+                        <span>Proceed to Pay ₹{simTotal.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                    <CheckCircle2 size={13} color="#4ade80" />
+                    <span>100% Certified Panchaloham (Govt Assay)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                    <CheckCircle2 size={13} color="#4ade80" />
+                    <span>Tamper-Proof Insured All-India Transit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ================= MODAL: CREATE HERO SLIDE ================= */}
       {isCreateSlideModalOpen && (
