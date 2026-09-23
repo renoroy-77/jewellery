@@ -1,16 +1,24 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { MapPin, Mail, Phone, Clock, ChevronRight, Sparkles } from 'lucide-react';
+import { MapPin, Mail, Phone, Clock, ChevronRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { constructMetadata } from '@/lib/seo';
 import ContactForm from '@/components/ContactForm';
 import BackButton from '@/components/BackButton';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Contact Us & Temple Atelier',
+  title: 'Contact Aamadappetti (Amadapetti) | Devotee Care & Temple Consultations',
   description:
-    'Reach out to our customer care team for jewellery enquiries, orders, and sacred gifting consultations.',
+    'Contact Aamadappetti (Amadapetti) temple jewellery atelier. Reach our sthapatis and devotee care team for custom panchaloham orders, sizing guidance, and delivery enquiries.',
   canonicalUrl: '/contact',
+  keywords: [
+    'contact aamadappetti',
+    'contact amadapetti',
+    'aamadappetti customer care',
+    'amadapetti phone number',
+    'panchaloham consultation',
+    'aamadappetti address',
+  ],
 });
 
 export default function ContactPage() {
@@ -72,8 +80,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="contact-info-title">Email Support</h3>
-                  <a href="mailto:support@aamaclapetti.in" className="contact-info-link">
-                    support@aamaclapetti.in
+                  <a href="mailto:support@aamadappetti.com" className="contact-info-link">
+                    support@aamadappetti.com
                   </a>
                 </div>
               </div>
@@ -99,6 +107,19 @@ export default function ContactPage() {
                   <p className="contact-info-desc">
                     Monday – Saturday<br />
                     9:00 AM – 6:00 PM IST
+                  </p>
+                </div>
+              </div>
+
+              <div className="contact-info-item">
+                <div className="contact-info-icon-wrap">
+                  <ShieldCheck size={18} color="#d4af37" />
+                </div>
+                <div>
+                  <h3 className="contact-info-title">Operating Legal Entity</h3>
+                  <p className="contact-info-desc">
+                    Janki Design<br />
+                    (Brand: Aamadappetti)
                   </p>
                 </div>
               </div>
