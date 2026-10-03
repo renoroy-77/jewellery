@@ -19,5 +19,9 @@ yarn-error.log*
 uploads/*
 !uploads/.gitkeep
 
+# Firebase Credentials & Local Token Store
+firebase-service-account*.json
+fcm-tokens.json
+
 # OS
 .DS_Store

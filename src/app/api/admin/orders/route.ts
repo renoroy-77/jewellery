@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { INITIAL_ORDERS, OrderCMS } from '@/data/cmsData';
 
-let storeOrders: OrderCMS[] = [...INITIAL_ORDERS];
+let storeOrders: OrderCMS[] = [];
 
 export async function GET() {
   return NextResponse.json({

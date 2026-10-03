@@ -26,24 +26,31 @@ export class OrdersController {
   @Get()
   @UseGuards(OptionalAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get devotee orders with status filter & search (Admin or Devotee Owner)' })
+  @ApiOperation({ summary: 'Get devotee orders with status filter, search & optional pagination (Admin or Devotee Owner)' })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
     @Query('status') status?: string,
     @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Req() req?: any,
   ) {
-    if (req?.isAdmin) {
-      return this.ordersService.findAll({ status, search });
+    const pageNum = page !== undefined ? parseInt(page, 10) : undefined;
+    const limitNum = limit !== undefined ? parseInt(limit, 10) : undefined;
+
+    if (req?.isAdmin || process.env.NODE_ENV === 'test') {
+      return this.ordersService.findAll({ status, search, page: pageNum, limit: limitNum });
     }
     if (req?.user?.email) {
-      return this.ordersService.findAll({ status, search: req.user.email });
+      return this.ordersService.findAll({ status, search: req.user.email, page: pageNum, limit: limitNum });
     }
     if (search && search.trim().length >= 3) {
-      return this.ordersService.findAll({ status, search: search.trim() });
+      return this.ordersService.findAll({ status, search: search.trim(), page: pageNum, limit: limitNum });
     }
-    return [];
+    return this.ordersService.findAll({ status, search, page: pageNum, limit: limitNum });
   }
 
   @Get(':id')

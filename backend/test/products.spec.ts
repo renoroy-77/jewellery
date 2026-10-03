@@ -45,6 +45,21 @@ describe('Products CRUD Module (E2E / Jest)', () => {
     }
   });
 
+  it('GET /api/products?page=1&limit=2 - should return paginated envelope with page, limit, total, totalPages', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/products?page=1&limit=2')
+      .expect(200);
+
+    expect(res.body).toHaveProperty('data');
+    expect(res.body).toHaveProperty('total');
+    expect(res.body).toHaveProperty('page', 1);
+    expect(res.body).toHaveProperty('limit', 2);
+    expect(res.body).toHaveProperty('totalPages');
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeLessThanOrEqual(2);
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
+  });
+
   it('POST /api/products - should create a new sacred jewellery product', async () => {
     const newProduct = {
       name: 'Vedic Subramanya Trisulam Pendant',

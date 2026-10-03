@@ -1,49 +1,47 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DEITY_COLLECTIONS, DeityCollectionItem } from '@/data/products';
-import { categoriesService } from '@/services/categoriesService';
+import { useCategoriesQuery } from '@/hooks/queries/useQueries';
 import { useTranslation } from '@/context/LanguageContext';
+import { Category } from '@/types';
 
 // Timing intervals: auto-slide every 3.2s, pause for 4s on manual click/swipe
 const CAROUSEL_INTERVAL_MS = 3200;
 const USER_CLICK_PAUSE_MS = 4000;
 
-export default function CategorySlider() {
+interface CategorySliderProps {
+  initialCategories?: Category[];
+}
+
+const mapCatsToSlider = (cats: Category[]): DeityCollectionItem[] =>
+  cats.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    tamilName: cat.tamilName,
+    slug: cat.slug || cat.id,
+    image: cat.image || '/assets/cat_ganesha_hq.webp',
+    deity: cat.name,
+    itemCount: cat.itemCount || 0,
+  }));
+
+export default function CategorySlider({ initialCategories = [] }: CategorySliderProps) {
   const { t } = useTranslation();
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [collections, setCollections] = useState<DeityCollectionItem[]>(DEITY_COLLECTIONS);
+
+  const { data: backendCats = initialCategories } = useCategoriesQuery(initialCategories);
+  const collections = useMemo(() => {
+    if (backendCats.length > 0) {
+      return mapCatsToSlider(backendCats);
+    }
+    return DEITY_COLLECTIONS;
+  }, [backendCats]);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   activeIndexRef.current = activeIndex;
-
-  // Sync with backend categories so newly created collections appear on homepage
-  useEffect(() => {
-    let isMounted = true;
-    categoriesService
-      .getAll()
-      .then((data) => {
-        if (isMounted && Array.isArray(data) && data.length > 0) {
-          setCollections(
-            data.map((cat) => ({
-              id: cat.id,
-              name: cat.name,
-              tamilName: cat.tamilName,
-              slug: cat.slug,
-              image: cat.image || '/assets/cat_ganesha_hq.webp',
-              deity: cat.name,
-              itemCount: cat.itemCount || 0,
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -196,8 +194,12 @@ export default function CategorySlider() {
                     <div className="category-circle-inner-five">
                       <img
                         src={cat.image || '/assets/cat_ganesha_hq.webp'}
-                        alt={cat.name}
+                        alt={`${cat.name} - Panchaloham Temple Jewellery`}
+                        title={`${cat.name} - Panchaloham Temple Jewellery`}
+                        width={96}
+                        height={96}
                         loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   </div>

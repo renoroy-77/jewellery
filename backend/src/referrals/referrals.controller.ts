@@ -53,6 +53,14 @@ export class ReferralsController {
     return this.referralsService.updateSettings(dto);
   }
 
+  @Put('settings')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update referral reward settings fallback' })
+  async updateSettingsFallback(@Body() dto: UpdateReferralSettingsDto) {
+    return this.referralsService.updateSettings(dto);
+  }
+
   /**
    * Checkout validation endpoint (public — validates a typed referral code)
    */

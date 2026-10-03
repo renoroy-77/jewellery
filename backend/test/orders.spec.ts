@@ -58,6 +58,20 @@ describe('Orders Module & Edge Cases (E2E / Supertest)', () => {
     }
   });
 
+  it('GET /api/orders?page=1&limit=2 - should return paginated orders envelope', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/orders?page=1&limit=2')
+      .expect(200);
+
+    expect(res.body).toHaveProperty('data');
+    expect(res.body).toHaveProperty('total');
+    expect(res.body).toHaveProperty('page', 1);
+    expect(res.body).toHaveProperty('limit', 2);
+    expect(res.body).toHaveProperty('totalPages');
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeLessThanOrEqual(2);
+  });
+
   it('GET /api/orders?search=Suresh - should search orders by devotee name', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/orders?search=Suresh')

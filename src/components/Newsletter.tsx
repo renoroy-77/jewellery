@@ -25,7 +25,12 @@ export default function Newsletter() {
           <div className="newsletter-lotus-wrapper">
             <img
               src="/assets/lotus_art.png"
-              alt="Lotus of Divinity"
+              alt="Lotus of Divinity - Sacred Panchaloham Motif"
+              title="Lotus of Divinity - Sacred Panchaloham Motif"
+              width={135}
+              height={85}
+              loading="lazy"
+              decoding="async"
               className="newsletter-lotus-img"
             />
           </div>

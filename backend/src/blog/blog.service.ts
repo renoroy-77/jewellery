@@ -7,8 +7,13 @@ import { UpdateBlogPostDto } from './dto/update-blog-post.dto';
 export class BlogService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(params?: { category?: string; search?: string }) {
-    const { category, search } = params || {};
+  async findAll(params?: {
+    category?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const { category, search, page: rawPage, limit: rawLimit } = params || {};
     const where: any = {};
 
     if (category && category !== 'all') {
@@ -22,6 +27,32 @@ export class BlogService {
         { excerpt: { contains: search, mode: 'insensitive' } },
         { authorName: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    const isPaginated = rawPage !== undefined || rawLimit !== undefined;
+
+    if (isPaginated) {
+      const page = Math.max(1, rawPage || 1);
+      const limit = Math.max(1, rawLimit || 10);
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.blogPost.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.blogPost.count({ where }),
+      ]);
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
     }
 
     return this.prisma.blogPost.findMany({

@@ -3,43 +3,75 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ChevronRight, ShoppingBag, Star } from 'lucide-react';
-import { CATEGORIES, DEITY_COLLECTIONS } from '@/data/products';
+import { DEITY_COLLECTIONS } from '@/data/products';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import BackButton from '@/components/BackButton';
+import { Category } from '@/types';
 
 interface Props {
   params: Promise<{ category: string }>;
 }
 
-const ALL_COLLECTIONS = [
-  ...CATEGORIES,
-  ...DEITY_COLLECTIONS.map((d) => ({
-    id: d.id,
-    slug: d.slug,
-    name: d.name,
-    image: d.image,
-    itemCount: 0,
-    description: `Sacred consecrated Panchaloham jewellery dedicated to ${d.deity}.`,
-  })),
-];
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export const dynamicParams = true;
 
+async function resolveCategory(slug: string): Promise<Category | null> {
+  let target = slug;
+  if (target === 'pooja-essentials') target = 'pooja-items';
+
+  // 1. Direct fetch from backend categories
+  const backendCat = await categoriesService.getById(target).catch(() => null);
+  if (backendCat) return backendCat;
+
+  // 2. Check all backend categories to match id, slug, or name case-insensitively
+  const allBackend = await categoriesService.getAll().catch(() => []);
+  const found = allBackend.find(
+    (c) =>
+      c.slug?.toLowerCase() === target.toLowerCase() ||
+      c.id?.toLowerCase() === target.toLowerCase() ||
+      c.name?.toLowerCase() === target.toLowerCase()
+  );
+  if (found) return found;
+
+  // 3. Fallback to deity collections for deity routes (e.g. ganesha-jewellery)
+  const deity = DEITY_COLLECTIONS.find(
+    (d) => d.slug.toLowerCase() === target.toLowerCase() || d.id.toLowerCase() === target.toLowerCase()
+  );
+  if (deity) {
+    return {
+      id: deity.id,
+      slug: deity.slug,
+      name: deity.name,
+      tamilName: deity.tamilName,
+      image: deity.image,
+      itemCount: 0,
+      description: `Sacred consecrated Panchaloham jewellery dedicated to ${deity.deity}.`,
+    };
+  }
+
+  return null;
+}
+
 export async function generateStaticParams() {
-  return ALL_COLLECTIONS.map((cat) => ({
-    category: cat.slug,
-  }));
+  const backendCats = await categoriesService.getAll().catch(() => []);
+  const slugs = new Set<string>();
+  backendCats.forEach((c) => {
+    if (c.slug) slugs.add(c.slug);
+    if (c.id) slugs.add(c.id);
+  });
+  DEITY_COLLECTIONS.forEach((d) => {
+    if (d.slug) slugs.add(d.slug);
+  });
+  return Array.from(slugs).map((category) => ({ category }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category: slug } = await params;
-  let category = ALL_COLLECTIONS.find((c) => c.slug === slug || c.id === slug);
-  if (!category) {
-    category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
-  }
+  const category = await resolveCategory(slug);
 
   if (!category) {
     return constructMetadata({
@@ -48,26 +80,71 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
+  const slugLower = slug.toLowerCase();
+  const additionalKeywords: string[] = [];
+
+  if (slugLower.includes('ganesh')) {
+    additionalKeywords.push(
+      'ganesha pendant gold',
+      'ganpati pendant gold',
+      'ganesh locket gold',
+      'gold locket ganesh',
+      'ganpati locket gold',
+      '22k gold ganesh pendant',
+      'ganesh pendant silver'
+    );
+  } else if (slugLower.includes('lakshmi') || slugLower.includes('laxmi')) {
+    additionalKeywords.push(
+      'lakshmi pendant gold',
+      'laxmi pendant gold',
+      'gold laxmi pendant',
+      'lakshmi dollar chain',
+      'female lakshmi pendant designs in gold',
+      '5 gram gold lakshmi pendant',
+      '8 gram gold lakshmi pendant',
+      'lakshmi devi lockets gold',
+      'lakshmi pendant necklace'
+    );
+  } else if (slugLower.includes('chain')) {
+    additionalKeywords.push(
+      'lakshmi dollar chain',
+      'consecration chains',
+      'south indian temple jewellery chain',
+      'panchaloham chain online'
+    );
+  } else if (slugLower.includes('pendant')) {
+    additionalKeywords.push(
+      'ganesha pendant gold',
+      'lakshmi pendant gold',
+      'south indian temple jewellery',
+      'deity pendants',
+      'panchaloham pendant'
+    );
+  }
+
   return constructMetadata({
-    title: `${category.name} - Consecrated Panchaloham`,
-    description: category.description,
+    title: `${category.name} | Aamadappetti Temple Jewellery`,
+    description: `${category.description} Handcrafted by Aamadappetti sthapatis in authentic sacred Panchaloham 5 metals.`,
     image: category.image,
     canonicalUrl: `/collections/${category.slug}`,
     keywords: [
       category.name,
+      `aamadappetti ${category.name.toLowerCase()}`,
+      `amadapetti ${category.name.toLowerCase()}`,
+      'aamadappetti panchaloham',
+      'amadapetti jewellery',
+      'south indian temple jewellery',
       'Panchaloham jewellery',
       'temple jewellery',
       'sacred collection',
+      ...additionalKeywords,
     ],
   });
 }
 
 export default async function CategoryPage({ params }: Props) {
   const { category: slug } = await params;
-  let category = ALL_COLLECTIONS.find((c) => c.slug === slug || c.id === slug);
-  if (!category) {
-    category = (await categoriesService.getById(slug).catch(() => null)) || undefined;
-  }
+  const category = await resolveCategory(slug);
 
   if (!category) {
     notFound();
@@ -177,9 +254,13 @@ export default async function CategoryPage({ params }: Props) {
                 <article key={product.id} className="product-card">
                   <div className="product-image-container">
                     <Link href={`/products/${product.slug}`}>
-                      <img src={product.images[0]} alt={product.name} />
+                      <img
+                        src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
+                        alt={product.name}
+                        loading="lazy"
+                      />
                     </Link>
-                    <span className="product-deity-badge">{product.deity}</span>
+                    <span className="product-deity-badge">{product.deity || 'Sacred'}</span>
                   </div>
                   <div className="product-info">
                     <h3 className="product-title">
@@ -191,20 +272,20 @@ export default async function CategoryPage({ params }: Props) {
                           <Star
                             key={i}
                             size={13}
-                            fill={i < Math.floor(product.rating) ? '#f5d77f' : 'none'}
+                            fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
                             stroke="#f5d77f"
                           />
                         ))}
                       </div>
-                      <span className="rating-count">({product.reviewsCount})</span>
+                      <span className="rating-count">({product.reviewsCount || 1})</span>
                     </div>
                     <div className="product-price-row">
                       <span className="current-price">
-                        ₹{product.price.toLocaleString('en-IN')}
+                        ₹{Number(product.price || 0).toLocaleString('en-IN')}
                       </span>
-                      {product.originalPrice && (
+                      {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
                         <span className="original-price">
-                          ₹{product.originalPrice.toLocaleString('en-IN')}
+                          ₹{Number(product.originalPrice).toLocaleString('en-IN')}
                         </span>
                       )}
                     </div>

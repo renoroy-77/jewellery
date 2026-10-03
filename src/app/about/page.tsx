@@ -1,98 +1,50 @@
-import React from 'react';
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { Award, ShieldCheck, Sparkles, Flame, Droplets, Mountain, Wind, Shield, ChevronRight } from 'lucide-react';
-import { constructMetadata } from '@/lib/seo';
-import BackButton from '@/components/BackButton';
+'use client';
 
-export const metadata: Metadata = constructMetadata({
-  title: 'Our Heritage & The Panchaloham Craft | Aamaclappetti',
-  description:
-    'Discover the ancient history of five-metal Panchaloham temple jewellery handcrafted by generational sthapatis. Sacred jewellery for every devotee.',
-  canonicalUrl: '/about',
-});
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  Award,
+  ShieldCheck,
+  Sparkles,
+  Flame,
+  Droplets,
+  Mountain,
+  Wind,
+  Shield,
+  ChevronRight,
+} from 'lucide-react';
+import BackButton from '@/components/BackButton';
+import { cmsService } from '@/services/cmsService';
+import { AboutPageCMS, INITIAL_ABOUT_CMS } from '@/data/cmsData';
+
+const METAL_ICONS: Record<string, any> = {
+  Gold: Flame,
+  Silver: Droplets,
+  Copper: Mountain,
+  Brass: Wind,
+  Zinc: Wind,
+  Iron: Shield,
+};
+
+function getMetalIcon(name: string) {
+  if (name.toLowerCase().includes('gold') || name.toLowerCase().includes('pon')) return Flame;
+  if (name.toLowerCase().includes('silver') || name.toLowerCase().includes('velli')) return Droplets;
+  if (name.toLowerCase().includes('copper') || name.toLowerCase().includes('chembu')) return Mountain;
+  if (name.toLowerCase().includes('iron') || name.toLowerCase().includes('irumbu')) return Shield;
+  return Wind;
+}
 
 export default function AboutPage() {
-  const METALS = [
-    {
-      name: 'Gold (Pon)',
-      element: 'Fire / Agni',
-      planet: 'Sun (Surya)',
-      symbol: 'Au',
-      icon: Flame,
-      color: '#dfba6c',
-      desc: 'Infuses solar vitality, divine consciousness, and spiritual radiance into the aura.',
-    },
-    {
-      name: 'Silver (Velli)',
-      element: 'Water / Jala',
-      planet: 'Moon (Chandra)',
-      symbol: 'Ag',
-      icon: Droplets,
-      color: '#e2e8f0',
-      desc: 'Cooling lunar vibrations that soothe emotional turmoil, providing peace and mental poise.',
-    },
-    {
-      name: 'Copper (Chembu)',
-      element: 'Earth / Prithvi',
-      planet: 'Mars (Mangal)',
-      symbol: 'Cu',
-      icon: Mountain,
-      color: '#d97736',
-      desc: 'Grounds bio-electric energy, stimulates physical stamina, and dispels sluggish inertia.',
-    },
-    {
-      name: 'Brass / Zinc (Pithalai)',
-      element: 'Ether / Akasha',
-      planet: 'Mercury (Budha)',
-      symbol: 'Zn',
-      icon: Wind,
-      color: '#e5c07b',
-      desc: 'Enhances subtle communication, cognitive perception, and harmonic bio-rhythms.',
-    },
-    {
-      name: 'Iron (Irumbu)',
-      element: 'Air / Vayu',
-      planet: 'Saturn (Shani)',
-      symbol: 'Fe',
-      icon: Shield,
-      color: '#94a3b8',
-      desc: 'Forms an impermeable electromagnetic shield against psychic negativity and malefic evil eye.',
-    },
-  ];
+  const [aboutData, setAboutData] = useState<AboutPageCMS>(INITIAL_ABOUT_CMS);
 
-  const CRAFT_STEPS = [
-    {
-      step: '01',
-      title: 'Sacred Shilpa Shastra Dhyana',
-      desc: 'Every design begins with scriptural meditation, ensuring the deity’s lakshanas (divine proportions) strictly align with temple Agama Shastras.',
-    },
-    {
-      step: '02',
-      title: 'Beeswax Master Sculpting',
-      desc: 'Master Sthapatis hand-carve intricate details into pure forest beeswax mixed with Dammar tree resin, creating an irreplaceable bespoke prototype.',
-    },
-    {
-      step: '03',
-      title: 'Sacred Clay Mold Baking',
-      desc: 'The wax model is enveloped in seven layers of alluvial clay sourced from holy riverbanks, dried under the sun, and baked in traditional kilns.',
-    },
-    {
-      step: '04',
-      title: 'Crucible Pouring at 1,080°C',
-      desc: 'The five sacred metals are melted in exact proportions in graphite crucibles. As liquid gold alloy flows in, the wax melts away (Lost-Wax casting).',
-    },
-    {
-      step: '05',
-      title: 'Master Chiseling & Goldsmithing',
-      desc: 'Once cooled, the clay is shattered. Artisans spend over 40 hours hand-chiseled each divine attribute with micro-tools to mirror temple icons.',
-    },
-    {
-      step: '06',
-      title: 'Prana Pratishtha Temple Consecration',
-      desc: 'Before packing, each piece is energized before temple sanctums with holy theertham and Vedic chant invocations, awakening its spiritual resonance.',
-    },
-  ];
+  useEffect(() => {
+    cmsService
+      .getAbout()
+      .then((data) => {
+        if (data) setAboutData(data);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="about-page-wrapper section-padding">
@@ -113,21 +65,48 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="about-hero-card">
           <div className="about-hero-content">
-            <span className="section-kicker">ESTD. 1984 • SACRED JEWELLERY GOLDSMITHING</span>
-            <h1 className="about-hero-title">The Sacred Legacy of Aamaclappetti</h1>
+            <span className="section-kicker">
+              {aboutData.heroKicker || `ESTD. ${aboutData.establishedYear || '1984'} • SACRED JEWELLERY GOLDSMITHING`}
+            </span>
+            <h1 className="about-hero-title">
+              {aboutData.heroTitle || 'The Sacred Legacy of Aamadappetti'}
+            </h1>
             <p className="about-hero-lead">
-              For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic <strong>Panchaloham</strong> — uniting cosmic energies, sacred heritage, and heirloom temple goldsmithing.
+              {aboutData.heroLead ||
+                'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple goldsmithing.'}
             </p>
           </div>
           <div className="about-hero-image-wrap">
             <img
               src="/assets/imagetressary.png"
-              alt="Aamaclappetti Master Sthapati Workshop"
+              alt="Aamadappetti Master Sthapati Workshop"
               className="about-hero-img"
               loading="eager"
             />
           </div>
         </div>
+
+        {/* Legacy Narrative Section */}
+        {(aboutData.legacyParagraph1 || aboutData.legacyTitle) && (
+          <section className="about-section" style={{ paddingTop: '20px', paddingBottom: '20px' }}>
+            <div style={{ maxWidth: '840px', margin: '0 auto', textAlign: 'center' }}>
+              <div className="section-kicker">GENERATIONAL LINEAGE</div>
+              <h2 className="section-title" style={{ marginBottom: '18px' }}>
+                {aboutData.legacyTitle || 'Preserving Agamic Metallurgy & Temple Artisanship'}
+              </h2>
+              {aboutData.legacyParagraph1 && (
+                <p style={{ fontSize: '1.05rem', lineHeight: '1.75', color: '#e2e8f0', marginBottom: '14px' }}>
+                  {aboutData.legacyParagraph1}
+                </p>
+              )}
+              {aboutData.legacyParagraph2 && (
+                <p style={{ fontSize: '1rem', lineHeight: '1.7', color: '#cbd5e1' }}>
+                  {aboutData.legacyParagraph2}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* The 5 Metals Section */}
         <section className="about-section">
@@ -140,12 +119,12 @@ export default function AboutPage() {
           </div>
 
           <div className="metals-grid">
-            {METALS.map((metal, idx) => {
-              const Icon = metal.icon;
+            {aboutData.metals.map((metal, idx) => {
+              const Icon = getMetalIcon(metal.name);
               return (
                 <div key={idx} className="metal-card">
-                  <div className="metal-icon-circle" style={{ borderColor: metal.color }}>
-                    <Icon size={24} style={{ color: metal.color }} />
+                  <div className="metal-icon-circle" style={{ borderColor: metal.color || '#dfba6c' }}>
+                    <Icon size={24} style={{ color: metal.color || '#dfba6c' }} />
                   </div>
                   <h3 className="metal-name">{metal.name}</h3>
                   <div className="metal-meta">
@@ -169,7 +148,7 @@ export default function AboutPage() {
           </div>
 
           <div className="craft-steps-grid">
-            {CRAFT_STEPS.map((step, idx) => (
+            {aboutData.craftSteps.map((step, idx) => (
               <div key={idx} className="craft-step-card">
                 <div className="craft-step-num">{step.step}</div>
                 <h3 className="craft-step-title">{step.title}</h3>
@@ -178,6 +157,41 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
+
+        {/* Sanctum Atelier Pledge / Quote */}
+        {aboutData.sanctumQuote && (
+          <div
+            style={{
+              margin: '40px auto',
+              maxWidth: '820px',
+              padding: '28px 32px',
+              background: 'linear-gradient(135deg, rgba(13, 84, 56, 0.4) 0%, rgba(4, 29, 20, 0.8) 100%)',
+              border: '1px solid rgba(212, 175, 55, 0.35)',
+              borderRadius: '8px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            <Sparkles size={28} color="#dfba6c" style={{ margin: '0 auto 12px' }} />
+            <blockquote
+              style={{
+                fontFamily: 'var(--font-heading, "Playfair Display", serif)',
+                fontSize: '1.25rem',
+                fontStyle: 'italic',
+                color: '#fffdf7',
+                lineHeight: '1.6',
+                margin: '0 0 12px',
+              }}
+            >
+              &ldquo;{aboutData.sanctumQuote}&rdquo;
+            </blockquote>
+            {aboutData.sanctumQuoteAuthor && (
+              <cite style={{ fontSize: '0.86rem', color: '#f5d382', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                — {aboutData.sanctumQuoteAuthor}
+              </cite>
+            )}
+          </div>
+        )}
 
         {/* Guarantees / Quality Pillars */}
         <section className="about-pillars-box">
@@ -195,6 +209,46 @@ export default function AboutPage() {
             <ShieldCheck size={36} className="pillar-icon" />
             <h4>Lifetime Heirloom Guarantee</h4>
             <p>Panchaloham will never peel or crack like fake gold plating; it matures into a lustrous temple patina.</p>
+          </div>
+        </section>
+
+        {/* Sacred Sizing & Measurement Guide */}
+        <section id="size-guide" className="about-section" style={{ paddingTop: '10px' }}>
+          <div className="section-header" style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div className="section-kicker">PRECISION MEASUREMENT</div>
+            <h2 className="section-title">Temple Jewellery Sizing Guide</h2>
+            <p style={{ maxWidth: '680px', margin: '10px auto 0', fontSize: '0.96rem' }}>
+              Ensure an auspicious, comfortable fit for your consecrated rings, temple chains, and bio-energy kadas.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '24px',
+            }}
+          >
+            <div className="metal-card" style={{ textAlign: 'left' }}>
+              <h3 style={{ color: '#f5d77f', fontSize: '1.15rem', marginBottom: '8px' }}>Panchaloham Rings</h3>
+              <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                Wrap a string or paper strip snugly around your intended sanctum finger. Measure the length in mm: <strong>52mm = Size 12</strong>, <strong>55mm = Size 15</strong>, <strong>58mm = Size 18</strong>, <strong>62mm = Size 22</strong>.
+              </p>
+            </div>
+
+            <div className="metal-card" style={{ textAlign: 'left' }}>
+              <h3 style={{ color: '#f5d77f', fontSize: '1.15rem', marginBottom: '8px' }}>Ayurvedic &amp; Temple Kadas</h3>
+              <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                Standard kada inner diameter is <strong>2.4 (57.2mm)</strong>, <strong>2.6 (60.3mm)</strong>, or <strong>2.8 (63.5mm)</strong>. Open-ended kada designs can be gently flexed for custom wrist contouring.
+              </p>
+            </div>
+
+            <div className="metal-card" style={{ textAlign: 'left' }}>
+              <h3 style={{ color: '#f5d77f', fontSize: '1.15rem', marginBottom: '8px' }}>Consecration Chains</h3>
+              <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                Standard lengths: <strong>20 inches</strong> (rests at collarbone), <strong>22 inches</strong> (rests mid-chest, ideal for deity lockets), and <strong>24 inches</strong> (traditional temple length).
+              </p>
+            </div>
           </div>
         </section>
 

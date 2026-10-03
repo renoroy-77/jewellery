@@ -47,6 +47,7 @@ export interface DeityCollectionItem {
   id: string;
   slug: string;
   name: string;
+  tamilName?: string;
   image: string;
   deity: string;
 }
@@ -427,7 +428,7 @@ export const STORE_FAQS = [
   {
     question: 'Does your jewellery come with a certificate of authenticity?',
     answer:
-      'Yes! Every piece from Aamaclappetti is accompanied by an authenticated Hallmark Metal Composition Certificate and an artisan origin seal from our heritage workshops in North Paravoor, Kerala.',
+      'Yes! Every piece from Aamadappetti (Amadapetti) is accompanied by an authenticated Hallmark Metal Composition Certificate and an artisan origin seal from our heritage sanctum workshops.',
   },
   {
     question: 'Will Panchaloham jewellery tarnish or rust over time?',

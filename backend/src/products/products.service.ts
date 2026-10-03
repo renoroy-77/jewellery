@@ -2,16 +2,22 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PushNotificationService } from '../notifications/push-notification.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pushNotificationService: PushNotificationService,
+  ) {}
 
   async findAll(params?: {
     category?: string;
     search?: string;
     inStock?: boolean;
     featured?: boolean;
+    page?: number;
+    limit?: number;
   }) {
     const where: any = {};
 
@@ -35,6 +41,32 @@ export class ProductsService {
         { category: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
       ];
+    }
+
+    const isPaginated = params?.page !== undefined || params?.limit !== undefined;
+
+    if (isPaginated) {
+      const page = Math.max(1, params?.page || 1);
+      const limit = Math.max(1, params?.limit || 10);
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.product.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.product.count({ where }),
+      ]);
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
     }
 
     return this.prisma.product.findMany({
@@ -75,7 +107,7 @@ export class ProductsService {
 
     const id = dto.id?.trim() || `prod-${Date.now()}`;
 
-    return this.prisma.product.create({
+    const createdProduct = await this.prisma.product.create({
       data: {
         id,
         slug: dto.slug,
@@ -103,6 +135,11 @@ export class ProductsService {
         tags: dto.tags && dto.tags.length > 0 ? dto.tags : ['panchaloham', dto.category || 'jewellery'],
       },
     });
+
+    // Send instant FCM push notification to Admin mobile & web apps (non-blocking)
+    this.pushNotificationService.sendProductNotification(createdProduct).catch(() => {});
+
+    return createdProduct;
   }
 
   async update(id: string, dto: UpdateProductDto) {

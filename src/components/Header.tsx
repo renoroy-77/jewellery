@@ -109,9 +109,12 @@ export default function Header() {
             {/* Official Brand Logo */}
             <Link href="/" className="brand-logo" aria-label="Aamadappetti Home" style={{ display: 'inline-flex', alignItems: 'center' }}>
               <img
-                src="/assets/brand_logo_gold.png"
-                alt="aamadappetti PANCHALOHAM JEWELLERY"
+                src="/assets/brand_logo_gold.webp"
+                alt="Aamadappetti (Amadapetti) Panchaloham Temple Jewellery"
+                title="Aamadappetti (Amadapetti) Panchaloham Temple Jewellery"
                 className="brand-logo-img"
+                width={180}
+                height={48}
                 style={{ maxHeight: '48px', height: '48px', width: 'auto', objectFit: 'contain' }}
               />
             </Link>

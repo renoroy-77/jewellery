@@ -31,6 +31,7 @@ async function bootstrap() {
 
   // Static uploads serving
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  app.use('/assets', express.static(join(process.cwd(), '../public/assets')));
 
   // Swagger Documentation Setup
   const config = new DocumentBuilder()

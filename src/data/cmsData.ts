@@ -1,5 +1,5 @@
 import { Product, Category } from '@/types';
-import { PRODUCTS, CATEGORIES } from './products';
+import { PRODUCTS } from './products';
 
 export interface HeroSlideCMS {
   id: number;

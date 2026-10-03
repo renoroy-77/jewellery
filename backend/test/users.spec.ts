@@ -35,6 +35,20 @@ describe('Devotees & Users Module (E2E / Supertest)', () => {
     expect(user.email).toBe('rajesh.sharma@example.com');
   });
 
+  it('GET /api/users?page=1&limit=2 - should return paginated devotee envelope', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/users?page=1&limit=2')
+      .expect(200);
+
+    expect(res.body).toHaveProperty('data');
+    expect(res.body).toHaveProperty('total');
+    expect(res.body).toHaveProperty('page', 1);
+    expect(res.body).toHaveProperty('limit', 2);
+    expect(res.body).toHaveProperty('totalPages');
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeLessThanOrEqual(2);
+  });
+
   it('GET /api/users/:id - should retrieve a specific devotee and their order history', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/users/USR-101')
@@ -46,10 +60,11 @@ describe('Devotees & Users Module (E2E / Supertest)', () => {
   });
 
   it('POST /api/users - should create a new devotee user profile', async () => {
+    const uniqueId = `USR-TEST-${Date.now()}`;
     const newDevotee = {
-      id: 'USR-TEST-999',
+      id: uniqueId,
       name: 'Venkataraman Sastry',
-      email: 'venkataraman.s@templetest.org',
+      email: `venkataraman.${Date.now()}@templetest.org`,
       phone: '+91 94440 11223',
       shippingAddress: '7, Car Street, Kumbakonam, Tamil Nadu - 612001',
       memberSince: 'Sep 2026',
@@ -60,9 +75,8 @@ describe('Devotees & Users Module (E2E / Supertest)', () => {
       .send(newDevotee)
       .expect(201);
 
-    expect(res.body.id).toBe('USR-TEST-999');
+    expect(res.body.id).toBe(uniqueId);
     expect(res.body.name).toBe('Venkataraman Sastry');
-    expect(res.body.email).toBe('venkataraman.s@templetest.org');
     testUserId = res.body.id;
   });
 

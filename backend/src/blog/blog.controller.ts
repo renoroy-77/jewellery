@@ -19,14 +19,23 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all published blog articles with category & search filter' })
+  @ApiOperation({ summary: 'Get all published blog articles with category, search & optional pagination' })
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
     @Query('category') category?: string,
     @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.blogService.findAll({ category, search });
+    return this.blogService.findAll({
+      category,
+      search,
+      page: page !== undefined ? parseInt(page, 10) : undefined,
+      limit: limit !== undefined ? parseInt(limit, 10) : undefined,
+    });
   }
 
   @Get(':idOrSlug')

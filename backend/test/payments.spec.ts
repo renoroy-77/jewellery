@@ -40,6 +40,24 @@ describe('Payments & Cashfree Webhook E2E Integration Tests', () => {
 
   describe('1. Cashfree Order Creation', () => {
     it('POST /api/payments/cashfree/create-order - should create a valid payment order with session ID', async () => {
+      jest.spyOn(paymentsService, 'createCashfreeOrder').mockImplementationOnce(async (dto: any) => {
+        const id = `order_${Date.now()}`;
+        return {
+          success: true,
+          orderId: id,
+          paymentSessionId: 'session_mock_cashfree_123',
+          cfOrderId: 'cf_order_mock_999',
+          orderStatus: 'ACTIVE',
+          orderAmount: dto.amount,
+          currency: dto.currency || 'INR',
+          environment: 'production',
+          appId: 'test_cashfree_app_id',
+          id,
+          amount: Math.round(dto.amount * 100),
+          keyId: 'test_cashfree_app_id',
+        };
+      });
+
       const res = await request(app.getHttpServer())
         .post('/api/payments/cashfree/create-order')
         .send({

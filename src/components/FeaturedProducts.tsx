@@ -1,30 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
-import { productsService } from '@/services/productsService';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
+import { useFeaturedProductsQuery } from '@/hooks/queries/useQueries';
 import { Product } from '@/types';
 
 export default function FeaturedProducts() {
   const { t } = useTranslation();
   const { addToCart } = useCart();
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    productsService
-      .getAll({ featured: true })
-      .then((data) => {
-        if (data.length > 0) {
-          setFeaturedProducts(data.slice(0, 8));
-        } else {
-          productsService.getAll().then((all) => setFeaturedProducts(all.slice(0, 8)));
-        }
-      })
-      .catch(() => setFeaturedProducts([]));
-  }, []);
+  const { data: featuredProducts = [] } = useFeaturedProductsQuery();
 
   if (featuredProducts.length === 0) {
     return null;
@@ -63,39 +50,46 @@ export default function FeaturedProducts() {
                 <div className="product-image-container-four">
                   <Link href={`/products/${product.slug}`} aria-label={`View details for ${product.name}`}>
                     <img
-                      src={product.images[0]}
-                      alt={product.name}
+                      src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
+                      alt={`${product.name} - Panchaloham Temple Jewellery`}
+                      title={`${product.name} - Panchaloham Temple Jewellery`}
+                      width={320}
+                      height={320}
                       loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                      }}
                     />
                   </Link>
-                  <span className="product-deity-badge-four">{product.deity}</span>
+                  <span className="product-deity-badge-four">{product.deity || 'Sacred'}</span>
                 </div>
 
                 <div className="product-info-four">
-                  <div className="product-category-meta">{product.category.toUpperCase()}</div>
+                  <div className="product-category-meta">{(product.category || 'Panchaloham').toUpperCase()}</div>
                   <h3 className="product-title-four">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                   </h3>
 
                   <div className="product-rating">
-                    <div className="rating-stars" aria-label={`${product.rating} out of 5 stars`}>
+                    <div className="rating-stars" aria-label={`${product.rating || 5} out of 5 stars`}>
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
                           size={13}
-                          fill={i < Math.floor(product.rating) ? '#f5d77f' : 'none'}
+                          fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
                           stroke="#f5d77f"
                         />
                       ))}
                     </div>
-                    <span className="rating-count">({product.reviewsCount})</span>
+                    <span className="rating-count">({product.reviewsCount || 1})</span>
                   </div>
 
                   <div className="product-price-row">
-                    <span className="current-price">₹{product.price.toLocaleString('en-IN')}</span>
-                    {product.originalPrice && (
+                    <span className="current-price">₹{Number(product.price || 0).toLocaleString('en-IN')}</span>
+                    {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
                       <span className="original-price">
-                        ₹{product.originalPrice.toLocaleString('en-IN')}
+                        ₹{Number(product.originalPrice).toLocaleString('en-IN')}
                       </span>
                     )}
                   </div>

@@ -88,7 +88,7 @@ export default function AdminReferralsPage() {
         minOrderSubtotal: Number(settings.minOrderSubtotal),
       });
       setSettings(updated);
-      showToast('Referral program settings successfully saved to Neon Cloud PostgreSQL!', 'success');
+      showToast('Referral program settings successfully saved to PostgreSQL database!', 'success');
     } catch (err: any) {
       showToast(err.message || 'Failed to update referral settings', 'error');
     } finally {

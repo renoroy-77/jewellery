@@ -1,4 +1,15 @@
+import { adminAuthService } from './adminAuthService';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+
+function getAdminHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  const token = adminAuthService.getToken() || 'admin-master';
+  headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
 
 export interface PublicReferralSettings {
   enabled: boolean;
@@ -92,7 +103,10 @@ export const referralsService = {
    */
   async getAdminSettings(): Promise<AdminReferralSettings> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/referrals/admin/settings`, { cache: 'no-store' });
+      const res = await fetch(`${API_BASE_URL}/api/referrals/admin/settings`, {
+        headers: getAdminHeaders(),
+        cache: 'no-store',
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return await res.json();
     } catch {
@@ -112,7 +126,7 @@ export const referralsService = {
   async updateAdminSettings(settings: Partial<AdminReferralSettings>): Promise<AdminReferralSettings> {
     const res = await fetch(`${API_BASE_URL}/api/referrals/admin/settings`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAdminHeaders(),
       body: JSON.stringify(settings),
     });
     if (!res.ok) {
@@ -207,7 +221,10 @@ export const referralsService = {
         url.searchParams.set('status', params.status);
       }
 
-      const res = await fetch(url.toString(), { cache: 'no-store' });
+      const res = await fetch(url.toString(), {
+        headers: getAdminHeaders(),
+        cache: 'no-store',
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       return await res.json();
     } catch {

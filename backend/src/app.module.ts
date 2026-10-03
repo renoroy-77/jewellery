@@ -15,6 +15,8 @@ import { TelegramModule } from './telegram/telegram.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReferralsModule } from './referrals/referrals.module';
 import { MailModule } from './mail/mail.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { InquiriesModule } from './inquiries/inquiries.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { MailModule } from './mail/mail.module';
     }),
     ScheduleModule.forRoot(),
     PrismaModule,
+    InquiriesModule,
+    NotificationsModule,
     MailModule,
     CmsModule,
     MediaModule,

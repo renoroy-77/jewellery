@@ -6,16 +6,31 @@ import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import ShopCatalog from '@/components/ShopCatalog';
 import { productsService } from '@/services/productsService';
+import { categoriesService } from '@/services/categoriesService';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Divine Panchaloham Jewellery | All Sacred Pieces',
+  title: 'Sacred Panchaloham Jewellery Collections | Aamadappetti (Amadapetti)',
   description:
-    'Shop authentic 5-metal Panchaloham temple jewellery, sacred deity pendants (Ganesha, Murugan, Shiva, Lakshmi), temple chains, and energized rings handcrafted in Kerala.',
+    'Shop authentic 5-metal Panchaloham temple jewellery from Aamadappetti (Amadapetti). Explore sacred deity pendants (Murugan, Ganesha, Shiva, Lakshmi), temple chains, and energized rings.',
   canonicalUrl: '/collections',
+  keywords: [
+    'aamadappetti collections',
+    'amadapetti collections',
+    'aamadappetti jewellery store',
+    'amadapetti panchaloham',
+    'buy panchaloham online',
+    'authentic temple jewellery',
+  ],
 });
 
 export default async function CollectionsPage() {
-  const initialProducts = await productsService.getAll();
+  const [initialProducts, initialCategories] = await Promise.all([
+    productsService.getAll(),
+    categoriesService.getAll().catch(() => []),
+  ]);
   const breadcrumbs = [
     { name: 'Home', url: '/' },
     { name: 'Jewellery', url: '/collections' },
@@ -42,7 +57,7 @@ export default async function CollectionsPage() {
           </div>
 
           {/* Full E-Commerce Shop Component with Filtering, Sorting & Cart */}
-          <ShopCatalog initialProducts={initialProducts} />
+          <ShopCatalog initialProducts={initialProducts} initialCategories={initialCategories} />
         </div>
       </div>
     </>

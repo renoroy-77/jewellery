@@ -312,6 +312,44 @@
   font-weight: 500;
 }
 
+.admin-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.admin-metric-card {
+  background: #ffffff;
+  border: 1px solid var(--admin-card-border);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.admin-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+}
+
+.admin-metric-value {
+  font-family: var(--font-serif, 'Cinzel', Georgia, serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  line-height: 1.1;
+}
+
+.admin-metric-label {
+  font-size: 0.82rem;
+  color: var(--admin-text-muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
 /* ==========================================================================
    DATA TABLES & CARD CONTAINERS (WHITE)
    ========================================================================== */
@@ -360,6 +398,38 @@
 .admin-table-container,
 .admin-table-wrapper {
   overflow-x: auto;
+}
+
+.admin-products-desktop-table {
+  display: block;
+}
+
+.admin-products-mobile-list {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-products-desktop-table {
+    display: none !important;
+  }
+
+  .admin-products-mobile-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .admin-product-mobile-card {
+    background: #ffffff;
+    border: 1px solid var(--admin-card-border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
 }
 
 .admin-table {

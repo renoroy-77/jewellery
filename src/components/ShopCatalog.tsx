@@ -1,46 +1,28 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
-import { productsService } from '@/services/productsService';
-import { categoriesService } from '@/services/categoriesService';
+import { useProductsQuery, useCategoriesQuery } from '@/hooks/queries/useQueries';
 import { useCart } from '@/context/CartContext';
 import { Product, Category } from '@/types';
 
 interface ShopCatalogProps {
   initialProducts?: Product[];
+  initialCategories?: Category[];
 }
 
-export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) {
+export default function ShopCatalog({
+  initialProducts = [],
+  initialCategories = [],
+}: ShopCatalogProps) {
   const { addToCart } = useCart();
 
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
-
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    productsService
-      .getAll()
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load products from database:', err);
-        setLoading(false);
-      });
-
-    categoriesService
-      .getAll()
-      .then((cats) => {
-        if (Array.isArray(cats) && cats.length > 0) {
-          setCategories(cats);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const { data: products = initialProducts, isLoading: loading } = useProductsQuery(
+    undefined,
+    initialProducts
+  );
+  const { data: categories = initialCategories } = useCategoriesQuery(initialCategories);
 
   // Filters State
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -51,56 +33,37 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
-  // Jewellery Types (Dynamically calculated from backend categories + products)
-  const baseTypes = [
-    { label: 'Pendants & Lockets', value: 'pendants' },
-    { label: 'Chains & Necklaces', value: 'chains' },
-    { label: 'Bracelets & Kadas', value: 'bracelets' },
-    { label: 'Temple Rings', value: 'rings' },
-  ];
+  // Category matching helper
+  const matchesCategory = (product: Product, cat: Category) => {
+    const prodCat = (product.category || '').toLowerCase().trim();
+    const prodDeity = (product.deity || '').toLowerCase().trim();
+    const catSlug = (cat.slug || '').toLowerCase().trim();
+    const catId = (cat.id || '').toLowerCase().trim();
+    const catName = (cat.name || '').toLowerCase().trim();
 
-  const backendTypes = categories.map((c) => ({
-    label: c.name,
-    value: c.slug || c.id,
-  }));
+    return (
+      prodCat === catSlug ||
+      prodCat === catId ||
+      prodCat === catName ||
+      prodCat.replace(/-/g, ' ') === catName ||
+      catName.replace(/-/g, ' ') === prodCat ||
+      (catSlug && prodCat.includes(catSlug)) ||
+      (catId && prodCat.includes(catId)) ||
+      (catName && (prodDeity.includes(catName) || catName.includes(prodDeity)))
+    );
+  };
 
-  const productCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
-  const customCats = productCats
-    .filter(
-      (c) =>
-        !baseTypes.some((b) => b.value.toLowerCase() === c.toLowerCase()) &&
-        !backendTypes.some((b) => b.value.toLowerCase() === c.toLowerCase())
-    )
-    .map((c) => ({
-      label: c.charAt(0).toUpperCase() + c.slice(1).replace(/-/g, ' '),
-      value: c,
-    }));
-
-  const allCategoryOptions = [
-    ...baseTypes,
-    ...backendTypes.filter((bt) => !baseTypes.some((b) => b.value.toLowerCase() === bt.value.toLowerCase())),
-    ...customCats,
-  ];
-
-  const JEWELLERY_TYPES = [
-    { label: 'All Sacred Jewellery', value: 'all', count: products.length },
-    ...allCategoryOptions.map((t) => ({
-      label: t.label,
-      value: t.value,
-      count: products.filter((p) => {
-        const cat = (p.category || '').toLowerCase();
-        const deity = (p.deity || '').toLowerCase();
-        const target = t.value.toLowerCase();
-        return (
-          cat === target ||
-          cat.includes(target) ||
-          target.includes(cat) ||
-          deity.includes(target) ||
-          t.label.toLowerCase().includes(cat)
-        );
-      }).length,
-    })),
-  ];
+  // Jewellery Types (Derived EXCLUSIVELY from backend categories)
+  const JEWELLERY_TYPES = useMemo(() => {
+    return [
+      { label: 'All Sacred Jewellery', value: 'all', count: products.length },
+      ...categories.map((c) => ({
+        label: c.name,
+        value: c.slug || c.id,
+        count: products.filter((p) => matchesCategory(p, c)).length,
+      })),
+    ];
+  }, [categories, products]);
 
   const PRICE_RANGES = [
     { label: 'All Price Ranges', value: 'all' },
@@ -114,18 +77,18 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
 
     // Filter by Jewellery Type
     if (selectedType !== 'all') {
-      const target = selectedType.toLowerCase();
-      list = list.filter((p) => {
-        const cat = (p.category || '').toLowerCase();
-        const deity = (p.deity || '').toLowerCase();
-        return (
-          cat === target ||
-          cat.replace(/-/g, ' ') === target ||
-          target.includes(cat) ||
-          cat.includes(target) ||
-          deity.includes(target)
-        );
-      });
+      const activeCat = categories.find(
+        (c) => (c.slug || c.id) === selectedType || c.id === selectedType || c.slug === selectedType
+      );
+      if (activeCat) {
+        list = list.filter((p) => matchesCategory(p, activeCat));
+      } else {
+        const target = selectedType.toLowerCase().trim();
+        list = list.filter((p) => {
+          const prodCat = (p.category || '').toLowerCase().trim();
+          return prodCat === target || prodCat.replace(/-/g, ' ') === target;
+        });
+      }
     }
 
     // Filter by Price Range
@@ -349,8 +312,8 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
               {filteredProducts.map((product) => {
 
                 const isJustAdded = addedProductId === product.id;
-                const discountPercent = product.originalPrice
-                  ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                const discountPercent = product.originalPrice && Number(product.originalPrice) > Number(product.price || 0)
+                  ? Math.round(((Number(product.originalPrice) - Number(product.price || 0)) / Number(product.originalPrice)) * 100)
                   : 0;
 
                 return (
@@ -359,9 +322,12 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
                       {/* Image */}
                       <div className="ecom-card-img-wrap">
                         <img
-                          src={product.images[0]}
+                          src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
                           alt={product.name}
                           className="ecom-product-img"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                          }}
                         />
 
                         {/* Badges */}
@@ -376,9 +342,17 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
 
                       {/* Product Content */}
                       <div className="ecom-card-body">
-                        <span className="ecom-item-category">
-                          {product.category.toUpperCase()} • CONSECRATED
-                        </span>
+                        {(() => {
+                          const matchingCat = categories.find((c) => matchesCategory(product, c));
+                          const displayCatName = matchingCat
+                            ? matchingCat.name
+                            : (product.category ? product.category.replace(/-/g, ' ') : 'Panchaloham');
+                          return (
+                            <span className="ecom-item-category">
+                              {displayCatName.toUpperCase()} • CONSECRATED
+                            </span>
+                          );
+                        })()}
                         <h3 className="ecom-item-title">{product.name}</h3>
 
                         {/* Rating */}
@@ -388,23 +362,23 @@ export default function ShopCatalog({ initialProducts = [] }: ShopCatalogProps) 
                               <Star
                                 key={i}
                                 size={12}
-                                fill={i < Math.floor(product.rating) ? '#dfba6c' : 'none'}
+                                fill={i < Math.floor(product.rating || 5) ? '#dfba6c' : 'none'}
                                 color="#dfba6c"
                               />
                             ))}
                           </div>
-                          <span className="ecom-rating-num">{product.rating}</span>
-                          <span className="ecom-rating-reviews">({product.reviewsCount})</span>
+                          <span className="ecom-rating-num">{product.rating || 5}</span>
+                          <span className="ecom-rating-reviews">({product.reviewsCount || 1})</span>
                         </div>
 
                         {/* Pricing */}
                         <div className="ecom-pricing-row">
                           <span className="ecom-price-current">
-                            ₹{product.price.toLocaleString('en-IN')}
+                            ₹{Number(product.price || 0).toLocaleString('en-IN')}
                           </span>
-                          {product.originalPrice && product.originalPrice > product.price && (
+                          {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
                             <span className="ecom-price-original">
-                              ₹{product.originalPrice.toLocaleString('en-IN')}
+                              ₹{Number(product.originalPrice).toLocaleString('en-IN')}
                             </span>
                           )}
                         </div>

@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
 import { ConfirmProvider } from '@/context/ConfirmContext';
 import GlobalToaster from '@/components/GlobalToaster';
+import QueryProvider from '@/providers/QueryProvider';
 
 export const viewport: Viewport = {
   themeColor: '#05160f',
@@ -27,26 +28,27 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href="/assets/hero_slide_1_mobile.webp" type="image/webp" media="(max-width: 768px)" />
-        <link rel="preload" as="image" href="/assets/hero_slide_1.webp" type="image/webp" media="(min-width: 769px)" />
-        <link rel="preload" as="image" href="/assets/hero_slide_2.webp" type="image/webp" />
-        <link rel="preload" as="image" href="/assets/hero_slide_3.webp" type="image/webp" />
-        <link rel="preload" as="image" href="/assets/brand_logo_gold.png" type="image/png" />
       </head>
       <body>
-        <LanguageProvider>
-          <CartProvider>
-            <ConfirmProvider>
-              <Header />
-              <main id="main-content">{children}</main>
-              <Footer />
-              <CartDrawer />
-              <GlobalToaster />
-            </ConfirmProvider>
-          </CartProvider>
-        </LanguageProvider>
+        <QueryProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <ConfirmProvider>
+                <Header />
+                <main id="main-content">{children}</main>
+                <Footer />
+                <CartDrawer />
+                <GlobalToaster />
+              </ConfirmProvider>
+            </CartProvider>
+          </LanguageProvider>
+        </QueryProvider>
       </body>
     </html>
   );

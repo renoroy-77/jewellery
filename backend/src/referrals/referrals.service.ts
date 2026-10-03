@@ -210,18 +210,22 @@ export class ReferralsService implements OnModuleInit {
    */
   async updateSettings(dto: UpdateReferralSettingsDto) {
     await this.ensureDefaultSettings();
+    const refereeDiscountRupees = dto.refereeDiscountRupees ?? dto.refereeDiscount;
+    const referrerRewardRupees = dto.referrerRewardRupees ?? dto.referrerCredit;
+    const minOrderSubtotal = dto.minOrderSubtotal ?? dto.minOrderValue;
+
     return this.prisma.referralSettings.update({
       where: { id: 'default' },
       data: {
         ...(dto.enabled !== undefined && { enabled: dto.enabled }),
-        ...(dto.refereeDiscountRupees !== undefined && {
-          refereeDiscountRupees: dto.refereeDiscountRupees,
+        ...(refereeDiscountRupees !== undefined && {
+          refereeDiscountRupees: refereeDiscountRupees,
         }),
-        ...(dto.referrerRewardRupees !== undefined && {
-          referrerRewardRupees: dto.referrerRewardRupees,
+        ...(referrerRewardRupees !== undefined && {
+          referrerRewardRupees: referrerRewardRupees,
         }),
-        ...(dto.minOrderSubtotal !== undefined && {
-          minOrderSubtotal: dto.minOrderSubtotal,
+        ...(minOrderSubtotal !== undefined && {
+          minOrderSubtotal: minOrderSubtotal,
         }),
       },
     });

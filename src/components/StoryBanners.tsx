@@ -31,8 +31,13 @@ export default function StoryBanners() {
           {banners.map((banner, idx) => (
             <div key={banner.id || idx} className="story-card">
               <img
-                src={banner.image}
-                alt={banner.title}
+                src={banner.image ? banner.image.replace('.png', '.webp') : '/assets/banner_sacred_gift.webp'}
+                alt={`${banner.title} - Aamadappetti Panchaloham`}
+                title={`${banner.title} - Aamadappetti Panchaloham`}
+                width={800}
+                height={500}
+                loading="lazy"
+                decoding="async"
                 className="story-bg-img"
               />
               <div className="story-content">

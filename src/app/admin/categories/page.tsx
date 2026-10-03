@@ -15,7 +15,6 @@ import {
   Search,
   AlertCircle,
 } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
 import { Category } from '@/types';
 import { categoriesService } from '@/services/categoriesService';
 import { cmsService } from '@/services/cmsService';
@@ -24,7 +23,7 @@ import { useConfirm } from '@/context/ConfirmContext';
 
 export default function AdminCategoriesPage() {
   const { confirm } = useConfirm();
-  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,11 +51,9 @@ export default function AdminCategoriesPage() {
     setIsLoading(true);
     try {
       const data = await categoriesService.getAll();
-      if (data && data.length > 0) {
-        setCategories(data);
-      }
+      setCategories(Array.isArray(data) ? data : []);
     } catch {
-      // Fallback already returned by categoriesService
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }

@@ -95,12 +95,16 @@ button {
   padding: 0 24px;
 }
 
+.section-padding {
+  padding: 84px 0;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
   }
   .section-padding {
-    padding: 44px 0;
+    padding: 48px 0;
   }
 }
 

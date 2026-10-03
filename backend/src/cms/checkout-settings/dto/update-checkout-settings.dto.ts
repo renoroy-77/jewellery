@@ -34,4 +34,34 @@ export class UpdateCheckoutSettingsDto {
   @IsOptional()
   @IsString()
   expressShippingText?: string;
+
+  @ApiPropertyOptional({ example: 199.0 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  expressShippingFee?: number;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  velvetPackaging?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  assayCertificate?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  insuredTransit?: boolean;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  internationalDelivery?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  courierPartners?: any;
 }

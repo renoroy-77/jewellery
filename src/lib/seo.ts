@@ -2,33 +2,95 @@ import { Metadata } from 'next';
 import { Product, BreadcrumbItem, FAQItem } from '@/types';
 
 export const siteConfig = {
-  name: 'Aamaclappetti | Panchaloham Temple Jewellery',
-  shortName: 'AamaClappetti',
+  name: 'Aamadappetti | Authentic Panchaloham Temple Jewellery',
+  shortName: 'Aamadappetti',
+  alternateNames: ['Amadapetti', 'Amadappetti', 'Aamadapetti', 'ஆமடைப்பெட்டி', 'ஆமடப்பெட்டி'],
   tagline: 'Divine Beauty, Timeless Tradition - Adorn Your Faith',
   description:
-    'Discover authentic handcrafted Panchaloham temple jewellery, sacred deity pendants (Ganesha, Murugan, Shiva, Lakshmi), consecration-grade divine chains, bracelets & pooja essentials.',
-  url: 'https://aamaclappetti.in',
-  ogImage: '/assets/imagetressary.png',
+    'Aamadappetti (Amadapetti) – Authentic Panchaloham temple jewellery, sacred deity pendants, consecration chains & kadas crafted in pure 5 metals.',
+  url: 'https://aamadappetti.com',
+  ogImage: '/assets/brand_logo_gold.png',
   locale: 'en_IN',
   telephone: '+91 96000 00000',
-  email: 'support@aamaclapetti.in',
+  email: 'support@aamadappetti.com',
   address: {
     streetAddress: 'Temple Road, Heritage Lane',
-    addressLocality: 'North Paravoor',
-    addressRegion: 'Kerala',
-    postalCode: '683513',
+    addressLocality: 'Madurai & Paravur',
+    addressRegion: 'Tamil Nadu & Kerala',
+    postalCode: '625001',
     addressCountry: 'IN',
   },
   socials: {
-    instagram: 'https://instagram.com/aamaclappetti',
-    facebook: 'https://facebook.com/aamaclappetti',
-    youtube: 'https://youtube.com/@aamaclappetti',
-    pinterest: 'https://pinterest.com/aamaclappetti',
+    instagram: 'https://instagram.com/aamadappetti',
+    facebook: 'https://facebook.com/aamadappetti',
+    youtube: 'https://www.youtube.com',
+    pinterest: 'https://pinterest.com/aamadappetti',
   },
   currenciesAccepted: 'INR, USD, AED, GBP, EUR',
   paymentAccepted: 'Credit Card, Debit Card, UPI, Net Banking',
   priceRange: '₹999 - ₹25,000',
 };
+
+export const TARGET_KEYWORDS = [
+  // Core Brand Queries (Primary & Phonetic Variations)
+  'aamadappetti',
+  'amadapetti',
+  'amadappetti',
+  'aamadapetti',
+  'aamadappetti jewellery',
+  'amadapetti jewellery',
+  'aamadappetti panchaloham',
+  'amadapetti panchaloham',
+  'aamadappetti online',
+  'amadapetti online store',
+  'aamadappetti website',
+  'amadapetti shop',
+  'ஆமடைப்பெட்டி',
+  'ஆமடப்பெட்டி',
+
+  // High-Volume Category & Temple Jewellery Queries (Ubersuggest Verified)
+  'south indian temple jewellery',
+  'south indian temple jewellery set',
+  'Panchaloham jewellery',
+  'authentic panchaloha idols',
+  'temple jewellery online',
+  'consecration chains and kadas',
+  'sanctified rings',
+  'pooja essentials',
+  'spiritual jewellery India',
+  'sanctum consecrated jewellery',
+
+  // Ganesha High-Volume Queries (3.6K+ Volume)
+  'ganesha pendant gold',
+  'ganpati pendant gold',
+  'ganesh locket gold',
+  'gold locket ganesh',
+  'ganesh pendant silver',
+  'ganpati locket gold',
+  '22k gold ganesh pendant',
+  'Lord Ganesha gold pendant',
+
+  // Lakshmi High-Volume Queries (2.4K+ Volume)
+  'lakshmi pendant gold',
+  'laxmi pendant gold',
+  'gold laxmi pendant',
+  'lakshmi dollar chain',
+  'female lakshmi pendant designs in gold',
+  '5 gram gold lakshmi pendant',
+  '8 gram gold lakshmi pendant',
+  'lakshmi devi lockets gold',
+  'lakshmi pendant necklace',
+  'laxmi pendant necklace',
+  'mangalsutra with lakshmi pendant',
+  'Lakshmi deity pendant',
+
+  // Murugan & Shiva Sacred Queries
+  'Murugan Vel pendant',
+  'vel locket gold',
+  'Shiva Lingam panchaloham',
+  'five metal gold pendant',
+  'sacred gifts',
+];
 
 export function constructMetadata({
   title,
@@ -36,19 +98,7 @@ export function constructMetadata({
   image = siteConfig.ogImage,
   canonicalUrl,
   noIndex = false,
-  keywords = [
-    'Panchaloham jewellery',
-    'temple jewellery online',
-    'five metal gold pendant',
-    'Lord Ganesha gold pendant',
-    'Murugan Vel pendant',
-    'Shiva Lingam panchaloham',
-    'Lakshmi deity pendant',
-    'authentic panchaloha idols',
-    'spiritual jewellery India',
-    'sacred gifts',
-    'Aamaclappetti jewellery',
-  ],
+  keywords = TARGET_KEYWORDS,
 }: {
   title?: string;
   description?: string;
@@ -57,40 +107,52 @@ export function constructMetadata({
   noIndex?: boolean;
   keywords?: string[];
 } = {}): Metadata {
-  const fullTitle = title
-    ? `${title} | Aamaclappetti Panchaloham Jewellery`
-    : `${siteConfig.name} - ${siteConfig.tagline}`;
+  let fullTitle = title || 'Aamadappetti (Amadapetti) | Panchaloham Temple Jewellery';
+  if (title && !title.includes('Aamadappetti') && !title.includes('Amadapetti')) {
+    fullTitle = `${title} | Aamadappetti`;
+  }
+
+  // Keep meta descriptions within 70 to 155 characters for optimal Google & Screaming Frog SERP display
+  let cleanDescription = description;
+  if (cleanDescription.length > 155) {
+    cleanDescription = `${cleanDescription.slice(0, 152).trim()}...`;
+  }
   
   const absoluteImageUrl = image.startsWith('http')
     ? image
-    : `${siteConfig.url}${image}`;
+    : `${siteConfig.url}${image.startsWith('/') ? image : `/${image}`}`;
 
   const canonical = canonicalUrl
-    ? `${siteConfig.url}${canonicalUrl}`
+    ? `${siteConfig.url}${canonicalUrl.startsWith('/') ? canonicalUrl : `/${canonicalUrl}`}`
     : siteConfig.url;
 
   return {
     title: fullTitle,
-    description,
+    description: cleanDescription,
     keywords,
-    authors: [{ name: 'AamaClappetti Artisans' }],
-    creator: 'AamaClappetti',
-    publisher: 'Aamaclappetti Panchaloham Jewellery',
+    authors: [{ name: 'Aamadappetti Sanctum Goldsmiths' }],
+    creator: 'Aamadappetti',
+    publisher: 'Aamadappetti Panchaloham Jewellery',
     metadataBase: new URL(siteConfig.url),
     alternates: {
       canonical,
+      languages: {
+        'en-IN': canonical,
+        'en': canonical,
+        'x-default': canonical,
+      },
     },
     openGraph: {
       title: fullTitle,
       description,
       url: canonical,
-      siteName: siteConfig.name,
+      siteName: 'Aamadappetti (Amadapetti) Panchaloham Jewellery',
       images: [
         {
           url: absoluteImageUrl,
           width: 1200,
           height: 630,
-          alt: fullTitle,
+          alt: `${fullTitle} - Aamadappetti / Amadapetti`,
         },
       ],
       locale: siteConfig.locale,
@@ -101,7 +163,8 @@ export function constructMetadata({
       title: fullTitle,
       description,
       images: [absoluteImageUrl],
-      creator: '@aamaclappetti',
+      creator: '@aamadappetti',
+      site: '@aamadappetti',
     },
     robots: {
       index: !noIndex,
@@ -114,19 +177,32 @@ export function constructMetadata({
         'max-snippet': -1,
       },
     },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+        { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
+      ],
+      shortcut: '/favicon.ico',
+      apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    },
   };
 }
 
 export function getOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'JewelryStore',
-    name: siteConfig.name,
-    legalName: 'Aamaclappetti Panchaloham Crafts Private Limited',
-    alternateName: 'AamaClappetti',
+    '@type': ['JewelryStore', 'OnlineStore', 'Organization'],
+    '@id': `${siteConfig.url}#organization`,
+    name: 'Aamadappetti Panchaloham Jewellery',
+    legalName: 'Aamadappetti Panchaloham Crafts Private Limited',
+    alternateName: siteConfig.alternateNames,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/assets/imagetressary.png`,
-    image: `${siteConfig.url}/assets/imagetressary.png`,
+    logo: `${siteConfig.url}/assets/brand_logo_gold.png`,
+    image: `${siteConfig.url}/assets/brand_logo_gold.png`,
     description: siteConfig.description,
     telephone: siteConfig.telephone,
     email: siteConfig.email,
@@ -143,8 +219,8 @@ export function getOrganizationSchema() {
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: '10.1437',
-      longitude: '76.2298',
+      latitude: '9.9252',
+      longitude: '78.1198',
     },
     openingHoursSpecification: [
       {
@@ -174,11 +250,13 @@ export function getWebsiteSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: siteConfig.name,
+    '@id': `${siteConfig.url}#website`,
+    name: 'Aamadappetti',
+    alternateName: siteConfig.alternateNames,
     url: siteConfig.url,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${siteConfig.url}/search?q={search_term_string}`,
+      target: `${siteConfig.url}/collections?search={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };
@@ -190,14 +268,15 @@ export function getProductSchema(product: Product) {
     '@type': 'Product',
     name: product.name,
     image: product.images.map((img) =>
-      img.startsWith('http') ? img : `${siteConfig.url}${img}`
+      img.startsWith('http') ? img : `${siteConfig.url}${img.startsWith('/') ? img : `/${img}`}`
     ),
     description: product.description,
     sku: product.id,
-    mpn: `ACP-${product.id}`,
+    mpn: `AAP-${product.id}`,
     brand: {
       '@type': 'Brand',
-      name: 'Aamaclappetti',
+      name: 'Aamadappetti',
+      alternateName: 'Amadapetti',
     },
     material: 'Panchaloham (Gold, Silver, Copper, Zinc, Iron alloy)',
     offers: {
@@ -212,7 +291,8 @@ export function getProductSchema(product: Product) {
         : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: 'Aamaclappetti Panchaloham Jewellery',
+        name: 'Aamadappetti Panchaloham Jewellery',
+        alternateName: 'Amadapetti',
       },
     },
     aggregateRating: {
@@ -226,7 +306,7 @@ export function getProductSchema(product: Product) {
       {
         '@type': 'PropertyValue',
         name: 'Metal Purity',
-        value: product.metalComposition.purityCertificate,
+        value: product.metalComposition?.purityCertificate || 'Panchaloham Consecrated Alloy',
       },
       {
         '@type': 'PropertyValue',
@@ -255,7 +335,9 @@ export function getBreadcrumbSchema(items: BreadcrumbItem[]) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: item.url.startsWith('http') ? item.url : `${siteConfig.url}${item.url}`,
+      item: item.url.startsWith('http')
+        ? item.url
+        : `${siteConfig.url}${item.url.startsWith('/') ? item.url : `/${item.url}`}`,
     })),
   };
 }
@@ -274,3 +356,4 @@ export function getFaqSchema(faqs: FAQItem[]) {
     })),
   };
 }
+

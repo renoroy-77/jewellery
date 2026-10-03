@@ -22,5 +22,23 @@ export class UpdateReferralSettingsDto {
   @Max(100000)
   @IsOptional()
   minOrderSubtotal?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(10000)
+  @IsOptional()
+  refereeDiscount?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(10000)
+  @IsOptional()
+  referrerCredit?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100000)
+  @IsOptional()
+  minOrderValue?: number;
 }
 

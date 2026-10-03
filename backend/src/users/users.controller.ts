@@ -22,10 +22,20 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all devotee registered users with search & order summary' })
+  @ApiOperation({ summary: 'Get all devotee registered users with search & optional pagination' })
   @ApiQuery({ name: 'search', required: false, type: String })
-  findAll(@Query('search') search?: string) {
-    return this.usersService.findAll(search);
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.usersService.findAll({
+      search,
+      page: page !== undefined ? parseInt(page, 10) : undefined,
+      limit: limit !== undefined ? parseInt(limit, 10) : undefined,
+    });
   }
 
   @Get(':id')

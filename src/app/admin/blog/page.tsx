@@ -1,10 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { BookOpen, Edit, Plus, Trash2, CheckCircle2, ExternalLink, X, Search, FileText } from 'lucide-react';
+import {
+  BookOpen,
+  Edit,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  ExternalLink,
+  X,
+  Search,
+  FileText,
+  Upload,
+  Loader2,
+  Image as ImageIcon,
+  Sparkles,
+} from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '@/data/blog';
 import { blogService } from '@/services/blogService';
+import { cmsService } from '@/services/cmsService';
 import { toast } from 'sonner';
 import { useConfirm } from '@/context/ConfirmContext';
 
@@ -15,6 +30,9 @@ export default function AdminBlogPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -34,12 +52,35 @@ export default function AdminBlogPage() {
   const [formReadTime, setFormReadTime] = useState('6 min');
   const [formExcerpt, setFormExcerpt] = useState('');
   const [formAuthor, setFormAuthor] = useState('Master Sthapati R. Shanmugam');
+  const [formAuthorRole, setFormAuthorRole] = useState('Sacred Metallurgy & Agama Scholar');
+  const [formImage, setFormImage] = useState('/assets/blog_vedic_metallurgy.jpg');
+  const [formBody, setFormBody] = useState('');
+  const [formFeatured, setFormFeatured] = useState(false);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     if (type === 'error' || msg.toLowerCase().includes('warning') || msg.toLowerCase().includes('failed')) {
       toast.error(msg);
     } else {
       toast.success(msg);
+    }
+  };
+
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const res = await cmsService.uploadMedia(file);
+      if (res && res.url) {
+        setFormImage(res.url);
+        showToast('Cover image uploaded successfully!');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Image upload failed. Backend media server may be offline.', 'error');
+    } finally {
+      setIsUploadingImage(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -50,6 +91,10 @@ export default function AdminBlogPage() {
     setFormReadTime('5 min');
     setFormExcerpt('');
     setFormAuthor('Master Sthapati R. Shanmugam');
+    setFormAuthorRole('Sacred Metallurgy & Agama Scholar');
+    setFormImage('/assets/blog_vedic_metallurgy.jpg');
+    setFormBody('This sacred treatise explores the timeless wisdom of traditional Panchaloham crafting.\n\nPassed down through generations of sthapatis, every piece created carries the resonance of divine geometry and Vedic craftsmanship.');
+    setFormFeatured(false);
     setIsCreateModalOpen(true);
   };
 
@@ -61,6 +106,16 @@ export default function AdminBlogPage() {
     setFormReadTime(post.readTime);
     setFormExcerpt(post.excerpt);
     setFormAuthor(post.author.name);
+    setFormAuthorRole(post.author.role);
+    setFormImage(post.image || '/assets/blog_vedic_metallurgy.jpg');
+    setFormFeatured(Boolean(post.featured));
+
+    const paragraphs = post.content?.sections?.[0]?.body;
+    if (Array.isArray(paragraphs) && paragraphs.length > 0) {
+      setFormBody(paragraphs.join('\n\n'));
+    } else {
+      setFormBody(post.content?.lead || post.excerpt);
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -73,31 +128,34 @@ export default function AdminBlogPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
+    const bodyParagraphs = formBody
+      .split('\n\n')
+      .map((p) => p.trim())
+      .filter(Boolean);
+
     const newArticle: BlogPost = {
       id: `post-${Date.now().toString().slice(-4)}`,
       slug: slug || `article-${Date.now()}`,
       title: formTitle.trim(),
       subtitle: formSubtitle.trim() || formTitle.trim(),
       excerpt: formExcerpt.trim() || formSubtitle.trim(),
-      image: '/assets/blog_vedic_metallurgy.jpg',
+      image: formImage.trim() || '/assets/blog_vedic_metallurgy.jpg',
       date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       readTime: formReadTime,
       tag: formCategory.toUpperCase(),
       category: formCategory,
       author: {
         name: formAuthor,
-        role: 'Sacred Metallurgy & Agama Scholar',
+        role: formAuthorRole,
       },
-      likes: 12,
+      featured: formFeatured,
+      likes: 18,
       content: {
         lead: formExcerpt.trim() || formSubtitle.trim(),
         sections: [
           {
             heading: formTitle.trim(),
-            body: [
-              formExcerpt.trim() || 'This sacred treatise explores the timeless wisdom of traditional Panchaloham crafting.',
-              'Passed down through generations of sthapatis, every piece created carries the resonance of divine geometry and Vedic craftsmanship.',
-            ],
+            body: bodyParagraphs.length > 0 ? bodyParagraphs : [formExcerpt.trim()],
           },
         ],
         takeaways: [
@@ -123,6 +181,11 @@ export default function AdminBlogPage() {
     e.preventDefault();
     if (!editingPost) return;
 
+    const bodyParagraphs = formBody
+      .split('\n\n')
+      .map((p) => p.trim())
+      .filter(Boolean);
+
     const updated: BlogPost = {
       ...editingPost,
       title: formTitle,
@@ -130,9 +193,21 @@ export default function AdminBlogPage() {
       category: formCategory,
       readTime: formReadTime,
       excerpt: formExcerpt,
+      image: formImage.trim() || editingPost.image,
+      featured: formFeatured,
       author: {
-        ...editingPost.author,
         name: formAuthor,
+        role: formAuthorRole,
+      },
+      content: {
+        ...editingPost.content,
+        lead: formExcerpt,
+        sections: [
+          {
+            heading: formTitle,
+            body: bodyParagraphs.length > 0 ? bodyParagraphs : [formExcerpt],
+          },
+        ],
       },
     };
 
@@ -174,13 +249,20 @@ export default function AdminBlogPage() {
 
   return (
     <div>
-
+      {/* Hidden file input for cover image upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleUploadImage}
+      />
 
       {/* Header */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-serif, "Cinzel", serif)', fontSize: '1.75rem', color: '#0f172a', margin: 0, fontWeight: 700 }}>
-            Sacred Metallurgy Journal &amp; Blog
+            Sacred Metallurgy Journal &amp; Blog CMS
           </h1>
           <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '4px' }}>
             Articles on Vedic metallurgical science, temple consecration traditions, and Agamic wisdom.
@@ -199,6 +281,16 @@ export default function AdminBlogPage() {
               style={{ paddingLeft: '36px', width: '100%' }}
             />
           </div>
+
+          <Link
+            href="/blog"
+            target="_blank"
+            className="admin-btn admin-btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+          >
+            <span>View Public Journal</span>
+            <ExternalLink size={14} />
+          </Link>
 
           <button
             type="button"
@@ -232,12 +324,12 @@ export default function AdminBlogPage() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Cover</th>
                 <th>Article Title</th>
                 <th>Category</th>
                 <th>Author</th>
                 <th>Read Time</th>
                 <th>Date</th>
-                <th>Likes</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -251,6 +343,13 @@ export default function AdminBlogPage() {
               ) : (
                 filteredPosts.map((post) => (
                   <tr key={post.id}>
+                    <td style={{ width: '60px' }}>
+                      <img
+                        src={post.image || '/assets/blog_vedic_metallurgy.jpg'}
+                        alt={post.title}
+                        style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+                      />
+                    </td>
                     <td>
                       <div style={{ fontWeight: 600, color: '#0f172a' }}>{post.title}</div>
                       <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{post.subtitle.slice(0, 75)}...</div>
@@ -261,7 +360,6 @@ export default function AdminBlogPage() {
                     <td style={{ fontSize: '0.82rem', color: '#334155' }}>{post.author.name}</td>
                     <td style={{ color: '#475569' }}>{post.readTime}</td>
                     <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{post.date}</td>
-                    <td style={{ color: '#b45309', fontWeight: 600 }}>❤️ {post.likes}</td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '8px' }}>
                         <Link
@@ -303,7 +401,7 @@ export default function AdminBlogPage() {
       {/* Create Article Modal */}
       {isCreateModalOpen && (
         <div className="admin-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
-          <div className="admin-modal-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-card" style={{ maxWidth: '720px' }} onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfdf5', color: '#0d5438', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -350,6 +448,39 @@ export default function AdminBlogPage() {
                   />
                 </div>
 
+                {/* Cover Image Upload */}
+                <div className="admin-form-group">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label className="admin-form-label" style={{ margin: 0 }}>Cover Image Asset</label>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingImage}
+                      className="admin-btn admin-btn-sm admin-btn-secondary"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {isUploadingImage ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                      <span>{isUploadingImage ? 'Uploading...' : 'Upload Image File'}</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={formImage}
+                    onChange={(e) => setFormImage(e.target.value)}
+                    className="admin-form-input"
+                    placeholder="/assets/blog_vedic_metallurgy.jpg or https://..."
+                  />
+                  {formImage && (
+                    <div style={{ marginTop: '8px' }}>
+                      <img
+                        src={formImage}
+                        alt="Preview"
+                        style={{ height: '70px', borderRadius: '4px', objectFit: 'cover', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="admin-form-group">
                     <label className="admin-form-label">Category</label>
@@ -377,25 +508,48 @@ export default function AdminBlogPage() {
                   </div>
                 </div>
 
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Author Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Master Sthapati R. Shanmugam"
-                    value={formAuthor}
-                    onChange={(e) => setFormAuthor(e.target.value)}
-                    className="admin-form-input"
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Author Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Master Sthapati R. Shanmugam"
+                      value={formAuthor}
+                      onChange={(e) => setFormAuthor(e.target.value)}
+                      className="admin-form-input"
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Author Role</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sacred Metallurgy & Agama Scholar"
+                      value={formAuthorRole}
+                      onChange={(e) => setFormAuthorRole(e.target.value)}
+                      className="admin-form-input"
+                    />
+                  </div>
                 </div>
 
                 <div className="admin-form-group">
                   <label className="admin-form-label">Excerpt / Summary *</label>
                   <textarea
-                    rows={4}
+                    rows={2}
                     required
                     placeholder="Provide a descriptive overview of this sacred article..."
                     value={formExcerpt}
                     onChange={(e) => setFormExcerpt(e.target.value)}
+                    className="admin-form-textarea"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Full Article Content (Paragraphs separated by blank line)</label>
+                  <textarea
+                    rows={6}
+                    placeholder="Write the complete article body here..."
+                    value={formBody}
+                    onChange={(e) => setFormBody(e.target.value)}
                     className="admin-form-textarea"
                   />
                 </div>
@@ -421,7 +575,7 @@ export default function AdminBlogPage() {
       {/* Edit Post Modal */}
       {editingPost && (
         <div className="admin-modal-overlay" onClick={() => setEditingPost(null)}>
-          <div className="admin-modal-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-card" style={{ maxWidth: '720px' }} onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Edit Article: {editingPost.title}</h2>
               <button
@@ -456,6 +610,38 @@ export default function AdminBlogPage() {
                   />
                 </div>
 
+                {/* Cover Image Upload */}
+                <div className="admin-form-group">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label className="admin-form-label" style={{ margin: 0 }}>Cover Image Asset</label>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingImage}
+                      className="admin-btn admin-btn-sm admin-btn-secondary"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {isUploadingImage ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                      <span>{isUploadingImage ? 'Uploading...' : 'Upload Image File'}</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={formImage}
+                    onChange={(e) => setFormImage(e.target.value)}
+                    className="admin-form-input"
+                  />
+                  {formImage && (
+                    <div style={{ marginTop: '8px' }}>
+                      <img
+                        src={formImage}
+                        alt="Preview"
+                        style={{ height: '70px', borderRadius: '4px', objectFit: 'cover', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="admin-form-group">
                     <label className="admin-form-label">Category</label>
@@ -482,22 +668,43 @@ export default function AdminBlogPage() {
                   </div>
                 </div>
 
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Author Name</label>
-                  <input
-                    type="text"
-                    value={formAuthor}
-                    onChange={(e) => setFormAuthor(e.target.value)}
-                    className="admin-form-input"
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Author Name</label>
+                    <input
+                      type="text"
+                      value={formAuthor}
+                      onChange={(e) => setFormAuthor(e.target.value)}
+                      className="admin-form-input"
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Author Role</label>
+                    <input
+                      type="text"
+                      value={formAuthorRole}
+                      onChange={(e) => setFormAuthorRole(e.target.value)}
+                      className="admin-form-input"
+                    />
+                  </div>
                 </div>
 
                 <div className="admin-form-group">
                   <label className="admin-form-label">Excerpt / Summary</label>
                   <textarea
-                    rows={4}
+                    rows={2}
                     value={formExcerpt}
                     onChange={(e) => setFormExcerpt(e.target.value)}
+                    className="admin-form-textarea"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Full Article Content (Paragraphs separated by blank line)</label>
+                  <textarea
+                    rows={6}
+                    value={formBody}
+                    onChange={(e) => setFormBody(e.target.value)}
                     className="admin-form-textarea"
                   />
                 </div>

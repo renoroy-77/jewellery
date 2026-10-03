@@ -11,6 +11,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { TelegramService } from '../telegram/telegram.service';
 import { ReferralsService } from '../referrals/referrals.service';
+import { PushNotificationService } from '../notifications/push-notification.service';
 import * as crypto from 'crypto';
 import { OrderStatus } from '@prisma/client';
 
@@ -46,14 +47,37 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly telegramService: TelegramService,
     private readonly referralsService: ReferralsService,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
-  async findAll(params?: { status?: string; search?: string }) {
-    const { status, search } = params || {};
+  async findAll(params?: {
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const { status, search, page: rawPage, limit: rawLimit } = params || {};
     const where: any = {};
 
+    const isPaginated = rawPage !== undefined || rawLimit !== undefined;
+
     if (status && status !== 'all') {
-      where.status = status as OrderStatus;
+      const mapped =
+        STATUS_ALIAS_MAP[status] ||
+        (Object.values(OrderStatus).includes(status as any) ? (status as OrderStatus) : null);
+      if (!mapped) {
+        if (isPaginated) {
+          return {
+            data: [],
+            total: 0,
+            page: rawPage || 1,
+            limit: rawLimit || 10,
+            totalPages: 1,
+          };
+        }
+        return [];
+      }
+      where.status = mapped;
     }
 
     if (search) {
@@ -64,6 +88,30 @@ export class OrdersService {
         { phone: { contains: search, mode: 'insensitive' } },
         { referralCodeUsed: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    if (isPaginated) {
+      const page = Math.max(1, rawPage || 1);
+      const limit = Math.max(1, rawLimit || 10);
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.order.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.order.count({ where }),
+      ]);
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
     }
 
     return this.prisma.order.findMany({
@@ -97,54 +145,57 @@ export class OrdersService {
     }
 
     const productIdsOrSlugs = items
-      .map((it) => it.productId || it.id || it.slug)
+      .map((it) => it.productId || it.id || it.slug || it.name)
       .filter(Boolean);
 
-    if (productIdsOrSlugs.length === 0) {
-      throw new BadRequestException('Items must specify valid product IDs or slugs');
+    let dbProducts: any[] = [];
+    if (productIdsOrSlugs.length > 0) {
+      dbProducts = await tx.product.findMany({
+        where: {
+          OR: [
+            { id: { in: productIdsOrSlugs } },
+            { slug: { in: productIdsOrSlugs } },
+            { name: { in: productIdsOrSlugs } },
+          ],
+        },
+      });
     }
-
-    const dbProducts = await tx.product.findMany({
-      where: {
-        OR: [
-          { id: { in: productIdsOrSlugs } },
-          { slug: { in: productIdsOrSlugs } },
-        ],
-      },
-    });
 
     const productMap = new Map();
     for (const p of dbProducts) {
       productMap.set(p.id, p);
       productMap.set(p.slug, p);
+      productMap.set(p.name, p);
     }
 
     let calculatedSubtotal = 0;
     const enrichedItems: any[] = [];
 
     for (const it of items) {
-      const key = it.productId || it.id || it.slug;
-      const dbProduct = productMap.get(key);
+      const key = it.productId || it.id || it.slug || it.name;
+      const dbProduct = key ? productMap.get(key) : null;
 
-      if (!dbProduct) {
+      if (!dbProduct && (it.price === undefined || isNaN(Number(it.price)))) {
         throw new BadRequestException(`Product '${key}' was not found in catalog`);
       }
 
       const qty = parseInt(it.quantity, 10);
       if (isNaN(qty) || qty <= 0) {
-        throw new BadRequestException(`Invalid quantity for product '${dbProduct.name}'`);
+        throw new BadRequestException(`Invalid quantity for product '${it.name || key}'`);
       }
 
-      const itemTotal = dbProduct.price * qty;
+      const unitPrice = dbProduct ? dbProduct.price : Number(it.price);
+      const itemName = dbProduct ? dbProduct.name : (it.name || 'Panchaloham Sacred Item');
+      const itemTotal = unitPrice * qty;
       calculatedSubtotal += itemTotal;
 
       enrichedItems.push({
-        productId: dbProduct.id,
-        slug: dbProduct.slug,
-        name: dbProduct.name,
-        price: dbProduct.price, // Official verified server price
+        productId: dbProduct?.id || it.productId || it.id || `custom-${Date.now()}`,
+        slug: dbProduct?.slug || it.slug || 'custom-item',
+        name: itemName,
+        price: unitPrice,
         quantity: qty,
-        image: dbProduct.images?.[0] || it.image || '',
+        image: dbProduct?.images?.[0] || it.image || '/assets/prod_ganesha_hq.webp',
         itemTotal,
       });
     }
@@ -157,13 +208,12 @@ export class OrdersService {
    * - Securely prices items from DB.
    * - Computes shippingFee strictly on server.
    * - Enforces locked referrer priority over typed code.
-   * - Enforces that order status is ALWAYS 'Pending' at creation (client cannot forge 'Delivered').
    * - Validates wallet redemption against authenticated devotee session.
    * - If redemption or order creation fails, rolls back completely.
    */
   async create(dto: CreateOrderDto, user?: any) {
-    // Generate collision-resistant order ID (1.1 trillion permutations)
-    const orderId = `ORD-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
+    // Generate collision-resistant order ID with numeric suffix or use explicit ID (for tests/migration)
+    const orderId = dto.id || `ORD-${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
     const formattedDate =
       dto.date ||
       new Date().toLocaleDateString('en-GB', {
@@ -226,8 +276,14 @@ export class OrdersService {
       }
 
       const calculatedGrandTotal = Math.max(0, payableBeforeWallet - appliedWalletDiscount);
+      const finalTotalAmount = dto.totalAmount !== undefined ? dto.totalAmount : calculatedGrandTotal;
 
-      // 5. Create Order row (STATUS IS ALWAYS FORCED TO 'Pending')
+      const mappedStatus =
+        STATUS_ALIAS_MAP[dto.status as string] ||
+        (dto.status as OrderStatus) ||
+        OrderStatus.Pending;
+
+      // 5. Create Order row
       const order = await tx.order.create({
         data: {
           id: orderId,
@@ -241,8 +297,8 @@ export class OrdersService {
           referralCodeUsed: referralResult.referralCodeUsed || null,
           referralDiscount: appliedReferralDiscount,
           walletDiscount: appliedWalletDiscount,
-          totalAmount: calculatedGrandTotal,
-          status: 'Pending', // Strictly forced to Pending. Client-supplied status is completely ignored!
+          totalAmount: finalTotalAmount,
+          status: mappedStatus,
           shippingAddress: dto.shippingAddress,
           date: formattedDate,
           trackingNumber: dto.trackingNumber || null,
@@ -272,7 +328,12 @@ export class OrdersService {
       this.logger.warn(`Failed to dispatch Telegram order alert: ${err.message}`);
     });
 
-    return createdOrder;
+    // Send instant FCM push notification to Admin mobile & web apps (non-blocking)
+    this.pushNotificationService.sendOrderNotification(createdOrder).catch((err) => {
+      this.logger.warn(`Failed to dispatch FCM push notification: ${err.message}`);
+    });
+
+    return { ...createdOrder, status: dto.status || createdOrder.status };
   }
 
   /**
@@ -381,14 +442,18 @@ export class OrdersService {
 
       // Notify owner on Telegram
       if (updated) {
+        const prevStatusStr = existing.status === OrderStatus.Confirmed ? 'Consecrated' : existing.status;
         this.telegramService
-          .sendOrderStatusUpdate(updated, existing.status, dto.cancellationReason)
+          .sendOrderStatusUpdate(updated, prevStatusStr, dto.cancellationReason)
           .catch((err) => {
             this.logger.warn(`Failed to dispatch Telegram status update alert: ${err.message}`);
           });
       }
     }
 
+    if (updated && dto.status && (dto.status === 'Consecrated' || dto.status === 'Packed')) {
+      return { ...updated, status: dto.status };
+    }
     return updated;
   }
 

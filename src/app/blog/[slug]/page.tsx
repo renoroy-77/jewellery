@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '@/data/blog';
 import { PRODUCTS } from '@/data/products';
-import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
+import { constructMetadata, getBreadcrumbSchema, siteConfig } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import BackButton from '@/components/BackButton';
 import BlogLikeButton from './BlogLikeButton';
@@ -84,7 +84,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: `https://jewellery-gamma-eight.vercel.app${post.image}`,
+    image: `${siteConfig.url}${post.image.startsWith('/') ? post.image : `/${post.image}`}`,
     datePublished: '2026-09-01T00:00:00Z',
     dateModified: '2026-09-15T00:00:00Z',
     author: {
@@ -97,7 +97,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
       name: 'Aamadappetti Panchaloham Jewellery',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://jewellery-gamma-eight.vercel.app/assets/brand_logo_gold.png',
+        url: `${siteConfig.url}/assets/brand_logo_gold.png`,
       },
     },
   };

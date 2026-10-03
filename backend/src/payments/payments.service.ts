@@ -92,20 +92,25 @@ export class PaymentsService {
         this.configService.get<string>('CORS_ORIGIN') ||
         '';
       if (cors && cors !== '*' && cors.startsWith('http')) {
-        frontendUrl = cors;
+        frontendUrl = cors.split(',')[0].trim();
       } else {
-        frontendUrl = 'https://jewellery-gamma-eight.vercel.app';
+        frontendUrl = 'https://aamadappetti.com';
       }
     }
+
+    if (this.env === 'production' && frontendUrl.startsWith('http://')) {
+      frontendUrl = frontendUrl.replace(/^http:\/\//, 'https://');
+    }
+
     const returnUrl =
       dto.returnUrl && dto.returnUrl.startsWith('http')
-        ? dto.returnUrl
+        ? (this.env === 'production' ? dto.returnUrl.replace(/^http:\/\//, 'https://') : dto.returnUrl)
         : `${frontendUrl}/order-success?order_id={order_id}&method=cashfree`;
 
     let backendUrl =
       process.env.BACKEND_PUBLIC_URL ||
       this.configService.get<string>('BACKEND_PUBLIC_URL') ||
-      'https://astro.bloodme.in';
+      'https://aamadappetti.com';
     backendUrl = backendUrl.replace(/\/+$/, '');
     const notifyUrl = `${backendUrl}/api/payments/cashfree/webhook`;
 
@@ -175,6 +180,12 @@ export class PaymentsService {
             const errObj = JSON.parse(errText);
             parsedErrMsg = errObj.message || errText;
           } catch {}
+
+          if (parsedErrMsg.toLowerCase().includes('transactions are not enabled')) {
+            throw new BadRequestException(
+              `Cashfree Account Pending Activation: Live transactions are not yet enabled for this Cashfree merchant account (AppID: ${this.appId}). Please complete KYC / merchant activation in your Cashfree dashboard, or click 'Switch to Test' in Cashfree to use Test keys for checkout testing.`,
+            );
+          }
           throw new BadRequestException(`Cashfree Payment Error: ${parsedErrMsg}`);
         }
       } catch (err: any) {

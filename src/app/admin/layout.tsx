@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
   LayoutDashboard,
   Languages,
@@ -96,6 +96,52 @@ const NAV_ITEMS: NavItem[] = [
     icon: BookOpen,
   },
 ];
+
+function AdminNavLinks({
+  pathname,
+  setMobileOpen,
+}: {
+  pathname: string;
+  setMobileOpen: (open: boolean) => void;
+}) {
+  const searchParams = useSearchParams();
+  const currentTab = searchParams?.get('tab');
+
+  return (
+    <nav className="admin-nav">
+      <div className="admin-nav-section-title">Store Management</div>
+
+      {NAV_ITEMS.map((item) => {
+        const Icon = item.icon;
+        let isActive = false;
+
+        if (item.href === '/admin/cms?tab=shipping') {
+          isActive = pathname === '/admin/cms' && currentTab === 'shipping';
+        } else if (item.href === '/admin/cms') {
+          isActive = pathname === '/admin/cms' && currentTab !== 'shipping';
+        } else if (item.exact) {
+          isActive = pathname === item.href;
+        } else {
+          isActive = pathname.startsWith(item.href);
+        }
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch={true}
+            onClick={() => setMobileOpen(false)}
+            className={`admin-nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Icon size={18} />
+            <span>{item.label}</span>
+            {item.badge && <span className="admin-nav-badge">{item.badge}</span>}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { confirm } = useConfirm();
@@ -452,7 +498,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="admin-login-card-header">
                 <div className="admin-login-brand-badge">
                   <img
-                    src="/assets/brand_logo_gold.png"
+                    src="/assets/brand_logo_round.png"
                     alt="Aamadappetti"
                     className="admin-login-brand-logo"
                   />
@@ -608,7 +654,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="admin-brand-header">
           <Link href="/admin" prefetch={true} onClick={() => setMobileOpen(false)}>
             <img
-              src="/assets/brand_logo_gold.png"
+              src="/assets/brand_logo_round.png"
               alt="Aamadappetti"
               className="admin-brand-logo"
             />
@@ -654,28 +700,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        <nav className="admin-nav">
-          <div className="admin-nav-section-title">Store Management</div>
-
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch={true}
-                onClick={() => setMobileOpen(false)}
-                className={`admin-nav-item ${isActive ? 'active' : ''}`}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-                {item.badge && <span className="admin-nav-badge">{item.badge}</span>}
-              </Link>
-            );
-          })}
-        </nav>
+        <Suspense
+          fallback={
+            <nav className="admin-nav">
+              <div className="admin-nav-section-title">Store Management</div>
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.href} className="admin-nav-item">
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </div>
+                );
+              })}
+            </nav>
+          }
+        >
+          <AdminNavLinks pathname={pathname} setMobileOpen={setMobileOpen} />
+        </Suspense>
 
         <div className="admin-sidebar-footer">
           <Link href="/" target="_blank" className="admin-view-store-btn" title="Open storefront in new tab">

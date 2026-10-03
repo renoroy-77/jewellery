@@ -1,5 +1,4 @@
 import { OrderCMS, INITIAL_ORDERS, UserRecord, INITIAL_USERS } from '@/data/cmsData';
-import { CATEGORIES } from '@/data/products';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
@@ -41,21 +40,16 @@ export const dashboardService = {
           consecratedOrders: INITIAL_ORDERS.filter((o) => o.status === 'Consecrated').length,
           shippedOrders: INITIAL_ORDERS.filter((o) => o.status === 'Shipped').length,
           deliveredOrders: INITIAL_ORDERS.filter((o) => o.status === 'Delivered').length,
-          totalProducts: 9,
-          inStockProducts: 9,
+          totalProducts: 1,
+          inStockProducts: 1,
           outOfStockProducts: 0,
           totalUsers: INITIAL_USERS.length,
-          totalCategories: CATEGORIES.length,
+          totalCategories: 0,
           totalBlogPosts: 2,
         },
         recentOrders: INITIAL_ORDERS,
         recentUsers: INITIAL_USERS,
-        categories: CATEGORIES.map((c) => ({
-          id: c.id,
-          name: c.name,
-          itemCount: c.itemCount,
-          slug: c.slug,
-        })),
+        categories: [],
       };
     }
   },

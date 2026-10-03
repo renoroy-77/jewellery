@@ -150,19 +150,19 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
   {
     key: 'hero.slide1.title1',
     section: 'Hero Carousel',
-    sourceText: 'Adorn',
+    sourceText: 'Adorn Your Faith',
     translations: {
-      en: 'Adorn',
-      ta: 'அலங்கரியுங்கள்',
+      en: 'Adorn Your Faith',
+      ta: 'உங்கள் பக்தியை அலங்கரியுங்கள்',
     },
   },
   {
     key: 'hero.slide1.title2',
     section: 'Hero Carousel',
-    sourceText: 'Your Faith',
+    sourceText: 'Sacred Panchaloham Jewellery',
     translations: {
-      en: 'Your Faith',
-      ta: 'உங்கள் பக்தியை',
+      en: 'Sacred Panchaloham Jewellery',
+      ta: 'புனித ஐம்பொன் ஆபரணங்கள்',
     },
   },
   {

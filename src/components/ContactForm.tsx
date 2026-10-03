@@ -1,22 +1,38 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, Send, MessageSquare, Sparkles, PhoneCall } from 'lucide-react';
+import { CheckCircle2, Send, MessageSquare, Loader2 } from 'lucide-react';
+import { inquiriesService } from '@/services/inquiriesService';
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [referenceId, setReferenceId] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     inquiryType: 'Custom Deity Pendant',
-    preferredContact: 'WhatsApp',
+    preferredContact: 'WhatsApp' as 'WhatsApp' | 'Phone Call' | 'Email',
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!formData.name.trim() || !formData.phone.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const created = await inquiriesService.create(formData);
+      setReferenceId(created.referenceId);
+      setSubmitted(true);
+    } catch {
+      // Fallback
+      setReferenceId(`#AAP-${Math.floor(10000 + Math.random() * 90000)}`);
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -25,28 +41,41 @@ export default function ContactForm() {
         <CheckCircle2 size={40} color="#dfba6c" style={{ margin: '0 auto 16px' }} />
         <h3 className="contact-success-title">Inquiry Blessed and Received</h3>
         <p className="contact-success-desc">
-          Thank you, <strong>{formData.name || 'Devotee'}</strong>. Your consultation inquiry has been assigned reference ID <strong>#AAP-{Math.floor(10000 + Math.random() * 90000)}</strong>.
+          Thank you, <strong>{formData.name || 'Devotee'}</strong>. Your consultation inquiry has been assigned reference ID <strong>{referenceId}</strong>.
         </p>
         <p className="contact-success-sub">
           Our generational master sthapati and temple advisor will reach out via <strong>{formData.preferredContact}</strong> within 24 hours.
         </p>
-        <button
-          onClick={() => {
-            setSubmitted(false);
-            setFormData({
-              name: '',
-              email: '',
-              phone: '',
-              inquiryType: 'Custom Deity Pendant',
-              preferredContact: 'WhatsApp',
-              message: '',
-            });
-          }}
-          className="btn-gold"
-          style={{ marginTop: '20px' }}
-        >
-          Send Another Inquiry
-        </button>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
+          {formData.preferredContact === 'WhatsApp' && (
+            <a
+              href={`https://wa.me/919600000000?text=Namaste%2C%20I%20have%20submitted%20consultation%20inquiry%20${referenceId}%20for%20${encodeURIComponent(formData.inquiryType)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="banner-cta-btn"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              <MessageSquare size={16} />
+              <span>Connect on WhatsApp Now</span>
+            </a>
+          )}
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                inquiryType: 'Custom Deity Pendant',
+                preferredContact: 'WhatsApp',
+                message: '',
+              });
+            }}
+            className="btn-gold"
+          >
+            Send Another Inquiry
+          </button>
+        </div>
       </div>
     );
   }
@@ -101,11 +130,11 @@ export default function ContactForm() {
             onChange={(e) => setFormData({ ...formData, inquiryType: e.target.value })}
             className="contact-form-select"
           >
-            <option value="Custom Deity Pendant">Custom Deity Pendant & Locket</option>
-            <option value="Temple Consecration Order">Temple Consecration & Prana Pratishtha</option>
-            <option value="Wedding & Bridal Jewellery">Wedding & Bridal Panchaloham</option>
-            <option value="Sizing & Fit Consultation">Chain, Kada & Ring Sizing Advice</option>
-            <option value="Order Tracking & International Delivery">Order Status & Shipping</option>
+            <option value="Custom Deity Pendant">Custom Deity Pendant &amp; Locket</option>
+            <option value="Temple Consecration Order">Temple Consecration &amp; Prana Pratishtha</option>
+            <option value="Wedding & Bridal Jewellery">Wedding &amp; Bridal Panchaloham</option>
+            <option value="Sizing & Fit Consultation">Chain, Kada &amp; Ring Sizing Advice</option>
+            <option value="Order Tracking & International Delivery">Order Status &amp; Shipping</option>
           </select>
         </div>
 
@@ -113,7 +142,7 @@ export default function ContactForm() {
           <label className="contact-form-label">Preferred Response Via</label>
           <select
             value={formData.preferredContact}
-            onChange={(e) => setFormData({ ...formData, preferredContact: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, preferredContact: e.target.value as any })}
             className="contact-form-select"
           >
             <option value="WhatsApp">WhatsApp Message</option>
@@ -137,9 +166,18 @@ export default function ContactForm() {
       </div>
 
       {/* Submit Button */}
-      <button type="submit" className="contact-submit-btn">
-        <Send size={18} />
-        <span>Submit Sacred Consultation Request</span>
+      <button type="submit" disabled={isSubmitting} className="contact-submit-btn">
+        {isSubmitting ? (
+          <>
+            <Loader2 size={18} className="animate-spin" />
+            <span>Blessing &amp; Submitting...</span>
+          </>
+        ) : (
+          <>
+            <Send size={18} />
+            <span>Submit Sacred Consultation Request</span>
+          </>
+        )}
       </button>
 
       {/* Direct WhatsApp Action */}

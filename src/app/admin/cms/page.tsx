@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Palette,
   Save,
@@ -41,8 +42,10 @@ import { cmsService } from '@/services/cmsService';
 import { toast } from 'sonner';
 import { useConfirm } from '@/context/ConfirmContext';
 
-export default function AdminCMSPage() {
+function AdminCMSContent() {
   const { confirm } = useConfirm();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'hero' | 'banners' | 'announcements' | 'faqs' | 'shipping' | 'footer' | 'about'>('hero');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -132,14 +135,22 @@ export default function AdminCMSPage() {
 
   useEffect(() => {
     loadCmsData();
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get('tab');
-      if (tab === 'shipping') {
-        setActiveTab('shipping');
-      }
-    }
   }, []);
+
+  // Reactively sync activeTab with URL search parameter whenever ?tab= changes
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab && ['hero', 'banners', 'announcements', 'faqs', 'shipping', 'footer', 'about'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: 'hero' | 'banners' | 'announcements' | 'faqs' | 'shipping' | 'footer' | 'about') => {
+    setActiveTab(tab);
+    try {
+      router.replace(`/admin/cms?tab=${tab}`, { scroll: false });
+    } catch {}
+  };
 
   // ================= HERO SLIDES HANDLERS =================
   const handleSaveHeroSlides = async () => {
@@ -473,49 +484,49 @@ export default function AdminCMSPage() {
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'hero' ? 'active' : ''}`}
-          onClick={() => setActiveTab('hero')}
+          onClick={() => handleTabChange('hero')}
         >
           Hero Carousel ({heroSlides.length} Slides)
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'banners' ? 'active' : ''}`}
-          onClick={() => setActiveTab('banners')}
+          onClick={() => handleTabChange('banners')}
         >
           Story Banners ({storyBanners.length})
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
-          onClick={() => setActiveTab('announcements')}
+          onClick={() => handleTabChange('announcements')}
         >
           Announcement Bar &amp; Alerts
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'faqs' ? 'active' : ''}`}
-          onClick={() => setActiveTab('faqs')}
+          onClick={() => handleTabChange('faqs')}
         >
           FAQs Management ({faqs.length})
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'shipping' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shipping')}
+          onClick={() => handleTabChange('shipping')}
         >
           Shipping &amp; Packaging
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'footer' ? 'active' : ''}`}
-          onClick={() => setActiveTab('footer')}
+          onClick={() => handleTabChange('footer')}
         >
           Footer &amp; Contact Info
         </button>
         <button
           type="button"
           className={`translation-tab-btn ${activeTab === 'about' ? 'active' : ''}`}
-          onClick={() => setActiveTab('about')}
+          onClick={() => handleTabChange('about')}
         >
           About Us Page
         </button>
@@ -2114,3 +2125,19 @@ export default function AdminCMSPage() {
     </div>
   );
 }
+
+export default function AdminCMSPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748b' }}>
+          <Loader2 size={32} className="animate-spin" color="#d4af37" style={{ margin: '0 auto 12px' }} />
+          <div>Loading CMS Management Console...</div>
+        </div>
+      }
+    >
+      <AdminCMSContent />
+    </Suspense>
+  );
+}
+

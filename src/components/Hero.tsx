@@ -10,8 +10,8 @@ const HERO_SLIDES = [
   {
     id: 1,
     kicker: 'DIVINE BEAUTY, TIMELESS TRADITION',
-    titleLine1: 'Adorn',
-    titleLine2: 'Your Faith',
+    titleLine1: 'Adorn Your Faith',
+    titleLine2: 'Sacred Panchaloham',
     subtitle: 'Authentic Panchaloham jewellery, crafted for every spiritual journey.',
     ctaText: 'Shop Now',
     ctaLink: '/collections',
@@ -104,9 +104,13 @@ export default function Hero() {
               <source media="(max-width: 768px)" srcSet={s.mobileImage} />
               <img
                 src={s.image}
-                alt={`${s.titleLine1} ${s.titleLine2}`}
+                alt={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
+                title={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
+                width={1920}
+                height={1080}
                 className="hero-slide-img"
-                loading="eager"
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                decoding="async"
               />
             </picture>
           </div>

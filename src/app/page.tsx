@@ -3,13 +3,21 @@ import Hero from '@/components/Hero';
 import CategorySlider from '@/components/CategorySlider';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import StoryBanners from '@/components/StoryBanners';
+import HeritageOverview from '@/components/HeritageOverview';
 import TrustBadges from '@/components/TrustBadges';
 import FaqSection from '@/components/FaqSection';
 import Newsletter from '@/components/Newsletter';
 import JsonLd from '@/components/JsonLd';
-import { getOrganizationSchema, getWebsiteSchema } from '@/lib/seo';
+import { constructMetadata, getOrganizationSchema, getWebsiteSchema } from '@/lib/seo';
+import { categoriesService } from '@/services/categoriesService';
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export const metadata = constructMetadata();
+
+export default async function HomePage() {
+  const initialCategories = await categoriesService.getAll().catch(() => []);
   const organizationSchema = getOrganizationSchema();
   const websiteSchema = getWebsiteSchema();
 
@@ -23,10 +31,13 @@ export default function HomePage() {
       <Hero />
 
       {/* Shop By Category (Divine Collections) */}
-      <CategorySlider />
+      <CategorySlider initialCategories={initialCategories} />
 
       {/* Featured Products with Category Tabs */}
       <FeaturedProducts />
+
+      {/* Heritage Metallurgy & Panchaloham Sanctuary */}
+      <HeritageOverview />
 
       {/* Heritage Story Banners */}
       <StoryBanners />

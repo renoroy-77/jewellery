@@ -27,7 +27,19 @@ export class UsersService {
     return user;
   }
 
-  async findAll(search?: string) {
+  async findAll(paramsOrSearch?: { search?: string; page?: number; limit?: number } | string) {
+    let search: string | undefined;
+    let rawPage: number | undefined;
+    let rawLimit: number | undefined;
+
+    if (typeof paramsOrSearch === 'string') {
+      search = paramsOrSearch;
+    } else if (paramsOrSearch) {
+      search = paramsOrSearch.search;
+      rawPage = paramsOrSearch.page;
+      rawLimit = paramsOrSearch.limit;
+    }
+
     const where: any = {};
     if (search) {
       where.OR = [
@@ -36,6 +48,58 @@ export class UsersService {
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    const isPaginated = rawPage !== undefined || rawLimit !== undefined;
+
+    if (isPaginated) {
+      const page = Math.max(1, rawPage || 1);
+      const limit = Math.max(1, rawLimit || 10);
+      const skip = (page - 1) * limit;
+
+      const [devotees, total] = await Promise.all([
+        this.prisma.devoteeUser.findMany({
+          where,
+          include: { addresses: true },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.devoteeUser.count({ where }),
+      ]);
+
+      const emails = devotees.map((d) => d.email).filter(Boolean);
+      const orders = emails.length > 0
+        ? await this.prisma.order.findMany({
+            where: { email: { in: emails, mode: 'insensitive' } },
+            select: { email: true, totalAmount: true },
+          })
+        : [];
+
+      const emailStats = orders.reduce((acc, order) => {
+        const email = order.email.toLowerCase();
+        if (!acc[email]) acc[email] = { count: 0, total: 0 };
+        acc[email].count += 1;
+        acc[email].total += order.totalAmount;
+        return acc;
+      }, {} as Record<string, { count: number; total: number }>);
+
+      const data = devotees.map((user) => {
+        const stats = emailStats[user.email.toLowerCase()] || { count: 0, total: 0 };
+        return {
+          ...user,
+          ordersCount: stats.count,
+          totalSpent: stats.total,
+        };
+      });
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
     }
 
     const devotees = await this.prisma.devoteeUser.findMany({

@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Flower2,
 } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
 import { constructMetadata, getProductSchema, getBreadcrumbSchema, siteConfig } from '@/lib/seo';
@@ -42,18 +41,55 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
+  const deityLower = (product.deity || '').toLowerCase();
+  const nameLower = product.name.toLowerCase();
+  const productSpecificKeywords: string[] = [];
+
+  if (deityLower.includes('ganesh') || nameLower.includes('ganesh')) {
+    productSpecificKeywords.push(
+      'ganesha pendant gold',
+      'ganpati pendant gold',
+      'ganesh locket gold',
+      'gold locket ganesh',
+      'ganpati locket gold',
+      '22k gold ganesh pendant'
+    );
+  } else if (deityLower.includes('lakshmi') || nameLower.includes('lakshmi') || nameLower.includes('laxmi')) {
+    productSpecificKeywords.push(
+      'lakshmi pendant gold',
+      'laxmi pendant gold',
+      'gold laxmi pendant',
+      'lakshmi dollar chain',
+      'female lakshmi pendant designs in gold',
+      '5 gram gold lakshmi pendant',
+      'lakshmi devi lockets gold'
+    );
+  } else if (deityLower.includes('murugan') || nameLower.includes('vel')) {
+    productSpecificKeywords.push(
+      'Murugan Vel pendant',
+      'vel locket gold',
+      'south indian temple jewellery'
+    );
+  }
+
   return constructMetadata({
-    title: `${product.name} - Consecrated Panchaloham`,
-    description: product.description.slice(0, 160),
-    image: product.images[0],
+    title: `${product.name} | Aamadappetti`,
+    description: `${product.name} – authentic Panchaloham temple jewellery consecrated by Aamadappetti. ${product.description.slice(0, 50)}`,
+    image: product.images?.[0] || '/assets/prod_ganesha_hq.webp',
     canonicalUrl: `/products/${product.slug}`,
     keywords: [
       product.name,
       product.deity,
+      'aamadappetti',
+      'amadapetti',
+      `aamadappetti ${product.name.toLowerCase()}`,
+      `amadapetti ${product.name.toLowerCase()}`,
+      'south indian temple jewellery',
       'Panchaloham jewellery',
       'five metal temple pendant',
       'sacred jewellery',
       ...product.tags,
+      ...productSpecificKeywords,
     ],
   });
 }
@@ -66,16 +102,25 @@ export default async function ProductDetailPage({ params }: Props) {
     notFound();
   }
 
-  const liveCategories = await categoriesService.getAll().catch(() => CATEGORIES);
-  const allKnownCategories = Array.isArray(liveCategories) && liveCategories.length > 0 ? liveCategories : CATEGORIES;
-  const matchingCategory = allKnownCategories.find(
-    (c) =>
-      c.id === product.category ||
-      c.slug === product.category ||
-      c.slug.includes(product.category) ||
-      product.deity.toLowerCase().includes(c.id) ||
-      (c.name && c.name.toLowerCase() === product.category?.toLowerCase())
-  );
+  const liveCategories = await categoriesService.getAll().catch(() => []);
+  const prodCat = (product.category || '').toLowerCase().trim();
+  const prodDeity = (product.deity || '').toLowerCase().trim();
+
+  const matchingCategory = liveCategories.find((c) => {
+    const catId = (c.id || '').toLowerCase().trim();
+    const catSlug = (c.slug || '').toLowerCase().trim();
+    const catName = (c.name || '').toLowerCase().trim();
+    return (
+      prodCat === catId ||
+      prodCat === catSlug ||
+      prodCat === catName ||
+      prodCat.replace(/-/g, ' ') === catName ||
+      catName.replace(/-/g, ' ') === prodCat ||
+      (catSlug && prodCat.includes(catSlug)) ||
+      (catId && prodCat.includes(catId)) ||
+      (catName && (prodDeity.includes(catName) || catName.includes(prodDeity)))
+    );
+  });
 
   const breadcrumbs = [
     { name: 'Home', url: '/' },
@@ -165,16 +210,16 @@ export default async function ProductDetailPage({ params }: Props) {
               {/* Responsive Price Row */}
               <div className="pdp-price-row">
                 <span className="pdp-price-current">
-                  ₹{product.price.toLocaleString('en-IN')}
+                  ₹{Number(product.price || 0).toLocaleString('en-IN')}
                 </span>
-                {product.originalPrice && (
+                {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
                   <span className="pdp-price-original">
-                    ₹{product.originalPrice.toLocaleString('en-IN')}
+                    ₹{Number(product.originalPrice).toLocaleString('en-IN')}
                   </span>
                 )}
-                {product.originalPrice && product.originalPrice > product.price && (
+                {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
                   <span className="pdp-save-tag">
-                    Save ₹{(product.originalPrice - product.price).toLocaleString('en-IN')}
+                    Save ₹{(Number(product.originalPrice) - Number(product.price || 0)).toLocaleString('en-IN')}
                   </span>
                 )}
               </div>
@@ -204,27 +249,27 @@ export default async function ProductDetailPage({ params }: Props) {
                       <tr>
                         <td>Gold</td>
                         <td>Pon (Sacred Gold)</td>
-                        <td>{product.metalComposition.gold}</td>
+                        <td>{product.metalComposition?.gold || '2.5%'}</td>
                       </tr>
                       <tr>
                         <td>Silver</td>
                         <td>Velli (Pure Silver)</td>
-                        <td>{product.metalComposition.silver}</td>
+                        <td>{product.metalComposition?.silver || '12.5%'}</td>
                       </tr>
                       <tr>
                         <td>Copper</td>
                         <td>Chembu (Sanctum Copper)</td>
-                        <td>{product.metalComposition.copper}</td>
+                        <td>{product.metalComposition?.copper || '65.0%'}</td>
                       </tr>
                       <tr>
                         <td>Zinc / Brass</td>
                         <td>Pithalai (Temple Brass)</td>
-                        <td>{product.metalComposition.zinc}</td>
+                        <td>{product.metalComposition?.zinc || '15.0%'}</td>
                       </tr>
                       <tr>
                         <td>Iron</td>
                         <td>Irumbu (Sacred Iron)</td>
-                        <td>{product.metalComposition.iron}</td>
+                        <td>{product.metalComposition?.iron || '5.0%'}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -249,10 +294,13 @@ export default async function ProductDetailPage({ params }: Props) {
               {/* Spiritual Benefits List */}
               <div style={{ marginTop: '16px' }}>
                 <h3 style={{ fontSize: '1.05rem', color: '#fff9eb', marginBottom: '12px' }}>
-                  Spiritual & Astrological Benefits
+                  Spiritual &amp; Astrological Benefits
                 </h3>
                 <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {product.benefits.map((benefit, i) => (
+                  {(Array.isArray(product.benefits) && product.benefits.length > 0
+                    ? product.benefits
+                    : ['Bestows divine grace and energy harmony.']
+                  ).map((benefit, i) => (
                     <li
                       key={i}
                       style={{
@@ -299,16 +347,20 @@ export default async function ProductDetailPage({ params }: Props) {
                   <article key={relProduct.id} className="product-card">
                     <div className="product-image-container">
                       <Link href={`/products/${relProduct.slug}`}>
-                        <img src={relProduct.images[0]} alt={relProduct.name} />
+                        <img
+                          src={relProduct.images?.[0] || '/assets/prod_ganesha_hq.webp'}
+                          alt={relProduct.name}
+                          loading="lazy"
+                        />
                       </Link>
-                      <span className="product-deity-badge">{relProduct.deity}</span>
+                      <span className="product-deity-badge">{relProduct.deity || 'Sacred'}</span>
                     </div>
                     <div className="product-info">
                       <h3 className="product-title">
                         <Link href={`/products/${relProduct.slug}`}>{relProduct.name}</Link>
                       </h3>
                       <div className="product-price-row">
-                        <span className="current-price">₹{relProduct.price.toLocaleString('en-IN')}</span>
+                        <span className="current-price">₹{Number(relProduct.price || 0).toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </article>

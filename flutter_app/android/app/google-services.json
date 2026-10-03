@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57338864137",
+    "project_id": "aamadappetti-sanctum",
+    "storage_bucket": "aamadappetti-sanctum.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57338864137:android:7d84ef9f406354d1f74ed8",
+        "android_client_info": {
+          "package_name": "com.aamadappetti.aamadappetti_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoO6cwISatneoPyXWLuq0-5at3Rhx1Xqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -24,7 +24,7 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
-import { PRODUCTS, CATEGORIES } from '@/data/products';
+import { PRODUCTS } from '@/data/products';
 import { INITIAL_ORDERS, OrderCMS, UserRecord, INITIAL_USERS } from '@/data/cmsData';
 import { BLOG_POSTS } from '@/data/blog';
 import { dashboardService, DashboardStatsResponse } from '@/services/dashboardService';
@@ -155,7 +155,7 @@ export default function AdminDashboardPage() {
             <Layers size={24} />
           </div>
           <div>
-            <div className="admin-stat-value" style={{ color: '#1d4ed8' }}>{stats?.metrics.totalCategories ?? CATEGORIES.length}</div>
+            <div className="admin-stat-value" style={{ color: '#1d4ed8' }}>{stats?.metrics.totalCategories ?? 0}</div>
             <div className="admin-stat-label">Divine Deities &amp; Collections</div>
             <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
               Ganesha, Murugan, Shiva &amp; Lakshmi

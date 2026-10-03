@@ -20,22 +20,28 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all products with search & category filters' })
+  @ApiOperation({ summary: 'Get all products with search & category filters and optional pagination' })
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'inStock', required: false, type: Boolean })
   @ApiQuery({ name: 'featured', required: false, type: Boolean })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
     @Query('category') category?: string,
     @Query('search') search?: string,
     @Query('inStock') inStock?: string,
     @Query('featured') featured?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return this.productsService.findAll({
       category,
       search,
       inStock: inStock !== undefined ? inStock === 'true' : undefined,
       featured: featured !== undefined ? featured === 'true' : undefined,
+      page: page !== undefined ? parseInt(page, 10) : undefined,
+      limit: limit !== undefined ? parseInt(limit, 10) : undefined,
     });
   }
 

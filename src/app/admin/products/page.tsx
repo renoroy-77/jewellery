@@ -20,7 +20,7 @@ import {
   Star,
   Image as ImageIcon,
 } from 'lucide-react';
-import { CATEGORIES, PRODUCTS } from '@/data/products';
+import { PRODUCTS } from '@/data/products';
 import { Category, Product } from '@/types';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
@@ -31,7 +31,7 @@ import { useConfirm } from '@/context/ConfirmContext';
 export default function AdminProductsPage() {
   const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -46,13 +46,13 @@ export default function AdminProductsPage() {
   // Form State
   const [formName, setFormName] = useState('');
   const [formDeity, setFormDeity] = useState('');
-  const [formCategory, setFormCategory] = useState<string>('pendants');
+  const [formCategory, setFormCategory] = useState<string>('');
   const [formPrice, setFormPrice] = useState(2499);
   const [formOriginalPrice, setFormOriginalPrice] = useState(2999);
   const [formInStock, setFormInStock] = useState(true);
   const [formFeatured, setFormFeatured] = useState(false);
   const [formDescription, setFormDescription] = useState('');
-  const [formImages, setFormImages] = useState<string[]>(['/assets/prod_ganesha_hq.webp']);
+  const [formImages, setFormImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [formGoldComp, setFormGoldComp] = useState('2.5%');
@@ -98,15 +98,16 @@ export default function AdminProductsPage() {
     categoriesService
       .getAll()
       .then((data) => {
-        if (data && data.length > 0) setCategories(data);
+        setCategories(Array.isArray(data) ? data : []);
       })
       .catch(() => {});
   }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      if (!p) return false;
       if (categoryFilter !== 'all') {
-        const cat = categoryFilter.toLowerCase();
+        const cat = (categoryFilter || '').toLowerCase();
         const prodCat = (p.category || '').toLowerCase();
         const prodDeity = (p.deity || '').toLowerCase();
         const prodSlug = (p.slug || '').toLowerCase();
@@ -116,9 +117,9 @@ export default function AdminProductsPage() {
       }
       if (searchQuery.trim().length > 0) {
         const q = searchQuery.toLowerCase();
-        const matchName = p.name.toLowerCase().includes(q);
-        const matchDeity = p.deity.toLowerCase().includes(q);
-        const matchCategory = p.category.toLowerCase().includes(q);
+        const matchName = (p.name || '').toLowerCase().includes(q);
+        const matchDeity = (p.deity || '').toLowerCase().includes(q);
+        const matchCategory = (p.category || '').toLowerCase().includes(q);
         return matchName || matchDeity || matchCategory;
       }
       return true;
@@ -129,13 +130,13 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
     setFormName('');
     setFormDeity('Lord Ganesha');
-    setFormCategory(categories.length > 0 ? (categories[0].slug || categories[0].id) : 'pendants');
+    setFormCategory(categories.length > 0 ? (categories[0].slug || categories[0].id) : '');
     setFormPrice(2499);
     setFormOriginalPrice(2999);
     setFormInStock(true);
     setFormFeatured(false);
     setFormDescription('Authentic consecrated Panchaloham jewellery handcrafted by temple sthapatis.');
-    setFormImages(['/assets/prod_ganesha_hq.webp']);
+    setFormImages([]);
     setNewImageUrl('');
     setFormGoldComp('2.5%');
     setFormSilverComp('12.5%');
@@ -168,7 +169,7 @@ export default function AdminProductsPage() {
     setFormDescription(product.description);
     const initialImages = Array.isArray(product.images) && product.images.length > 0
       ? [...product.images]
-      : ['/assets/prod_ganesha_hq.webp'];
+      : [];
     setFormImages(initialImages);
     setNewImageUrl('');
     setFormGoldComp(product.metalComposition?.gold || '2.5%');
@@ -189,10 +190,7 @@ export default function AdminProductsPage() {
       showToast('This image is already in the list', 'error');
       return;
     }
-    setFormImages((prev) => {
-      const filtered = prev.filter(img => img !== '/assets/prod_ganesha_hq.webp' || prev.length > 1);
-      return [...filtered, url];
-    });
+    setFormImages((prev) => [...prev, url]);
     setNewImageUrl('');
     showToast('Added image to list!');
   };
@@ -208,10 +206,6 @@ export default function AdminProductsPage() {
   };
 
   const handleRemoveImage = (index: number) => {
-    if (formImages.length <= 1) {
-      showToast('Product must have at least one photo', 'error');
-      return;
-    }
     setFormImages((prev) => prev.filter((_, i) => i !== index));
     showToast('Photo removed');
   };
@@ -233,10 +227,7 @@ export default function AdminProductsPage() {
       }
 
       if (newUrls.length > 0) {
-        setFormImages((prev) => {
-          const filtered = prev.filter(img => img !== '/assets/prod_ganesha_hq.webp' || prev.length > 1);
-          return [...filtered, ...newUrls];
-        });
+        setFormImages((prev) => [...prev, ...newUrls]);
         showToast(`Uploaded ${newUrls.length} photo${newUrls.length > 1 ? 's' : ''}!`);
       }
     } catch (err: any) {
@@ -256,7 +247,11 @@ export default function AdminProductsPage() {
     }
 
     const validImages = formImages.map((s) => s.trim()).filter(Boolean);
-    const finalImages = validImages.length > 0 ? validImages : ['/assets/prod_ganesha_hq.webp'];
+    if (validImages.length === 0) {
+      showToast('Please upload or add at least one product photo', 'error');
+      return;
+    }
+    const finalImages = validImages;
 
     setIsSaving(true);
     try {
@@ -297,12 +292,14 @@ export default function AdminProductsPage() {
         showToast(`Saved changes for "${result.name}" with ${finalImages.length} photos in PostgreSQL!`);
       } else {
         // Add new product
+        const deityValue = formDeity.trim() || 'Lord Ganesha';
+        const categoryValue = formCategory || (categories.length > 0 ? (categories[0].slug || categories[0].id) : '');
         const newPayload: Partial<Product> = {
           name: formName.trim(),
-          deity: formDeity.trim(),
-          category: formCategory,
-          price: Number(formPrice),
-          originalPrice: formOriginalPrice ? Number(formOriginalPrice) : undefined,
+          deity: deityValue,
+          category: categoryValue,
+          price: Number(formPrice) || 0,
+          originalPrice: formOriginalPrice && Number(formOriginalPrice) > 0 ? Number(formOriginalPrice) : undefined,
           inStock: formInStock,
           featured: formFeatured,
           description: formDescription.trim(),
@@ -311,13 +308,13 @@ export default function AdminProductsPage() {
           weight: formWeight.trim(),
           consecrationDetails: formConsecration.trim(),
           benefits: ['Bestows divine grace and energy harmony.'],
-          tags: ['panchaloham', formDeity.toLowerCase(), formCategory],
+          tags: ['panchaloham', deityValue.toLowerCase(), categoryValue],
           metalComposition: {
-            gold: formGoldComp,
-            silver: formSilverComp,
-            copper: formCopperComp,
-            zinc: formZincComp,
-            iron: formIronComp,
+            gold: formGoldComp || '2.5%',
+            silver: formSilverComp || '12.5%',
+            copper: formCopperComp || '65.0%',
+            zinc: formZincComp || '15.0%',
+            iron: formIronComp || '5.0%',
             purityCertificate: 'Authentic Temple Guild Certified',
           },
         };
@@ -412,7 +409,7 @@ export default function AdminProductsPage() {
                 }}
               >
                 <Database size={12} />
-                {backendOnline ? 'PostgreSQL Connected (Neon Cloud)' : 'Demo Catalog (Offline)'}
+                {backendOnline ? 'PostgreSQL Connected' : 'Demo Catalog (Offline)'}
               </span>
             )}
           </div>
@@ -478,9 +475,10 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* Products Table Card */}
+      {/* Products Table & Mobile Cards Container */}
       <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="admin-table-container">
+        {/* Desktop Table View */}
+        <div className="admin-table-container admin-products-desktop-table">
           <table className="admin-table">
             <thead>
               <tr>
@@ -509,93 +507,225 @@ export default function AdminProductsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <img
-                        src={p.images?.[0] || '/assets/prod_ganesha_hq.webp'}
-                        alt={p.name}
-                        style={{
-                          width: '46px',
-                          height: '46px',
-                          borderRadius: '8px',
-                          objectFit: 'cover',
-                          background: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                        }}
-                      />
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.92rem' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                        Slug: <code>{p.slug}</code> {p.featured && <span className="admin-status-badge admin-status-gold" style={{ marginLeft: '6px' }}>FEATURED</span>}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 500, color: '#0f172a', fontSize: '0.85rem' }}>{p.deity}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'capitalize' }}>
-                        {p.category}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 700, color: '#0d5438' }}>
-                        ₹{p.price.toLocaleString('en-IN')}
-                      </div>
-                      {p.originalPrice && (
-                        <div style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: '#94a3b8' }}>
-                          ₹{p.originalPrice.toLocaleString('en-IN')}
+                filteredProducts.map((p) => {
+                  const photo = Array.isArray(p.images) && p.images.length > 0 && p.images[0]
+                    ? p.images[0]
+                    : '/assets/prod_ganesha_hq.webp';
+
+                  return (
+                    <tr key={p.id}>
+                      <td>
+                        <img
+                          src={photo}
+                          alt={p.name || 'Product'}
+                          style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '8px',
+                            objectFit: 'cover',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                          }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.92rem' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                          Slug: <code>{p.slug}</code> {p.featured && <span className="admin-status-badge admin-status-gold" style={{ marginLeft: '6px' }}>FEATURED</span>}
                         </div>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleStock(p)}
-                        className={`admin-status-badge ${p.inStock ? 'admin-status-green' : 'admin-status-amber'}`}
-                        style={{ cursor: 'pointer', border: 'none' }}
-                        title="Click to toggle In-Stock / Out-of-Stock"
-                      >
-                        {p.inStock ? '● In Stock' : '○ Sold Out'}
-                      </button>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.4 }}>
-                        Cu {p.metalComposition?.copper || '65%'} · Zn {p.metalComposition?.zinc || '15%'} · Ag {p.metalComposition?.silver || '12.5%'} · Au {p.metalComposition?.gold || '2.5%'}
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '8px' }}>
-                        <Link
-                          href={`/products/${p.slug}`}
-                          target="_blank"
-                          className="admin-btn admin-btn-sm admin-btn-secondary"
-                          title="View on storefront"
-                        >
-                          <ExternalLink size={13} />
-                        </Link>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 500, color: '#0f172a', fontSize: '0.85rem' }}>{p.deity || 'Sacred'}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'capitalize' }}>
+                          {p.category || 'Pendants'}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700, color: '#0d5438' }}>
+                          ₹{Number(p.price || 0).toLocaleString('en-IN')}
+                        </div>
+                        {p.originalPrice != null && Number(p.originalPrice) > 0 && (
+                          <div style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: '#94a3b8' }}>
+                            ₹{Number(p.originalPrice).toLocaleString('en-IN')}
+                          </div>
+                        )}
+                      </td>
+                      <td>
                         <button
                           type="button"
-                          className="admin-btn admin-btn-sm admin-btn-secondary"
-                          onClick={() => openEditModal(p)}
-                          title="Edit product"
+                          onClick={() => handleToggleStock(p)}
+                          className={`admin-status-badge ${p.inStock ? 'admin-status-green' : 'admin-status-amber'}`}
+                          style={{ cursor: 'pointer', border: 'none' }}
+                          title="Click to toggle In-Stock / Out-of-Stock"
                         >
-                          <Edit size={13} />
+                          {p.inStock ? '● In Stock' : '○ Sold Out'}
                         </button>
-                        <button
-                          type="button"
-                          className="admin-btn admin-btn-sm admin-btn-danger"
-                          onClick={() => handleDeleteProduct(p.id, p.name)}
-                          title="Delete product"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.4 }}>
+                          Cu {p.metalComposition?.copper || '65%'} · Zn {p.metalComposition?.zinc || '15%'} · Ag {p.metalComposition?.silver || '12.5%'} · Au {p.metalComposition?.gold || '2.5%'}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '8px' }}>
+                          <Link
+                            href={`/products/${p.slug}`}
+                            target="_blank"
+                            className="admin-btn admin-btn-sm admin-btn-secondary"
+                            title="View on storefront"
+                          >
+                            <ExternalLink size={13} />
+                          </Link>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-secondary"
+                            onClick={() => openEditModal(p)}
+                            title="Edit product"
+                          >
+                            <Edit size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-danger"
+                            onClick={() => handleDeleteProduct(p.id, p.name)}
+                            title="Delete product"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Product Cards View (<= 768px) */}
+        <div className="admin-products-mobile-list">
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
+              <Loader2 size={28} className="animate-spin" color="#d4af37" style={{ margin: '0 auto 10px' }} />
+              <div>Loading Products from PostgreSQL database...</div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
+              <Package size={32} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
+              <div>No matching Panchaloham products found.</div>
+            </div>
+          ) : (
+            filteredProducts.map((p) => {
+              const photo = Array.isArray(p.images) && p.images.length > 0 && p.images[0]
+                ? p.images[0]
+                : '/assets/prod_ganesha_hq.webp';
+
+              return (
+                <div key={p.id} className="admin-product-mobile-card">
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <img
+                      src={photo}
+                      alt={p.name || 'Product'}
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '10px',
+                        objectFit: 'cover',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        flexShrink: 0,
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.95rem', lineHeight: 1.3 }}>
+                        {p.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', background: '#ecfdf5', color: '#047857', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          {p.deity || 'Sacred'}
+                        </span>
+                        <span style={{ fontSize: '0.72rem', background: '#f1f5f9', color: '#475569', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                          {p.category || 'Jewellery'}
+                        </span>
+                        {p.featured && (
+                          <span className="admin-status-badge admin-status-gold" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                            FEATURED
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>
+                        Slug: <code>{p.slug}</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                    <div>
+                      <span style={{ fontWeight: 700, color: '#0d5438', fontSize: '1.05rem' }}>
+                        ₹{Number(p.price || 0).toLocaleString('en-IN')}
+                      </span>
+                      {p.originalPrice != null && Number(p.originalPrice) > 0 && (
+                        <span style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: '#94a3b8', marginLeft: '6px' }}>
+                          ₹{Number(p.originalPrice).toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleStock(p)}
+                      className={`admin-status-badge ${p.inStock ? 'admin-status-green' : 'admin-status-amber'}`}
+                      style={{ cursor: 'pointer', border: 'none' }}
+                      title="Click to toggle In-Stock / Out-of-Stock"
+                    >
+                      {p.inStock ? '● In Stock' : '○ Sold Out'}
+                    </button>
+                  </div>
+
+                  <div style={{ fontSize: '0.72rem', color: '#64748b', background: '#f8fafc', padding: '6px 10px', borderRadius: '6px' }}>
+                    Cu {p.metalComposition?.copper || '65%'} · Zn {p.metalComposition?.zinc || '15%'} · Ag {p.metalComposition?.silver || '12.5%'} · Au {p.metalComposition?.gold || '2.5%'}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                    <Link
+                      href={`/products/${p.slug}`}
+                      target="_blank"
+                      className="admin-btn admin-btn-sm admin-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center' }}
+                      title="View on storefront"
+                    >
+                      <ExternalLink size={13} style={{ marginRight: '4px' }} />
+                      <span>Live Store</span>
+                    </Link>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-sm admin-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center' }}
+                      onClick={() => openEditModal(p)}
+                      title="Edit product"
+                    >
+                      <Edit size={13} style={{ marginRight: '4px' }} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-sm admin-btn-danger"
+                      onClick={() => handleDeleteProduct(p.id, p.name)}
+                      title="Delete product"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -658,7 +788,7 @@ export default function AdminProductsPage() {
                     {editingProduct ? 'Edit Sacred Jewellery Item' : 'Add New Panchaloham Item'}
                   </h2>
                   <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
-                    Directly saves to Neon PostgreSQL and synchronizes with the live catalog.
+                    Directly saves to PostgreSQL database and synchronizes with the live catalog.
                   </p>
                 </div>
               </div>
@@ -930,8 +1060,27 @@ export default function AdminProductsPage() {
                       gap: '12px',
                     }}
                   >
-                    {formImages.map((imgUrl, index) => {
-                      const isMain = index === 0;
+                    {formImages.length === 0 ? (
+                      <div
+                        style={{
+                          gridColumn: '1 / -1',
+                          padding: '28px 16px',
+                          textAlign: 'center',
+                          background: '#f8fafc',
+                          borderRadius: '10px',
+                          border: '1px dashed #cbd5e1',
+                          color: '#64748b',
+                          fontSize: '0.84rem',
+                        }}
+                      >
+                        <p style={{ margin: 0, fontWeight: 600, color: '#334155' }}>No photos added yet</p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                          Upload photos using the button above or paste an image URL to add photos for this product.
+                        </p>
+                      </div>
+                    ) : (
+                      formImages.map((imgUrl, index) => {
+                        const isMain = index === 0;
                       return (
                         <div
                           key={`${imgUrl}-${index}`}
@@ -1050,8 +1199,9 @@ export default function AdminProductsPage() {
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
+                    })
+                  )}
+                </div>
                 </div>
 
                 {/* Sacred Description */}
