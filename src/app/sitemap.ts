@@ -5,8 +5,8 @@ import { siteConfig } from '@/lib/seo';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600; // Cache sitemap for 1 hour for fast, stable crawler delivery
+
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const currentDate = new Date().toISOString();

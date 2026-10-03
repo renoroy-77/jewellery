@@ -1,0 +1,32 @@
+User-Agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /cart
+Disallow: /account
+Disallow: /account/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /order-success
+Disallow: /login
+
+User-Agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /cart
+Disallow: /account
+Disallow: /account/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /order-success
+Disallow: /login
+
+Host: aamadappetti.com
+Sitemap: https://aamadappetti.com/sitemap.xml
