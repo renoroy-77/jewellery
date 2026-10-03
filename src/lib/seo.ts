@@ -178,7 +178,7 @@ export function constructMetadata({
       },
     },
     verification: {
-      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '42x8qhbP9fRQh1y_QNrbBmTBxgpV5h9RKQqebWLCdXk',
     },
     icons: {
       icon: [
@@ -293,6 +293,41 @@ export function getProductSchema(product: Product) {
         '@type': 'Organization',
         name: 'Aamadappetti Panchaloham Jewellery',
         alternateName: 'Amadapetti',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: Number(product.price) >= 999 ? '0' : '99',
+          currency: 'INR',
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'IN',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 1,
+            maxValue: 2,
+            unitCode: 'd',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 3,
+            maxValue: 5,
+            unitCode: 'd',
+          },
+        },
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'IN',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
       },
     },
     aggregateRating: {

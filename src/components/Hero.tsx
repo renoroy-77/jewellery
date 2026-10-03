@@ -9,10 +9,10 @@ import { cmsService } from '@/services/cmsService';
 const HERO_SLIDES = [
   {
     id: 1,
-    kicker: 'DIVINE BEAUTY, TIMELESS TRADITION',
+    kicker: 'AAMADAPPETTI • AUTHENTIC TEMPLE CRAFT',
     titleLine1: 'Adorn Your Faith',
-    titleLine2: 'Sacred Panchaloham',
-    subtitle: 'Authentic Panchaloham jewellery, crafted for every spiritual journey.',
+    titleLine2: 'Aamadappetti Panchaloham',
+    subtitle: 'Authentic 5-metal Panchaloham jewellery, consecrated for every spiritual journey.',
     ctaText: 'Shop Now',
     ctaLink: '/collections',
     tag: 'FAITH IN EVERY DETAIL',
