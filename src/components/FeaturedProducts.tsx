@@ -34,6 +34,10 @@ export default function FeaturedProducts() {
               src="/assets/lotus_flourish.png"
               alt="Lotus Ornament"
               className="lotus-flourish-img"
+              width={210}
+              height={28}
+              loading="lazy"
+              decoding="async"
             />
           </div>
 
@@ -72,7 +76,7 @@ export default function FeaturedProducts() {
                   </h3>
 
                   <div className="product-rating">
-                    <div className="rating-stars" aria-label={`${product.rating || 5} out of 5 stars`}>
+                    <div className="rating-stars" role="img" aria-label={`${product.rating || 5} out of 5 stars`}>
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
@@ -97,7 +101,7 @@ export default function FeaturedProducts() {
                   <button
                     className="add-to-cart-btn"
                     onClick={() => addToCart(product, 1)}
-                    aria-label={`Add ${product.name} to cart`}
+                    aria-label={`Add to Bag: ${product.name}`}
                   >
                     <ShoppingBag size={16} />
                     <span>{t('featured.add_to_bag', 'Add to Bag')}</span>

@@ -115,6 +115,8 @@ export default function Header() {
                 className="brand-logo-img"
                 width={180}
                 height={48}
+                loading="eager"
+                fetchPriority="high"
                 style={{ maxHeight: '48px', height: '48px', width: 'auto', objectFit: 'contain' }}
               />
             </Link>

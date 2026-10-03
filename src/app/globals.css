@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-
 :root {
   /* Palette directly inspired by temple panchaloham heritage */
   --bg-primary: #05160f;
@@ -23,9 +21,10 @@
   --accent-red: #d9534f;
   --success: #2ea44f;
   
-  --font-serif: 'Cinzel', Georgia, serif;
-  --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: var(--font-cinzel), 'Cinzel', Georgia, serif;
+  --font-heading: var(--font-cormorant), var(--font-playfair), 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
   
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -1390,14 +1389,27 @@ button {
 }
 
 .category-dot {
-  width: 7px;
-  height: 7px;
+  position: relative;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
   border-radius: 50%;
   background: rgba(212, 175, 55, 0.25);
   border: none;
   padding: 0;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: 0 4px;
+}
+
+.category-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .category-dot:hover {

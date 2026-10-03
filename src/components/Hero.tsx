@@ -52,6 +52,24 @@ export default function Hero() {
   const [slides, setSlides] = useState(HERO_SLIDES);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const enableFullCarousel = () => setIsHydrated(true);
+    if ('requestIdleCallback' in window) {
+      const idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts: { timeout: number }) => number }).requestIdleCallback(
+        enableFullCarousel,
+        { timeout: 2000 }
+      );
+      return () => {
+        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      };
+    } else {
+      const timer = setTimeout(enableFullCarousel, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     cmsService
@@ -94,27 +112,33 @@ export default function Hero() {
     >
       {/* Dynamic Background Image Layers with Smooth Cinematic Crossfade */}
       <div className="hero-bg-carousel">
-        {slides.map((s, idx) => (
-          <div
-            key={s.id}
-            className={`hero-bg-slide ${idx === currentSlide ? 'active' : ''}`}
-            aria-hidden={idx !== currentSlide}
-          >
-            <picture className="hero-picture">
-              <source media="(max-width: 768px)" srcSet={s.mobileImage} />
-              <img
-                src={s.image}
-                alt={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
-                title={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
-                width={1920}
-                height={1080}
-                className="hero-slide-img"
-                loading={idx === 0 ? 'eager' : 'lazy'}
-                decoding="async"
-              />
-            </picture>
-          </div>
-        ))}
+        {slides.map((s, idx) => {
+          if (idx !== 0 && !isHydrated && idx !== currentSlide) {
+            return null;
+          }
+          return (
+            <div
+              key={s.id}
+              className={`hero-bg-slide ${idx === currentSlide ? 'active' : ''}`}
+              aria-hidden={idx !== currentSlide}
+            >
+              <picture className="hero-picture">
+                <source media="(max-width: 768px)" srcSet={s.mobileImage} />
+                <img
+                  src={s.image}
+                  alt={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
+                  title={`${s.titleLine1} ${s.titleLine2} - Aamadappetti Panchaloham`}
+                  width={1920}
+                  height={1080}
+                  className="hero-slide-img"
+                  loading={idx === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={idx === 0 ? 'high' : 'auto'}
+                  decoding={idx === 0 ? 'sync' : 'async'}
+                />
+              </picture>
+            </div>
+          );
+        })}
         {/* Subtle Vignette Overlay to ensure text readability while keeping the imagery full-size & vibrant */}
         <div className="hero-vignette-overlay" />
       </div>
@@ -184,7 +208,7 @@ export default function Hero() {
                 type="button"
                 className={`slide-num ${idx === currentSlide ? 'active' : ''}`}
                 onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
+                aria-label={`0${idx + 1} - Slide ${idx + 1}`}
               >
                 0{idx + 1}
               </button>
