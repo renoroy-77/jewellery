@@ -4,7 +4,6 @@ import { siteConfig } from '@/lib/seo';
 const disallowedPaths = [
   '/admin',
   '/admin/*',
-  '/api/*',
   '/checkout',
   '/checkout/*',
   '/cart',
@@ -14,6 +13,19 @@ const disallowedPaths = [
   '/profile/*',
   '/order-success',
   '/login',
+  '/api/admin/orders',
+  '/api/admin/users',
+  '/api/admin/bookings',
+  '/api/inquiries',
+];
+
+const allowedPublicApis = [
+  '/',
+  '/api/products',
+  '/api/categories',
+  '/api/cms/*',
+  '/api/admin/content',
+  '/api/admin/translations',
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -21,12 +33,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: allowedPublicApis,
         disallow: disallowedPaths,
       },
       {
         userAgent: 'Googlebot',
-        allow: '/',
+        allow: allowedPublicApis,
         disallow: disallowedPaths,
       },
     ],
@@ -34,3 +46,4 @@ export default function robots(): MetadataRoute.Robots {
     host: 'aamadappetti.com',
   };
 }
+

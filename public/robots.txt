@@ -1,8 +1,12 @@
 User-Agent: *
 Allow: /
+Allow: /api/products
+Allow: /api/categories
+Allow: /api/cms/*
+Allow: /api/admin/content
+Allow: /api/admin/translations
 Disallow: /admin
 Disallow: /admin/*
-Disallow: /api/*
 Disallow: /checkout
 Disallow: /checkout/*
 Disallow: /cart
@@ -12,12 +16,20 @@ Disallow: /profile
 Disallow: /profile/*
 Disallow: /order-success
 Disallow: /login
+Disallow: /api/admin/orders
+Disallow: /api/admin/users
+Disallow: /api/admin/bookings
+Disallow: /api/inquiries
 
 User-Agent: Googlebot
 Allow: /
+Allow: /api/products
+Allow: /api/categories
+Allow: /api/cms/*
+Allow: /api/admin/content
+Allow: /api/admin/translations
 Disallow: /admin
 Disallow: /admin/*
-Disallow: /api/*
 Disallow: /checkout
 Disallow: /checkout/*
 Disallow: /cart
@@ -27,6 +39,10 @@ Disallow: /profile
 Disallow: /profile/*
 Disallow: /order-success
 Disallow: /login
+Disallow: /api/admin/orders
+Disallow: /api/admin/users
+Disallow: /api/admin/bookings
+Disallow: /api/inquiries
 
 Host: aamadappetti.com
 Sitemap: https://aamadappetti.com/sitemap.xml
