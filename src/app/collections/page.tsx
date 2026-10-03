@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Sacred Panchaloham Jewellery Collections | Aamadappetti (Amadapetti)',
+  title: 'Panchaloham Temple Jewellery Collections',
   description:
     'Shop authentic 5-metal Panchaloham temple jewellery from Aamadappetti (Amadapetti). Explore sacred deity pendants (Murugan, Ganesha, Shiva, Lakshmi), temple chains, and energized rings.',
   canonicalUrl: '/collections',

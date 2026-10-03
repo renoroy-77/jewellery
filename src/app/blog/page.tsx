@@ -18,7 +18,7 @@ import BackButton from '@/components/BackButton';
 import BlogNewsletterBox from './BlogNewsletterBox';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Sacred Journal | Panchaloham Chronicles & Jewellery Insights',
+  title: 'Sacred Journal & Vedic Chronicles',
   description:
     'Explore our sacred journal: authentic treatises on temple metallurgy, deity symbolism, Panchaloham care rituals, and the living heritage of divine adornment.',
   canonicalUrl: '/blog',

@@ -7,7 +7,7 @@ import ContactForm from '@/components/ContactForm';
 import BackButton from '@/components/BackButton';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Contact Aamadappetti (Amadapetti) | Devotee Care & Temple Consultations',
+  title: 'Contact Devotee Care & Consultations',
   description:
     'Contact Aamadappetti (Amadapetti) temple jewellery atelier. Reach our sthapatis and devotee care team for custom panchaloham orders, sizing guidance, and delivery enquiries.',
   canonicalUrl: '/contact',

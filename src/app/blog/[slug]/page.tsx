@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return constructMetadata({
-    title: `${post.title} | Aamadappetti Sacred Journal`,
+    title: post.title.length > 40 ? `${post.title.slice(0, 38).trim()}...` : post.title,
     description: post.excerpt,
     image: post.image,
     canonicalUrl: `/blog/${post.slug}`,

@@ -6,7 +6,7 @@ import { constructMetadata } from '@/lib/seo';
 import BackButton from '@/components/BackButton';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Terms & Conditions | Aamadappetti Panchaloham Temple Jewellery',
+  title: 'Terms & Conditions | Aamadappetti',
   description:
     'Read the official Terms and Conditions of Aamadappetti. Details regarding product orders, INR pricing, payment processing, intellectual property, and user agreements.',
   canonicalUrl: '/terms-and-conditions',
