@@ -120,7 +120,7 @@ export default function CheckoutPage() {
   });
 
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cashfree' | 'cod'>('cashfree');
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod'>('payu');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -311,14 +311,17 @@ export default function CheckoutPage() {
   const walletDiscount = useWalletBalance ? maxWalletApplicable : 0;
   const grandTotal = Math.max(0, amountBeforeWallet - walletDiscount);
 
-  // Load Cashfree checkout script v3
-  const loadCashfreeScript = (): Promise<boolean> => {
+  // Load PayU Bolt checkout script
+  const loadPayUScript = (isProduction: boolean): Promise<boolean> => {
     return new Promise((resolve) => {
       if (typeof window === 'undefined') return resolve(false);
-      if ((window as any).Cashfree) return resolve(true);
+      if ((window as any).bolt) return resolve(true);
 
       const script = document.createElement('script');
-      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+      script.id = 'bolt';
+      script.src = isProduction
+        ? 'https://checkout-static.payu.in/bolt/run/bolt.min.js'
+        : 'https://sboxcheckout-static.payu.in/bolt/run/bolt.min.js';
       script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
@@ -434,7 +437,7 @@ export default function CheckoutPage() {
       const buyerEmail = (loggedDevotee?.email || form.email).trim().toLowerCase();
       const devoteeName = form.customerName.trim() || loggedDevotee?.name || 'Devotee';
 
-      // Cashfree Online Payment Flow
+      // PayU Online Payment Flow
       const notes = {
         customerName: devoteeName,
         email: buyerEmail,
@@ -442,9 +445,6 @@ export default function CheckoutPage() {
         city: form.city.trim(),
         referralCode: referralCodeToSend || '',
       };
-
-      const cashfreeOrder = await paymentsService.createOrder(grandTotal, notes);
-      const isScriptLoaded = await loadCashfreeScript();
 
       const preparedOrderPayload = {
         devoteeName,
@@ -458,57 +458,138 @@ export default function CheckoutPage() {
         referralDiscount: referralDiscount > 0 ? referralDiscount : 0,
         walletDiscount: walletDiscount > 0 ? walletDiscount : 0,
         totalAmount: grandTotal,
-        paymentMethod: 'Cashfree UPI/Cards (Online)',
+        paymentMethod: 'PayU UPI/Cards (Online)',
       };
 
-      if (isScriptLoaded && (window as any).Cashfree && cashfreeOrder.paymentSessionId) {
-        const cashfree = (window as any).Cashfree({
-          mode: cashfreeOrder.environment === 'production' ? 'production' : 'sandbox',
+      const payuOrder = await paymentsService.createOrder(
+        grandTotal,
+        notes,
+        undefined,
+        preparedOrderPayload,
+      );
+
+      const isProduction = payuOrder.environment === 'production';
+      const isScriptLoaded = await loadPayUScript(isProduction);
+      const isLiveKey = payuOrder.key && !payuOrder.key.includes('test_');
+
+      if (
+        isScriptLoaded &&
+        (window as any).bolt &&
+        typeof (window as any).bolt.launch === 'function' &&
+        isLiveKey
+      ) {
+        // PayU Bolt Inline Modal Checkout
+        (window as any).bolt.launch(
+          {
+            key: payuOrder.key,
+            txnid: payuOrder.txnid,
+            hash: payuOrder.hash,
+            amount: payuOrder.amount,
+            firstname: payuOrder.firstname,
+            email: payuOrder.email,
+            phone: payuOrder.phone,
+            productinfo: payuOrder.productinfo,
+            udf1: payuOrder.udf1 || '',
+            udf2: payuOrder.udf2 || '',
+            udf3: payuOrder.udf3 || '',
+            udf4: payuOrder.udf4 || '',
+            udf5: payuOrder.udf5 || '',
+            surl: payuOrder.surl,
+            furl: payuOrder.furl,
+            mode: 'dropout',
+          },
+          {
+            responseHandler: async (BOLT: any) => {
+              if (BOLT?.response?.txnStatus === 'SUCCESS') {
+                try {
+                  const verifyRes = await paymentsService.verifyPayment({
+                    txnid: payuOrder.txnid,
+                    orderId: payuOrder.txnid,
+                    payuPaymentId: BOLT.response.mihpayid,
+                    mihpayid: BOLT.response.mihpayid,
+                    status: 'success',
+                    hash: BOLT.response.hash,
+                    orderData: preparedOrderPayload,
+                  });
+
+                  await maybeSaveAddress();
+                  clearCart();
+                  router.push(`/order-success?orderId=${verifyRes.orderId}&method=payu`);
+                } catch (err: any) {
+                  setErrorMessage(
+                    `Payment verification error: ${err.message || 'Please contact support'}`,
+                  );
+                  setIsProcessing(false);
+                }
+              } else if (BOLT?.response?.txnStatus === 'CANCEL') {
+                setErrorMessage('Payment was cancelled.');
+                setIsProcessing(false);
+              } else {
+                setErrorMessage(
+                  `Payment failed: ${BOLT?.response?.error_Message || 'Transaction could not be completed'}`,
+                );
+                setIsProcessing(false);
+              }
+            },
+            catchException: (BOLT: any) => {
+              setErrorMessage(
+                `Payment gateway error: ${BOLT?.message || 'Transaction could not be completed'}`,
+              );
+              setIsProcessing(false);
+            },
+          },
+        );
+      } else if (isLiveKey) {
+        // Standard PayU Hosted Checkout (Form Submission)
+        await maybeSaveAddress();
+        clearCart();
+
+        const formElem = document.createElement('form');
+        formElem.method = 'POST';
+        formElem.action = payuOrder.actionUrl;
+
+        const fields: Record<string, string> = {
+          key: payuOrder.key,
+          txnid: payuOrder.txnid,
+          amount: payuOrder.amount,
+          productinfo: payuOrder.productinfo,
+          firstname: payuOrder.firstname,
+          email: payuOrder.email,
+          phone: payuOrder.phone,
+          surl: payuOrder.surl,
+          furl: payuOrder.furl,
+          hash: payuOrder.hash,
+          udf1: payuOrder.udf1 || '',
+          udf2: payuOrder.udf2 || '',
+          udf3: payuOrder.udf3 || '',
+          udf4: payuOrder.udf4 || '',
+          udf5: payuOrder.udf5 || '',
+          service_provider: 'payu_paisa',
+        };
+
+        Object.entries(fields).forEach(([k, v]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = v;
+          formElem.appendChild(input);
         });
 
-        cashfree
-          .checkout({
-            paymentSessionId: cashfreeOrder.paymentSessionId,
-            redirectTarget: '_modal',
-          })
-          .then(async (result: any) => {
-            if (result?.error) {
-              setErrorMessage(`Payment notice: ${result.error.message || 'Payment window closed'}`);
-              setIsProcessing(false);
-              return;
-            }
-
-            try {
-              const verifyRes = await paymentsService.verifyPayment({
-                orderId: cashfreeOrder.orderId,
-                paymentSessionId: cashfreeOrder.paymentSessionId,
-                orderData: preparedOrderPayload,
-              });
-
-              await maybeSaveAddress();
-              clearCart();
-              router.push(`/order-success?orderId=${verifyRes.orderId}&method=cashfree`);
-            } catch (err: any) {
-              setErrorMessage(`Payment verification error: ${err.message || 'Please contact support'}`);
-              setIsProcessing(false);
-            }
-          })
-          .catch((err: any) => {
-            setErrorMessage(`Payment gateway error: ${err.message || 'Transaction could not be completed'}`);
-            setIsProcessing(false);
-          });
+        document.body.appendChild(formElem);
+        formElem.submit();
       } else {
-        // Fallback for simulated/test environments
+        // High-fidelity fallback for simulated / demo test environments
         const verifyRes = await paymentsService.verifyPayment({
-          orderId: cashfreeOrder.orderId,
-          paymentSessionId: cashfreeOrder.paymentSessionId,
-          cfPaymentId: `cf_pay_sim_${Date.now()}`,
+          txnid: payuOrder.txnid,
+          orderId: payuOrder.txnid,
+          payuPaymentId: `payu_sim_${Date.now()}`,
+          status: 'success',
           orderData: preparedOrderPayload,
         });
 
         await maybeSaveAddress();
         clearCart();
-        router.push(`/order-success?orderId=${verifyRes.orderId}&method=cashfree`);
+        router.push(`/order-success?orderId=${verifyRes.orderId}&method=payu`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred during checkout. Please try again.');
@@ -1582,9 +1663,9 @@ export default function CheckoutPage() {
               </div>
 
               <div style={{ display: 'grid', gap: '14px' }}>
-                {/* Cashfree Option */}
+                {/* PayU Option */}
                 <label
-                  onClick={() => setPaymentMethod('cashfree')}
+                  onClick={() => setPaymentMethod('payu')}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -1592,11 +1673,11 @@ export default function CheckoutPage() {
                     padding: '18px',
                     borderRadius: '10px',
                     background:
-                      paymentMethod === 'cashfree'
+                      paymentMethod === 'payu'
                         ? 'rgba(212, 175, 55, 0.1)'
                         : 'rgba(2, 12, 8, 0.6)',
                     border:
-                      paymentMethod === 'cashfree'
+                      paymentMethod === 'payu'
                         ? '2px solid #d4af37'
                         : '1px solid rgba(212, 175, 55, 0.2)',
                     cursor: 'pointer',
@@ -1606,9 +1687,9 @@ export default function CheckoutPage() {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    id="radio-cashfree"
-                    checked={paymentMethod === 'cashfree'}
-                    onChange={() => setPaymentMethod('cashfree')}
+                    id="radio-payu"
+                    checked={paymentMethod === 'payu'}
+                    onChange={() => setPaymentMethod('payu')}
                     style={{ marginTop: '4px', accentColor: '#d4af37' }}
                   />
                   <div style={{ flex: 1 }}>
@@ -1621,7 +1702,7 @@ export default function CheckoutPage() {
                       }}
                     >
                       <span style={{ fontWeight: 600, color: '#fcf9f2', fontSize: '1rem' }}>
-                        Cashfree Secure Gateway (Recommended)
+                        PayU Secure Gateway (Recommended)
                       </span>
                       <span
                         style={{
@@ -1638,7 +1719,7 @@ export default function CheckoutPage() {
                     </div>
                     <p style={{ fontSize: '0.82rem', color: '#9db3a8', margin: 0 }}>
                       Pay via Google Pay, PhonePe, Paytm, BHIM UPI, NetBanking, Credit or Debit
-                      Cards. 256-Bit SSL Bank Grade Security.
+                      Cards, EMI &amp; Wallets. 256-Bit SSL Bank Grade Security.
                     </p>
                   </div>
                 </label>
@@ -1667,8 +1748,8 @@ export default function CheckoutPage() {
               <Lock size={18} />
               <span>
                 {isProcessing
-                  ? 'Connecting to Payment Gateway...'
-                  : `Proceed to Pay ₹${grandTotal.toLocaleString('en-IN')} via Cashfree`}
+                  ? 'Connecting to PayU Gateway...'
+                  : `Proceed to Pay ₹${grandTotal.toLocaleString('en-IN')} via PayU`}
               </span>
             </button>
           </form>

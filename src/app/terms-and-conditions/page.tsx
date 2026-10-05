@@ -115,7 +115,7 @@ export default function TermsAndConditionsPage() {
               3. Orders &amp; Payment Processing
             </h2>
             <p>
-              We provide secure, PCI-DSS compliant online payment facilities powered by licensed payment gateway aggregators, including <strong>Cashfree Payments</strong>, supporting UPI, Debit Cards, Credit Cards, and Net Banking.
+              We provide secure, PCI-DSS compliant online payment facilities powered by licensed payment gateway aggregators, including <strong>PayU Payments</strong>, supporting UPI, Debit Cards, Credit Cards, and Net Banking.
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
               <li>

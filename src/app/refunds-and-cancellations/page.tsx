@@ -8,7 +8,7 @@ import BackButton from '@/components/BackButton';
 export const metadata: Metadata = constructMetadata({
   title: 'Refunds & Cancellations Policy | Aamadappetti',
   description:
-    'Learn about Aamadappetti’s transparent Refunds & Cancellations policy. Hassle-free 7-day returns, instant cancellation, and secure refunds via Cashfree within 5-7 business days.',
+    'Learn about Aamadappetti’s transparent Refunds & Cancellations policy. Hassle-free 7-day returns, instant cancellation, and secure refunds via PayU within 5-7 business days.',
   canonicalUrl: '/refunds-and-cancellations',
 });
 
@@ -107,7 +107,7 @@ export default function RefundsAndCancellationsPage() {
               <CreditCard size={20} color="#d4af37" style={{ marginBottom: '8px' }} />
               <div style={{ color: '#fff9eb', fontWeight: 600, fontSize: '0.95rem' }}>5–7 Day Bank Refund</div>
               <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
-                Refunds processed through Cashfree directly back to source account.
+                Refunds processed through PayU directly back to source account.
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function RefundsAndCancellationsPage() {
               3. Refund Process &amp; Timelines
             </h2>
             <p>
-              All refunds are handled through licensed payment gateway channels (such as <strong>Cashfree Payments</strong>) directly to the devotee’s original source of payment:
+              All refunds are handled through licensed payment gateway channels (such as <strong>PayU Payments</strong>) directly to the devotee’s original source of payment:
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
               <li>

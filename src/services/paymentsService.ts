@@ -1,27 +1,48 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
-export interface CashfreeOrderResponse {
+export interface PayUOrderResponse {
   success: boolean;
+  key: string;
+  txnid: string;
+  amount: string;
+  productinfo: string;
+  firstname: string;
+  email: string;
+  phone: string;
+  surl: string;
+  furl: string;
+  hash: string;
+  udf1?: string;
+  udf2?: string;
+  udf3?: string;
+  udf4?: string;
+  udf5?: string;
+  actionUrl: string;
+  boltScriptUrl?: string;
+  environment: string;
   orderId: string;
-  paymentSessionId: string;
+  // Compatibility fields
+  paymentSessionId?: string;
   cfOrderId?: string;
   orderStatus?: string;
-  orderAmount: number;
-  currency: string;
-  environment?: string;
+  orderAmount?: number;
+  currency?: string;
+  id?: string;
   appId?: string;
-  // Legacy compatibility
-  id: string;
-  amount: number;
   keyId?: string;
 }
 
-export interface VerifyCashfreePaymentPayload {
-  orderId: string;
-  cfPaymentId?: string;
-  paymentSessionId?: string;
+export interface VerifyPayUPaymentPayload {
+  txnid?: string;
+  orderId?: string;
+  payuPaymentId?: string;
+  mihpayid?: string;
+  status?: string;
+  hash?: string;
   orderData?: any;
   // Legacy aliases
+  cfPaymentId?: string;
+  paymentSessionId?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
@@ -29,13 +50,14 @@ export interface VerifyCashfreePaymentPayload {
 
 export const paymentsService = {
   /**
-   * Create Cashfree payment order on the backend
+   * Create PayU payment order on the backend
    */
   async createOrder(
     amount: number,
     notesOrCustomer?: Record<string, any>,
     legacyNotes?: Record<string, any>,
-  ): Promise<CashfreeOrderResponse> {
+    orderData?: any,
+  ): Promise<PayUOrderResponse> {
     const customerDetails =
       notesOrCustomer?.customerPhone || notesOrCustomer?.customerEmail
         ? notesOrCustomer
@@ -48,10 +70,10 @@ export const paymentsService = {
     const notes = legacyNotes || notesOrCustomer || {};
     const returnUrl =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/order-success?order_id={order_id}&method=cashfree`
+        ? `${window.location.origin}/order-success?orderId={order_id}&method=payu`
         : undefined;
 
-    const res = await fetch(`${API_BASE_URL}/api/payments/cashfree/create-order`, {
+    const res = await fetch(`${API_BASE_URL}/api/payments/payu/create-order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,6 +85,7 @@ export const paymentsService = {
         customerDetails,
         returnUrl,
         notes,
+        orderData,
       }),
     });
 
@@ -79,10 +102,10 @@ export const paymentsService = {
   },
 
   /**
-   * Verify Cashfree payment and commit order to database
+   * Verify PayU payment and commit order to database
    */
-  async verifyPayment(payload: VerifyCashfreePaymentPayload) {
-    const res = await fetch(`${API_BASE_URL}/api/payments/cashfree/verify`, {
+  async verifyPayment(payload: VerifyPayUPaymentPayload) {
+    const res = await fetch(`${API_BASE_URL}/api/payments/payu/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -98,5 +121,7 @@ export const paymentsService = {
   },
 };
 
-export type RazorpayOrderResponse = CashfreeOrderResponse;
-export type VerifyPaymentPayload = VerifyCashfreePaymentPayload;
+export type CashfreeOrderResponse = PayUOrderResponse;
+export type VerifyCashfreePaymentPayload = VerifyPayUPaymentPayload;
+export type RazorpayOrderResponse = PayUOrderResponse;
+export type VerifyPaymentPayload = VerifyPayUPaymentPayload;

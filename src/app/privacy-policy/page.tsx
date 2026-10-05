@@ -94,7 +94,7 @@ export default function PrivacyPolicyPage() {
               2. Payment Security &amp; PCI-DSS Compliance
             </h2>
             <p>
-              We do <strong>not</strong> store your credit card numbers, debit card CVVs, or Net Banking credentials on our servers. All financial transactions are encrypted through 256-bit SSL encryption and processed directly by RBI-licensed payment aggregators (such as <strong>Cashfree Payments</strong>) complying with strict global PCI-DSS standards.
+              We do <strong>not</strong> store your credit card numbers, debit card CVVs, or Net Banking credentials on our servers. All financial transactions are encrypted through 256-bit SSL encryption and processed directly by RBI-licensed payment aggregators (such as <strong>PayU Payments</strong>) complying with strict global PCI-DSS standards.
             </p>
           </section>
 
