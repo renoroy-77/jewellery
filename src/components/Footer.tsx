@@ -180,8 +180,8 @@ export default function Footer() {
             </div>
             <div className="footer-contact-item">
               <Phone size={18} className="footer-contact-icon" />
-              <a href={`tel:${footerData.phone || '+919600000000'}`} style={{ color: 'inherit' }}>
-                {footerData.phone || '+91 96000 00000'}
+              <a href={`tel:${footerData.phone || '+917012732880'}`} style={{ color: 'inherit' }}>
+                {footerData.phone || '+91 70127 32880'}
               </a>
             </div>
             <div className="footer-contact-item">

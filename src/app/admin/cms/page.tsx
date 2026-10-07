@@ -1121,7 +1121,7 @@ function AdminCMSContent() {
                   value={footerData.phone}
                   onChange={(e) => setFooterData({ ...footerData, phone: e.target.value })}
                   className="admin-form-input"
-                  placeholder="+91 96000 00000"
+                  placeholder="+91 70127 32880"
                 />
               </div>
 
@@ -1133,7 +1133,7 @@ function AdminCMSContent() {
                   value={footerData.whatsapp}
                   onChange={(e) => setFooterData({ ...footerData, whatsapp: e.target.value })}
                   className="admin-form-input"
-                  placeholder="+91 96000 00000"
+                  placeholder="+91 70127 32880"
                 />
               </div>
 

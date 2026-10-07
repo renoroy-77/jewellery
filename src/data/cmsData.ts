@@ -309,8 +309,8 @@ export const INITIAL_FOOTER_CMS: FooterCMS = {
   brandLogo: '/assets/brand_logo_gold.webp',
   address: 'Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650',
   email: 'support@aamadappetti.com',
-  phone: '+91 96000 00000',
-  whatsapp: '+91 96000 00000',
+  phone: '+91 70127 32880',
+  whatsapp: '+91 70127 32880',
   sanctumHours: 'Monday – Saturday: 9:00 AM – 6:00 PM IST',
   assuranceNote: 'Every Panchaloham consultation is directly coordinated with master temple sthapatis and certified hallmark metal documentation.',
   socialLinks: {

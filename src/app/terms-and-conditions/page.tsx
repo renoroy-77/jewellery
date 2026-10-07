@@ -171,7 +171,7 @@ export default function TermsAndConditionsPage() {
             <div style={{ marginTop: '12px', padding: '16px 20px', background: 'rgba(212, 175, 55, 0.08)', borderRadius: '10px', borderLeft: '3px solid #d4af37' }}>
               <p style={{ margin: 0 }}><strong>Aamadappetti Temple Jewellery Atelier</strong></p>
               <p style={{ margin: '4px 0' }}>Email: <a href="mailto:support@aamadappetti.com" style={{ color: '#d4af37' }}>support@aamadappetti.com</a></p>
-              <p style={{ margin: '4px 0' }}>Helpline / WhatsApp: <a href="tel:+919600000000" style={{ color: '#d4af37' }}>+91 96000 00000</a></p>
+              <p style={{ margin: '4px 0' }}>Helpline / WhatsApp: <a href="tel:+917012732880" style={{ color: '#d4af37' }}>+91 70127 32880</a></p>
               <p style={{ margin: 0 }}>Operating Hours: Monday – Saturday, 9:00 AM – 6:00 PM IST</p>
             </div>
           </section>

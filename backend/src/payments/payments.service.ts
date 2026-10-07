@@ -439,7 +439,7 @@ export class PaymentsService {
             id: txnid,
             devoteeName: orderData.devoteeName || 'Devotee Customer',
             email: orderData.email || 'customer@temple.org',
-            phone: orderData.phone || '+91 96000 00000',
+            phone: orderData.phone || '+91 70127 32880',
             shippingAddress: orderData.shippingAddress || 'Store Pickup',
             items: orderData.items || [],
             totalAmount: orderData.totalAmount || 0,

@@ -373,7 +373,7 @@ export default function Header() {
                 <span>100% Certified Agamic Panchaloham</span>
               </div>
               <div className="mobile-drawer-contact">
-                <span>Direct Consultation: +91 96000 00000</span>
+                <span>Direct Consultation: +91 70127 32880</span>
               </div>
             </div>
           </div>

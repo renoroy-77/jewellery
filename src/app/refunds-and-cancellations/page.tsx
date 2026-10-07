@@ -186,7 +186,7 @@ export default function RefundsAndCancellationsPage() {
             <div style={{ marginTop: '14px', padding: '16px 20px', background: 'rgba(212, 175, 55, 0.08)', borderRadius: '10px', borderLeft: '3px solid #d4af37' }}>
               <p style={{ margin: 0 }}><strong>Aamadappetti Devotee Support Desk</strong></p>
               <p style={{ margin: '4px 0' }}>Email: <a href="mailto:support@aamadappetti.com" style={{ color: '#d4af37' }}>support@aamadappetti.com</a></p>
-              <p style={{ margin: '4px 0' }}>WhatsApp Support: <a href="https://wa.me/919600000000" target="_blank" rel="noopener noreferrer" style={{ color: '#d4af37' }}>+91 96000 00000</a></p>
+              <p style={{ margin: '4px 0' }}>WhatsApp Support: <a href="https://wa.me/917012732880" target="_blank" rel="noopener noreferrer" style={{ color: '#d4af37' }}>+91 70127 32880</a></p>
               <p style={{ margin: 0 }}>Subject Line format: <em>&quot;Return/Cancellation Request - Order #ORD-XXXXX&quot;</em></p>
             </div>
           </section>

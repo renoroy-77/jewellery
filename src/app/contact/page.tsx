@@ -92,8 +92,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="contact-info-title">Helpline &amp; WhatsApp</h3>
-                  <a href="tel:+919600000000" className="contact-info-link">
-                    +91 96000 00000
+                  <a href="tel:+917012732880" className="contact-info-link">
+                    +91 70127 32880
                   </a>
                 </div>
               </div>

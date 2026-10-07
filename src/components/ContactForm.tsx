@@ -49,7 +49,7 @@ export default function ContactForm() {
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
           {formData.preferredContact === 'WhatsApp' && (
             <a
-              href={`https://wa.me/919600000000?text=Namaste%2C%20I%20have%20submitted%20consultation%20inquiry%20${referenceId}%20for%20${encodeURIComponent(formData.inquiryType)}`}
+              href={`https://wa.me/917012732880?text=Namaste%2C%20I%20have%20submitted%20consultation%20inquiry%20${referenceId}%20for%20${encodeURIComponent(formData.inquiryType)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="banner-cta-btn"
@@ -184,7 +184,7 @@ export default function ContactForm() {
       <div className="contact-direct-whatsapp">
         <span>Need instant assistance from our artisans?</span>
         <a
-          href="https://wa.me/919600000000?text=Vanakkam%2C%20I%20would%20like%20to%20inquire%20about%20Panchaloham%20temple%20jewellery"
+          href="https://wa.me/917012732880?text=Vanakkam%2C%20I%20would%20like%20to%20inquire%20about%20Panchaloham%20temple%20jewellery"
           target="_blank"
           rel="noopener noreferrer"
           className="whatsapp-quick-btn"

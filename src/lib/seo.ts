@@ -11,7 +11,7 @@ export const siteConfig = {
   url: 'https://aamadappetti.com',
   ogImage: '/assets/brand_logo_gold.png',
   locale: 'en_IN',
-  telephone: '+91 96000 00000',
+  telephone: '+91 70127 32880',
   email: 'support@aamadappetti.com',
   address: {
     streetAddress: 'Eazhaparambil, Edayar, Kannavam P.O.',
