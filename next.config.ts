@@ -55,6 +55,31 @@ const nextConfig: NextConfig = {
         destination: "/privacy-policy",
         permanent: true,
       },
+      {
+        source: "/shipping-and-return-policy",
+        destination: "/shipping-policy",
+        permanent: true,
+      },
+      {
+        source: "/shipping",
+        destination: "/shipping-policy",
+        permanent: true,
+      },
+      {
+        source: "/return-policy",
+        destination: "/shipping-policy",
+        permanent: true,
+      },
+      {
+        source: "/about-us",
+        destination: "/about",
+        permanent: true,
+      },
+      {
+        source: "/contact-us",
+        destination: "/contact",
+        permanent: true,
+      },
     ];
   },
 };

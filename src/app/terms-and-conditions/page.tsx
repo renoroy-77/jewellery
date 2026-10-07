@@ -65,6 +65,45 @@ export default function TermsAndConditionsPage() {
           </p>
         </div>
 
+        {/* Merchant & Business Compliance Box */}
+        <div
+          style={{
+            background: 'rgba(10, 36, 25, 0.85)',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '32px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '16px',
+            fontSize: '0.85rem',
+            lineHeight: '1.6',
+          }}
+        >
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Legal Business Name:</div>
+            <div style={{ color: '#fff9eb', fontWeight: 600 }}>Athira Rajendran</div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
+              Operating Brand / Trade Name: <strong>Aamadappetti</strong>
+            </div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
+            <div style={{ color: '#fff9eb', fontWeight: 600 }}>
+              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+            </div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
+              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+            </div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Operating Location:</div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+              Kannur, Kerala – 670650, India
+            </div>
+          </div>
+        </div>
+
         {/* Policy Content Card */}
         <div
           style={{
@@ -84,19 +123,22 @@ export default function TermsAndConditionsPage() {
               1. Introduction &amp; Ownership
             </h2>
             <p>
-              Welcome to <strong>Aamadappetti</strong> (accessible at <a href="https://aamadappetti.com" style={{ color: '#d4af37', textDecoration: 'underline' }}>https://aamadappetti.com</a>). The website and brand Aamadappetti are owned and operated by <strong>Athira Rajendran</strong>. By visiting, browsing, registering, or placing an order on our platform, you acknowledge that you have read, understood, and agree to be legally bound by these Terms and Conditions, our Privacy Policy, and our Refunds &amp; Cancellations Policy.
+              Welcome to <strong>Aamadappetti</strong> (accessible at <a href="https://aamadappetti.com" style={{ color: '#d4af37', textDecoration: 'underline' }}>https://aamadappetti.com</a>). The website and brand Aamadappetti are owned and operated by <strong>Athira Rajendran</strong>. By visiting, browsing, registering, or placing an order on our platform, you acknowledge that you have read, understood, and agree to be legally bound by these Terms and Conditions, our Privacy Policy, our Shipping &amp; Return Policy, and our Refunds &amp; Cancellations Policy.
             </p>
           </section>
 
           <section style={{ marginBottom: '32px' }}>
             <h2 style={{ fontSize: '1.35rem', color: '#f5d77f', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <CheckCircle2 size={18} color="#d4af37" />
-              2. Products, Consecration &amp; Currency (INR)
+              2. Products, Business Category &amp; Currency (INR)
             </h2>
             <p>
-              Aamadappetti specializes in authentic Agamic <strong>Panchaloham temple jewellery</strong> (an alloy of Gold, Silver, Copper, Zinc, and Iron) cast following traditional Shilpa Shastras and Agamic guidelines.
+              Aamadappetti operates within the business category of <strong>Precious &amp; Semi-Precious Jewellery (MCC Code: 5944)</strong>, specializing in authentic Agamic <strong>Panchaloham temple jewellery</strong> (an alloy of Gold, Silver, Copper, Zinc, and Iron) cast following traditional Shilpa Shastras and Agamic guidelines.
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
+              <li>
+                <strong>Permitted &amp; Finished Goods Only:</strong> We exclusively sell finished consecrated temple jewellery, deity lockets, and sacred spiritual artefacts. We do <strong>NOT</strong> sell loose or unset diamonds (MCC 5094), bullion, raw precious metals for speculative investment, or any prohibited items under PayU or RBI regulatory frameworks.
+              </li>
               <li>
                 <strong>Currency of Transaction:</strong> All product and service prices on this website are listed in <strong>Indian Rupees (INR - ₹)</strong> and are inclusive of applicable statutory taxes (GST) unless explicitly noted.
               </li>
@@ -156,7 +198,7 @@ export default function TermsAndConditionsPage() {
               6. Governing Law &amp; Jurisdiction
             </h2>
             <p>
-              These Terms and Conditions and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of <strong>India</strong>. Any disputes arising in connection with these terms shall be subject to the exclusive jurisdiction of the competent courts in Tamil Nadu, India.
+              These Terms and Conditions and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of <strong>India</strong>. Any disputes arising in connection with these terms shall be subject to the exclusive jurisdiction of the competent courts in Kannur, Kerala, India.
             </p>
           </section>
 
@@ -170,6 +212,8 @@ export default function TermsAndConditionsPage() {
             </p>
             <div style={{ marginTop: '12px', padding: '16px 20px', background: 'rgba(212, 175, 55, 0.08)', borderRadius: '10px', borderLeft: '3px solid #d4af37' }}>
               <p style={{ margin: 0 }}><strong>Aamadappetti Temple Jewellery Atelier</strong></p>
+              <p style={{ margin: '4px 0' }}>Operating Legal Entity: <strong>Athira Rajendran (Brand: Aamadappetti)</strong></p>
+              <p style={{ margin: '4px 0' }}>Registered Address: <strong>Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650, India</strong></p>
               <p style={{ margin: '4px 0' }}>Email: <a href="mailto:support@aamadappetti.com" style={{ color: '#d4af37' }}>support@aamadappetti.com</a></p>
               <p style={{ margin: '4px 0' }}>Helpline / WhatsApp: <a href="tel:+917012732880" style={{ color: '#d4af37' }}>+91 70127 32880</a></p>
               <p style={{ margin: 0 }}>Operating Hours: Monday – Saturday, 9:00 AM – 6:00 PM IST</p>

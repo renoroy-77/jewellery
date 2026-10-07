@@ -252,6 +252,66 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Merchant & Legal Business Details Section */}
+        <section
+          className="about-section"
+          style={{
+            marginTop: '40px',
+            padding: '32px',
+            background: 'rgba(10, 36, 25, 0.85)',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            borderRadius: '16px',
+            boxShadow: '0 16px 36px rgba(0,0,0,0.4)',
+          }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div className="section-kicker">GOVERNANCE &amp; MERCHANT TRANSPARENCY</div>
+            <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '8px' }}>
+              Legal Business &amp; Operational Disclosure
+            </h2>
+            <p style={{ maxWidth: '640px', margin: '0 auto', fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)' }}>
+              Aamadappetti is committed to total merchant transparency and compliance with Indian regulatory and payment gateway guidelines.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '20px',
+              fontSize: '0.9rem',
+              lineHeight: '1.7',
+              color: 'rgba(255, 255, 255, 0.85)',
+            }}
+          >
+            <div style={{ background: 'rgba(212, 175, 55, 0.06)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+              <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, marginBottom: '4px' }}>Legal Entity &amp; Ownership</div>
+              <div>Legal Business Name: <strong style={{ color: '#fff9eb' }}>Athira Rajendran</strong></div>
+              <div>Brand / Trade Name: <strong style={{ color: '#fff9eb' }}>Aamadappetti</strong></div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.65)', marginTop: '4px' }}>
+                Solely operated &amp; managed under traditional artisanal governance.
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(212, 175, 55, 0.06)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+              <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, marginBottom: '4px' }}>Business Category &amp; MCC</div>
+              <div>Category: <strong style={{ color: '#fff9eb' }}>Precious &amp; Semi-Precious Jewellery</strong></div>
+              <div>Merchant Category Code: <strong style={{ color: '#fff9eb' }}>MCC 5944</strong></div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.65)', marginTop: '4px' }}>
+                Exclusively finished sacred temple ornaments. No loose/unset diamonds or commodity trading.
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(212, 175, 55, 0.06)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+              <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, marginBottom: '4px' }}>Registered Atelier &amp; Contact</div>
+              <div>Eazhaparambil, Edayar, Kannavam P.O.</div>
+              <div>Koloyad, Kannur, Kerala – 670650, India</div>
+              <div>Email: <a href="mailto:support@aamadappetti.com" style={{ color: '#d4af37' }}>support@aamadappetti.com</a></div>
+              <div>Helpline: <a href="tel:+917012732880" style={{ color: '#d4af37' }}>+91 70127 32880</a></div>
+            </div>
+          </div>
+        </section>
+
         {/* Final CTA */}
         <div className="about-cta-banner">
           <h2>Adorn Your Faith with Consecrated Gold</h2>

@@ -142,19 +142,22 @@ export default function Footer() {
             <h3 className="footer-col-title">Customer Care &amp; Policies</h3>
             <ul className="footer-links">
               <li>
-                <Link href="/contact">Contact Us</Link>
+                <Link href="/about">About Us</Link>
+              </li>
+              <li>
+                <Link href="/privacy-policy">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link href="/shipping-policy">Shipping &amp; Return Policy</Link>
+              </li>
+              <li>
+                <Link href="/refunds-and-cancellations">Refund &amp; Cancellation Policy</Link>
               </li>
               <li>
                 <Link href="/terms-and-conditions">Terms &amp; Conditions</Link>
               </li>
               <li>
-                <Link href="/refunds-and-cancellations">Refunds &amp; Cancellations</Link>
-              </li>
-              <li>
-                <Link href="/shipping-policy">Shipping Policy</Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href="/contact">Contact Us</Link>
               </li>
               <li>
                 <Link href="/#faq-section">FAQs</Link>
@@ -170,7 +173,7 @@ export default function Footer() {
             <h3 className="footer-col-title">Contact Us</h3>
             <div className="footer-contact-item">
               <MapPin size={18} className="footer-contact-icon" />
-              <span>{footerData.address || 'Ships Worldwide · India'}</span>
+              <span>{footerData.address || 'Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650'}</span>
             </div>
             <div className="footer-contact-item">
               <Mail size={18} className="footer-contact-icon" />
@@ -186,7 +189,7 @@ export default function Footer() {
             </div>
             <div className="footer-contact-item">
               <Clock size={18} className="footer-contact-icon" />
-              <span>{footerData.sanctumHours || 'Mon - Sat, 9 AM - 6 PM'}</span>
+              <span>{footerData.sanctumHours || 'Mon - Sat, 9 AM - 6 PM IST'}</span>
             </div>
           </div>
 
@@ -200,12 +203,72 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Merchant & Business Compliance Box (PayU Onboarding & Regulatory Details) */}
+        <div
+          className="footer-compliance-card"
+          style={{
+            marginTop: '32px',
+            padding: '18px 24px',
+            background: 'rgba(10, 36, 25, 0.75)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '12px',
+            fontSize: '0.82rem',
+            lineHeight: '1.6',
+            color: 'rgba(255, 255, 255, 0.85)',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '16px',
+          }}
+        >
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
+              Legal Business Name
+            </div>
+            <div>
+              <strong style={{ color: '#fff9eb' }}>Athira Rajendran</strong>
+            </div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.78rem' }}>
+              Operating Brand / Trade Name: <strong>Aamadappetti</strong>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
+              Business Category
+            </div>
+            <div>
+              <strong style={{ color: '#fff9eb' }}>Precious &amp; Semi-Precious Jewellery (MCC: 5944)</strong>
+            </div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.78rem' }}>
+              Retail sale of finished Panchaloham temple jewellery &amp; spiritual artefacts
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
+              Registered &amp; Operating Address
+            </div>
+            <div style={{ fontSize: '0.78rem' }}>
+              Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650, India
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
+              Compliance Assurance
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.75)' }}>
+              100% compliant with RBI &amp; PayU guidelines. We exclusively sell finished temple ornaments. No loose diamonds or speculative commodities.
+            </div>
+          </div>
+        </div>
+
         {/* SEO Brand Narrative & Keyword Context (Aamadappetti & Amadapetti) */}
         <div
           className="footer-seo-narrative"
           style={{
-            marginTop: '36px',
-            paddingTop: '24px',
+            marginTop: '28px',
+            paddingTop: '20px',
             borderTop: '1px solid rgba(212, 175, 55, 0.15)',
             fontSize: '0.8rem',
             lineHeight: '1.7',

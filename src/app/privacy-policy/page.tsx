@@ -65,6 +65,45 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
 
+        {/* Merchant & Business Compliance Box */}
+        <div
+          style={{
+            background: 'rgba(10, 36, 25, 0.85)',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '32px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '16px',
+            fontSize: '0.85rem',
+            lineHeight: '1.6',
+          }}
+        >
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Legal Business Name:</div>
+            <div style={{ color: '#fff9eb', fontWeight: 600 }}>Athira Rajendran</div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
+              Operating Brand / Trade Name: <strong>Aamadappetti</strong>
+            </div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
+            <div style={{ color: '#fff9eb', fontWeight: 600 }}>
+              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+            </div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
+              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+            </div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Operating Location:</div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+              Kannur, Kerala – 670650, India
+            </div>
+          </div>
+        </div>
+
         {/* Policy Content Card */}
         <div
           style={{
@@ -130,9 +169,12 @@ export default function PrivacyPolicyPage() {
               If you have inquiries about this Privacy Policy or wish to request data updates, please contact our Data Protection Officer at:
             </p>
             <div style={{ marginTop: '12px', padding: '16px 20px', background: 'rgba(212, 175, 55, 0.08)', borderRadius: '10px', borderLeft: '3px solid #d4af37' }}>
-              <p style={{ margin: 0 }}><strong>Aamadappetti Privacy Desk</strong></p>
+              <p style={{ margin: 0 }}><strong>Aamadappetti Privacy &amp; Grievance Desk</strong></p>
+              <p style={{ margin: '4px 0' }}>Operating Entity: <strong>Athira Rajendran (Brand: Aamadappetti)</strong></p>
+              <p style={{ margin: '4px 0' }}>Grievance Officer: <strong>Athira Rajendran</strong></p>
+              <p style={{ margin: '4px 0' }}>Registered Address: <strong>Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650, India</strong></p>
               <p style={{ margin: '4px 0' }}>Email: <a href="mailto:support@aamadappetti.com" style={{ color: '#d4af37' }}>support@aamadappetti.com</a></p>
-              <p style={{ margin: 0 }}>Helpline: <a href="tel:+917012732880" style={{ color: '#d4af37' }}>+91 70127 32880</a></p>
+              <p style={{ margin: 0 }}>Helpline: <a href="tel:+917012732880" style={{ color: '#d4af37' }}>+91 70127 32880</a> (Mon – Sat, 9:00 AM – 6:00 PM IST)</p>
             </div>
           </section>
         </div>
