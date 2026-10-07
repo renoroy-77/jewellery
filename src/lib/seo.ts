@@ -14,10 +14,10 @@ export const siteConfig = {
   telephone: '+91 96000 00000',
   email: 'support@aamadappetti.com',
   address: {
-    streetAddress: 'Temple Road, Heritage Lane',
-    addressLocality: 'Madurai & Paravur',
-    addressRegion: 'Tamil Nadu & Kerala',
-    postalCode: '625001',
+    streetAddress: 'Eazhaparambil, Edayar, Kannavam P.O.',
+    addressLocality: 'Koloyad, Kannur',
+    addressRegion: 'Kerala',
+    postalCode: '670650',
     addressCountry: 'IN',
   },
   socials: {

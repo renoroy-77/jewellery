@@ -1097,7 +1097,7 @@ function AdminCMSContent() {
                   value={footerData.address}
                   onChange={(e) => setFooterData({ ...footerData, address: e.target.value })}
                   className="admin-form-input"
-                  placeholder="Heritage Temple Goldsmith Atelier, Sanctum Jewellery Studios, India"
+                  placeholder="Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650"
                 />
               </div>
 

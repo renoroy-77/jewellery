@@ -65,11 +65,11 @@ export default function ContactPage() {
                   <MapPin size={20} color="#d4af37" />
                 </div>
                 <div>
-                  <h3 className="contact-info-title">Artisan Atelier</h3>
+                  <h3 className="contact-info-title">Registered &amp; Operating Address</h3>
                   <p className="contact-info-desc">
-                    Heritage Temple Goldsmith Atelier<br />
-                    Sanctum Jewellery Studios<br />
-                    India
+                    Eazhaparambil, Edayar, Kannavam P.O.,<br />
+                    Koloyad, Kannur,<br />
+                    Kerala – 670650, India
                   </p>
                 </div>
               </div>

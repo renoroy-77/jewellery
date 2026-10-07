@@ -307,7 +307,7 @@ export const INITIAL_USERS: UserRecord[] = [];
 export const INITIAL_FOOTER_CMS: FooterCMS = {
   brandTagline: 'Faith. Tradition. Timeless Beauty.',
   brandLogo: '/assets/brand_logo_gold.webp',
-  address: 'Heritage Temple Goldsmith Atelier, Sanctum Jewellery Studios, India',
+  address: 'Eazhaparambil, Edayar, Kannavam P.O., Koloyad, Kannur, Kerala – 670650',
   email: 'support@aamadappetti.com',
   phone: '+91 96000 00000',
   whatsapp: '+91 96000 00000',
