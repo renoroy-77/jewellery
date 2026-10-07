@@ -118,7 +118,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="contact-info-title">Operating Legal Entity</h3>
                   <p className="contact-info-desc">
-                    Janki Design<br />
+                    Athira Rajendran<br />
                     (Brand: Aamadappetti)
                   </p>
                 </div>

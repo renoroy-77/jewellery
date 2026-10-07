@@ -84,7 +84,7 @@ export default function TermsAndConditionsPage() {
               1. Introduction &amp; Ownership
             </h2>
             <p>
-              Welcome to <strong>Aamadappetti</strong> (accessible at <a href="https://aamadappetti.com" style={{ color: '#d4af37', textDecoration: 'underline' }}>https://aamadappetti.com</a>). The website and brand Aamadappetti are owned and operated by <strong>Janki Design</strong>. By visiting, browsing, registering, or placing an order on our platform, you acknowledge that you have read, understood, and agree to be legally bound by these Terms and Conditions, our Privacy Policy, and our Refunds &amp; Cancellations Policy.
+              Welcome to <strong>Aamadappetti</strong> (accessible at <a href="https://aamadappetti.com" style={{ color: '#d4af37', textDecoration: 'underline' }}>https://aamadappetti.com</a>). The website and brand Aamadappetti are owned and operated by <strong>Athira Rajendran</strong>. By visiting, browsing, registering, or placing an order on our platform, you acknowledge that you have read, understood, and agree to be legally bound by these Terms and Conditions, our Privacy Policy, and our Refunds &amp; Cancellations Policy.
             </p>
           </section>
 

@@ -118,7 +118,7 @@ export default function RefundsAndCancellationsPage() {
               1. Order Cancellation Policy
             </h2>
             <p>
-              At <strong>Aamadappetti</strong> (operated by <strong>Janki Design</strong>), each sacred piece is consecrated and prepared with Vedic reverence. We understand that circumstances may require order modification or cancellation:
+              At <strong>Aamadappetti</strong> (operated by <strong>Athira Rajendran</strong>), each sacred piece is consecrated and prepared with Vedic reverence. We understand that circumstances may require order modification or cancellation:
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
               <li>

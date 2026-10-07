@@ -234,7 +234,7 @@ export default function Footer() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div>{footerData.copyrightText || '© 2026 Aamadappetti. All rights reserved.'}</div>
             <div style={{ fontSize: '0.75rem', color: 'rgba(212, 175, 55, 0.85)' }}>
-              Aamadappetti is owned and operated by <strong>Janki Design</strong>.
+              Aamadappetti is owned and operated by <strong>Athira Rajendran</strong>.
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

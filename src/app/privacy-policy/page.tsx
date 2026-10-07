@@ -84,7 +84,7 @@ export default function PrivacyPolicyPage() {
               1. Information We Collect
             </h2>
             <p>
-              When you purchase consecrated temple jewellery or submit an inquiry on <strong>aamadappetti.com</strong> (owned and operated by <strong>Janki Design</strong>), we collect necessary devotee information, including your full name, shipping and billing address, email address, phone/WhatsApp number, and optional temple sankalpam blessing notes.
+              When you purchase consecrated temple jewellery or submit an inquiry on <strong>aamadappetti.com</strong> (owned and operated by <strong>Athira Rajendran</strong>), we collect necessary devotee information, including your full name, shipping and billing address, email address, phone/WhatsApp number, and optional temple sankalpam blessing notes.
             </p>
           </section>
 
