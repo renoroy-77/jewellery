@@ -26,7 +26,7 @@ export default function TrustBadges() {
     {
       icon: Award,
       title: t('trust.authenticity.title', 'Certified Authenticity'),
-      desc: t('trust.authenticity.desc', 'Government lab tested Panchaloham assay certificate'),
+      desc: t('trust.authenticity.desc', 'Authentic temple guild Panchaloham composition certificate'),
     },
     {
       icon: Headphones,

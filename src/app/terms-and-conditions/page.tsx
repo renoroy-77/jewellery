@@ -90,10 +90,10 @@ export default function TermsAndConditionsPage() {
           <div>
             <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
             <div style={{ color: '#fff9eb', fontWeight: 600 }}>
-              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+              Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC: 5973 / 5999)
             </div>
             <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
-              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+              Retail sale of handcrafted traditional Panchaloham devotional ornaments &amp; spiritual artefacts
             </div>
           </div>
           <div>
@@ -133,20 +133,20 @@ export default function TermsAndConditionsPage() {
               2. Products, Business Category &amp; Currency (INR)
             </h2>
             <p>
-              Aamadappetti operates within the business category of <strong>Precious &amp; Semi-Precious Jewellery (MCC Code: 5944)</strong>, specializing in authentic Agamic <strong>Panchaloham temple jewellery</strong> (an alloy of Gold, Silver, Copper, Zinc, and Iron) cast following traditional Shilpa Shastras and Agamic guidelines.
+              Aamadappetti operates within the business category of <strong>Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC Code: 5973 / 5999)</strong>, specializing in authentic Agamic <strong>Panchaloham devotional ornaments and spiritual artefacts</strong> (an alloy of traditional copper, brass/zinc, iron, silver, and metals) cast following traditional Shilpa Shastras and Agamic guidelines.
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
               <li>
-                <strong>Permitted &amp; Finished Goods Only:</strong> We exclusively sell finished consecrated temple jewellery, deity lockets, and sacred spiritual artefacts. We do <strong>NOT</strong> sell loose or unset diamonds (MCC 5094), bullion, raw precious metals for speculative investment, or any prohibited items under PayU or RBI regulatory frameworks.
+                <strong>Permitted &amp; Finished Artefacts Only:</strong> We exclusively sell finished consecrated temple ornaments, deity lockets, and sacred spiritual artefacts. We do <strong>NOT</strong> sell solid gold fine jewellery, bullion, raw precious metals for speculative investment, loose diamonds, or any prohibited items under PayU or RBI regulatory frameworks.
               </li>
               <li>
                 <strong>Currency of Transaction:</strong> All product and service prices on this website are listed in <strong>Indian Rupees (INR - ₹)</strong> and are inclusive of applicable statutory taxes (GST) unless explicitly noted.
               </li>
               <li>
-                <strong>Handcrafted Nature:</strong> As our consecrated jewellery is handcrafted by generational master sthapatis, subtle variations in polish, weight, and engravings are hallmarks of authentic artisanal work.
+                <strong>Handcrafted Nature:</strong> As our consecrated jewellery is handcrafted by generational master sthapatis, subtle variations in polish, weight, and engravings are natural characteristics of authentic artisanal craftsmanship.
               </li>
               <li>
-                <strong>Price Revisions:</strong> We reserve the right to revise prices for precious metals and craftsmanship based on market conditions without prior notice. However, orders already confirmed will be fulfilled at the ordered price.
+                <strong>Price Revisions:</strong> We reserve the right to revise prices based on craftsmanship and material costs without prior notice. However, orders already confirmed will be fulfilled at the ordered price.
               </li>
             </ul>
           </section>

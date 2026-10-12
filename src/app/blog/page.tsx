@@ -60,9 +60,9 @@ export default function BlogPage() {
                 <Flame size={14} color="#ffd966" />
                 <span>SACRED KNOWLEDGE HUB</span>
               </div>
-              <h1 className="blog-main-title">Stories of Gold &amp; Devotion</h1>
+              <h1 className="blog-main-title">Stories of Sanctum &amp; Devotion</h1>
               <p className="blog-main-subtitle">
-                Insights on Panchaloham jewellery, Vedic traditions, temple goldsmithing, and the sacred art of divine adornment.
+                Insights on Panchaloham jewellery, Vedic traditions, temple metal craftsmanship, and the sacred art of divine adornment.
               </p>
             </div>
           </div>

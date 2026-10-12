@@ -265,7 +265,7 @@ function OrderSuccessContent() {
                   Quality Inspection &amp; Packaging
                 </div>
                 <div style={{ fontSize: '0.78rem', color: '#8fa59b' }}>
-                  Each item is verified for metal assay certification and placed in premium packaging.
+                  Each item is verified for metal composition certification and placed in premium packaging.
                 </div>
               </div>
             </div>

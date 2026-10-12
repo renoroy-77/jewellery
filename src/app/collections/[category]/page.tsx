@@ -85,24 +85,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (slugLower.includes('ganesh')) {
     additionalKeywords.push(
-      'ganesha pendant gold',
-      'ganpati pendant gold',
-      'ganesh locket gold',
-      'gold locket ganesh',
-      'ganpati locket gold',
-      '22k gold ganesh pendant',
+      'ganesha pendant panchaloham',
+      'ganpati pendant panchaloham',
+      'ganesh locket panchaloham',
+      'panchaloham locket ganesh',
+      'ganpati locket panchaloham',
+      'panchaloham ganesh pendant',
       'ganesh pendant silver'
     );
   } else if (slugLower.includes('lakshmi') || slugLower.includes('laxmi')) {
     additionalKeywords.push(
-      'lakshmi pendant gold',
-      'laxmi pendant gold',
-      'gold laxmi pendant',
+      'lakshmi pendant panchaloham',
+      'laxmi pendant panchaloham',
+      'panchaloham laxmi pendant',
       'lakshmi dollar chain',
-      'female lakshmi pendant designs in gold',
-      '5 gram gold lakshmi pendant',
-      '8 gram gold lakshmi pendant',
-      'lakshmi devi lockets gold',
+      'female lakshmi pendant designs in panchaloham',
+      'panchaloham lakshmi dollar',
+      'panchaloham lakshmi locket',
+      'lakshmi devi lockets panchaloham',
       'lakshmi pendant necklace'
     );
   } else if (slugLower.includes('chain')) {

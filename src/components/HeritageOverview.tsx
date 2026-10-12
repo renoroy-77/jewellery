@@ -122,7 +122,7 @@ export default function HeritageOverview() {
               Handcrafted Deity Pendants &amp; Consecrated Temple Heirlooms
             </h3>
             <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
-              Whether ordering a certified <strong>Lord Ganesha gold pendant</strong> for obstacle removal, a sanctified <strong>Murugan Vel talisman</strong> for courage, a graceful <strong>Lakshmi pendant dollar chain</strong> for prosperity, or heavy handmade temple chains, every piece comes with an authenticated Hallmark Purity Certificate and sacred sanctum energization.
+              Whether ordering a consecrated <strong>Lord Ganesha Panchaloham pendant</strong> for obstacle removal, a sanctified <strong>Murugan Vel talisman</strong> for courage, a graceful <strong>Lakshmi deity pendant</strong> for prosperity, or handmade temple chains, every piece comes with an authenticated Panchaloham Composition Certificate and sacred sanctum energization.
             </p>
           </div>
           <Link href="/collections" className="admin-btn admin-btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: 600 }}>

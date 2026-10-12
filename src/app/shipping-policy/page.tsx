@@ -107,10 +107,10 @@ export default function ShippingAndReturnPolicyPage() {
           <div>
             <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
             <div style={{ color: '#fff9eb', fontWeight: 600 }}>
-              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+              Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC: 5973 / 5999)
             </div>
             <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
-              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+              Retail sale of handcrafted traditional Panchaloham devotional ornaments &amp; spiritual artefacts
             </div>
           </div>
           <div>
@@ -293,7 +293,7 @@ export default function ShippingAndReturnPolicyPage() {
                 4. Tamper-Evident Insured Packaging
               </h3>
               <p>
-                Every jewel is cushioned in plush velvet temple gift cases, vacuum-sealed inside tamper-evident waterproof outer packaging, and accompanied by an authentic government-laboratory assayed <strong>Panchaloham Metallurgical Certificate</strong>. All shipments are <strong>100% transit-insured</strong> against loss, theft, or damage during transit until safe delivery at your doorstep.
+                Every jewel is cushioned in plush velvet temple gift cases, vacuum-sealed inside tamper-evident waterproof outer packaging, and accompanied by an authentic <strong>Panchaloham Metallurgical Certificate</strong>. All shipments are <strong>100% transit-insured</strong> against loss, theft, or damage during transit until safe delivery at your doorstep.
               </p>
             </section>
 
@@ -373,7 +373,7 @@ export default function ShippingAndReturnPolicyPage() {
               </p>
               <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
                 <li>The jewellery piece must remain <strong>unworn, unaltered, and unscratched</strong>.</li>
-                <li>The item must be returned in its original velvet jewellery box with all original security tags, packaging, and the assay certificate intact.</li>
+                <li>The item must be returned in its original velvet jewellery box with all original security tags, packaging, and the authenticity certificate intact.</li>
                 <li>Custom bespoke deity castings or personalized wedding thalis cast specifically under personal astrological sankalpam are non-returnable unless defective.</li>
               </ul>
             </section>
@@ -391,7 +391,7 @@ export default function ShippingAndReturnPolicyPage() {
                   <strong>Reverse Pickup:</strong> Our support desk will arrange a complimentary insured reverse courier pickup from your delivery address through Blue Dart / Delhivery (subject to pin code serviceability). If reverse pickup is unserviceable at your location, we will provide our atelier return address and reimburse standard courier charges.
                 </li>
                 <li style={{ marginBottom: '8px' }}>
-                  <strong>Atelier Inspection:</strong> Upon receipt at our Kannur workshop, our master artisans inspect the piece to verify hallmark integrity.
+                  <strong>Atelier Inspection:</strong> Upon receipt at our Kannur workshop, our artisans inspect the piece to verify item condition and authenticity.
                 </li>
                 <li>
                   <strong>Resolution:</strong> A replacement unit is dispatched within 2 business days, or a 100% full refund is issued back to your source account.

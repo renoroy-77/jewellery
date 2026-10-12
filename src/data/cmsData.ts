@@ -134,7 +134,7 @@ export const INITIAL_HERO_SLIDES: HeroSlideCMS[] = [
     subtitle: 'Crafted by master sthapatis preserving ancient metallurgy.',
     ctaText: 'Discover Heritage',
     ctaLink: '/about',
-    tag: 'HALLMARKED PURITY',
+    tag: 'SACRED PANCHALOHAM',
     image: '/assets/hero_slide_3.webp',
     mobileImage: '/assets/hero_slide_3_mobile.webp',
   },
@@ -312,7 +312,7 @@ export const INITIAL_FOOTER_CMS: FooterCMS = {
   phone: '+91 70127 32880',
   whatsapp: '+91 70127 32880',
   sanctumHours: 'Monday – Saturday: 9:00 AM – 6:00 PM IST',
-  assuranceNote: 'Every Panchaloham consultation is directly coordinated with master temple sthapatis and certified hallmark metal documentation.',
+  assuranceNote: 'Every Panchaloham consultation is directly coordinated with master temple sthapatis and authentic metal composition documentation.',
   socialLinks: {
     instagram: 'https://instagram.com/aamadappetti',
     facebook: 'https://facebook.com/aamadappetti',
@@ -323,13 +323,13 @@ export const INITIAL_FOOTER_CMS: FooterCMS = {
 };
 
 export const INITIAL_ABOUT_CMS: AboutPageCMS = {
-  heroKicker: 'ESTD. 1984 • SACRED JEWELLERY GOLDSMITHING',
+  heroKicker: 'ESTD. 1984 • SACRED TEMPLE PANCHALOHAM ARTISANSHIP',
   heroTitle: 'The Sacred Legacy of Aamadappetti',
-  heroLead: 'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple goldsmithing.',
+  heroLead: 'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple artisanship.',
   establishedYear: '1984',
   legacyTitle: 'Preserving Agamic Metallurgy & Temple Artisanship',
   legacyParagraph1: 'Founded four decades ago in the temple heartlands of South India, Aamadappetti was born out of deep devotion to authentic Agamic craftsmanship. While modern commercial markets replaced traditional methods with hollow flash-plating, our sanctum atelier vowed to protect the sacred Panchaloham science prescribed in the Shilpa Shastras.',
-  legacyParagraph2: 'Every ring, pendant, and kada is cast using genuine five-metal alloy (Gold, Silver, Copper, Brass/Zinc, and Iron), blessed in traditional sanctums, and hallmarked for lifetime purity.',
+  legacyParagraph2: 'Every ring, pendant, and kada is cast using genuine five-metal alloy (Gold, Silver, Copper, Brass/Zinc, and Iron), blessed in traditional sanctums, and certified for lifetime authenticity.',
   metals: [
     {
       name: 'Gold (Pon)',
@@ -395,7 +395,7 @@ export const INITIAL_ABOUT_CMS: AboutPageCMS = {
     },
     {
       step: '05',
-      title: 'Master Chiseling & Goldsmithing',
+      title: 'Master Chiseling & Sculpting',
       desc: 'Once cooled, the clay is shattered. Artisans spend over 40 hours hand-chiseled each divine attribute with micro-tools to mirror temple icons.',
     },
     {
@@ -405,7 +405,7 @@ export const INITIAL_ABOUT_CMS: AboutPageCMS = {
     },
   ],
   sanctumQuote: 'Every jewel we forge is not mere metal; it is a consecrated vessel carrying the cosmic vibrations of Vedic mantras into your daily life.',
-  sanctumQuoteAuthor: 'Master Sthapati R. Shanmugam, Chief Temple Goldsmith',
+  sanctumQuoteAuthor: 'Master Sthapati R. Shanmugam, Chief Temple Metal Artisan',
 };
 
 export const INITIAL_INQUIRIES: any[] = [];

@@ -39,7 +39,7 @@ const HERO_SLIDES = [
     subtitle: 'Crafted by master sthapatis preserving ancient metallurgy.',
     ctaText: 'Discover Heritage',
     ctaLink: '/about',
-    tag: 'HALLMARKED PURITY',
+    tag: 'SACRED PANCHALOHAM',
     image: '/assets/hero_slide_3.webp',
     mobileImage: '/assets/hero_slide_3_mobile.webp',
   },

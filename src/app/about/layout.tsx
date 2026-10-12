@@ -10,7 +10,7 @@ export const metadata: Metadata = constructMetadata({
     'about aamadappetti',
     'about amadapetti',
     'panchaloham heritage',
-    'temple jewellery goldsmith',
+    'temple jewellery artisans',
     'sacred metallurgy',
     'sthapatis madurai',
   ],

@@ -237,10 +237,10 @@ export default function Footer() {
               Business Category
             </div>
             <div>
-              <strong style={{ color: '#fff9eb' }}>Precious &amp; Semi-Precious Jewellery (MCC: 5944)</strong>
+              <strong style={{ color: '#fff9eb' }}>Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC: 5973 / 5999)</strong>
             </div>
             <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.78rem' }}>
-              Retail sale of finished Panchaloham temple jewellery &amp; spiritual artefacts
+              Retail sale of handcrafted traditional Panchaloham devotional ornaments &amp; spiritual artefacts
             </div>
           </div>
 
@@ -258,7 +258,7 @@ export default function Footer() {
               Compliance Assurance
             </div>
             <div style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.75)' }}>
-              100% compliant with RBI &amp; PayU guidelines. We exclusively sell finished temple ornaments. No loose diamonds or speculative commodities.
+              100% compliant with RBI &amp; PayU individual merchant onboarding guidelines. We exclusively sell finished Panchaloham devotional artefacts and copper-alloy spiritual ornaments. We do not sell pure gold/silver bullion, solid gold fine jewelry, or speculative commodities.
             </div>
           </div>
         </div>

@@ -542,10 +542,10 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
   {
     key: 'trust.authenticity.desc',
     section: 'Value Propositions',
-    sourceText: 'Government lab tested Panchaloham assay certificate',
+    sourceText: 'Authentic temple guild Panchaloham composition certificate',
     translations: {
-      en: 'Government lab tested Panchaloham assay certificate',
-      ta: 'அரசு ஆய்வக சோதனை செய்யப்பட்ட ஐம்பொன் சான்றிதழ்',
+      en: 'Authentic temple guild Panchaloham composition certificate',
+      ta: 'பாரம்பரிய ஐம்பொன் உலோக கலவை சான்றிதழ்',
     },
   },
   {

@@ -1343,7 +1343,7 @@ function AdminCMSContent() {
               </div>
 
               <div className="admin-form-group">
-                <label className="admin-form-label">Story Paragraph 2 (Sanctum Hallmarking)</label>
+                <label className="admin-form-label">Story Paragraph 2 (Sanctum Authenticity)</label>
                 <textarea
                   rows={3}
                   value={aboutData.legacyParagraph2}
@@ -1960,7 +1960,7 @@ function AdminCMSContent() {
                 <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8' }}>
                     <CheckCircle2 size={13} color="#4ade80" />
-                    <span>100% Certified Panchaloham (Govt Assay)</span>
+                    <span>100% Certified Panchaloham (Artisan Guild)</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#94a3b8' }}>
                     <CheckCircle2 size={13} color="#4ade80" />

@@ -145,7 +145,7 @@ export default function AdminDashboardPage() {
             <div className="admin-stat-value">{stats?.metrics.totalProducts ?? PRODUCTS.length}</div>
             <div className="admin-stat-label">Consecrated Products</div>
             <div style={{ fontSize: '0.72rem', color: '#0d5438', marginTop: '4px', fontWeight: 600 }}>
-              {stats?.metrics.inStockProducts ?? PRODUCTS.length} in stock • Assay certified
+              {stats?.metrics.inStockProducts ?? PRODUCTS.length} in stock • Guild certified
             </div>
           </div>
         </div>

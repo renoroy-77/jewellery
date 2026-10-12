@@ -255,7 +255,7 @@ export default function ShopCatalog({
             </div>
             <div className="mini-trust-item">
               <span className="mini-trust-gold">✓</span>
-              <span>Govt. Assay Hallmarked</span>
+              <span>Artisan Guild Certified</span>
             </div>
           </div>
         </aside>

@@ -90,10 +90,10 @@ export default function PrivacyPolicyPage() {
           <div>
             <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
             <div style={{ color: '#fff9eb', fontWeight: 600 }}>
-              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+              Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC: 5973 / 5999)
             </div>
             <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
-              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+              Retail sale of handcrafted traditional Panchaloham devotional ornaments &amp; spiritual artefacts
             </div>
           </div>
           <div>

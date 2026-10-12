@@ -66,14 +66,14 @@ export default function AboutPage() {
         <div className="about-hero-card">
           <div className="about-hero-content">
             <span className="section-kicker">
-              {aboutData.heroKicker || `ESTD. ${aboutData.establishedYear || '1984'} • SACRED JEWELLERY GOLDSMITHING`}
+              {aboutData.heroKicker || `ESTD. ${aboutData.establishedYear || '1984'} • SACRED PANCHALOHAM ARTISANSHIP`}
             </span>
             <h1 className="about-hero-title">
               {aboutData.heroTitle || 'The Sacred Legacy of Aamadappetti'}
             </h1>
             <p className="about-hero-lead">
               {aboutData.heroLead ||
-                'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple goldsmithing.'}
+                'For four decades, our sanctum artisans have guarded the timeless Vedic metallurgy of authentic Panchaloham — uniting cosmic energies, sacred heritage, and heirloom temple artisanship.'}
             </p>
           </div>
           <div className="about-hero-image-wrap">
@@ -197,8 +197,8 @@ export default function AboutPage() {
         <section className="about-pillars-box">
           <div className="pillar-item">
             <Award size={36} className="pillar-icon" />
-            <h4>Assay Hallmarked Authenticity</h4>
-            <p>Every piece is certified with government-tested five-metal assay percentage documentation.</p>
+            <h4>Authentic Panchaloham Certification</h4>
+            <p>Every piece is certified with authentic five-metal alloy composition and temple artisan documentation.</p>
           </div>
           <div className="pillar-item">
             <Sparkles size={36} className="pillar-icon" />
@@ -295,10 +295,10 @@ export default function AboutPage() {
 
             <div style={{ background: 'rgba(212, 175, 55, 0.06)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
               <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600, marginBottom: '4px' }}>Business Category &amp; MCC</div>
-              <div>Category: <strong style={{ color: '#fff9eb' }}>Precious &amp; Semi-Precious Jewellery</strong></div>
-              <div>Merchant Category Code: <strong style={{ color: '#fff9eb' }}>MCC 5944</strong></div>
+              <div>Category: <strong style={{ color: '#fff9eb' }}>Handicrafts &amp; Devotional Artefacts</strong></div>
+              <div>Merchant Category Code: <strong style={{ color: '#fff9eb' }}>MCC 5973 / 5999</strong></div>
               <div style={{ fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.65)', marginTop: '4px' }}>
-                Exclusively finished sacred temple ornaments. No loose/unset diamonds or commodity trading.
+                Exclusively handcrafted sacred temple ornaments. No pure gold bullion or commodity trading.
               </div>
             </div>
 
@@ -314,7 +314,7 @@ export default function AboutPage() {
 
         {/* Final CTA */}
         <div className="about-cta-banner">
-          <h2>Adorn Your Faith with Consecrated Gold</h2>
+          <h2>Adorn Your Faith with Consecrated Panchaloham</h2>
           <p>Explore our handcrafted Ganesha, Murugan, Shiva, and Lakshmi heirloom jewellery.</p>
           <div style={{ marginTop: '24px' }}>
             <Link href="/collections" className="banner-cta-btn">

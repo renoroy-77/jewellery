@@ -131,8 +131,8 @@ export default function ContactPage() {
                 <div>
                   <h3 className="contact-info-title">Business Category</h3>
                   <p className="contact-info-desc">
-                    Precious &amp; Semi-Precious Jewellery (MCC: 5944)<br />
-                    Handcrafted Panchaloham Temple Artefacts
+                    Handicrafts &amp; Devotional Artefacts (MCC: 5973 / 5999)<br />
+                    Handcrafted Panchaloham Devotional Artefacts
                   </p>
                 </div>
               </div>
@@ -145,7 +145,7 @@ export default function ContactPage() {
                 <span>SACRED ARTISAN ASSURANCE</span>
               </div>
               <p className="guarantee-text">
-                Every Panchaloham consultation is directly coordinated with master temple sthapatis and certified hallmark metal documentation.
+                Every Panchaloham consultation is directly coordinated with master temple sthapatis and authentic metal composition documentation.
               </p>
             </div>
           </div>

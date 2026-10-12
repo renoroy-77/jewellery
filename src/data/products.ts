@@ -154,7 +154,7 @@ export const PRODUCTS: Product[] = [
       copper: '65.0%',
       zinc: '15.0%',
       iron: '5.0%',
-      purityCertificate: 'Temple Artisan Guild Hallmarked',
+      purityCertificate: 'Temple Artisan Guild Certified',
     },
     dimensions: '4.2 cm Height x 1.8 cm Width',
     weight: '13.2 grams',
@@ -226,7 +226,7 @@ export const PRODUCTS: Product[] = [
       copper: '63.0%',
       zinc: '15.0%',
       iron: '5.0%',
-      purityCertificate: 'Hallmark Panchaloham Grade A',
+      purityCertificate: 'Authentic Panchaloham Grade A',
     },
     dimensions: '3.9 cm Height x 2.7 cm Width',
     weight: '16.4 grams',
@@ -297,7 +297,7 @@ export const PRODUCTS: Product[] = [
       copper: '65.0%',
       zinc: '15.0%',
       iron: '5.0%',
-      purityCertificate: 'Guaranteed Panchaloham Assay Marked',
+      purityCertificate: 'Guaranteed Panchaloham Metal Certified',
     },
     dimensions: '24 inches length x 4.5 mm thickness',
     weight: '28.0 grams',
@@ -428,7 +428,7 @@ export const STORE_FAQS = [
   {
     question: 'Does your jewellery come with a certificate of authenticity?',
     answer:
-      'Yes! Every piece from Aamadappetti (Amadapetti) is accompanied by an authenticated Hallmark Metal Composition Certificate and an artisan origin seal from our heritage sanctum workshops.',
+      'Yes! Every piece from Aamadappetti (Amadapetti) is accompanied by an authenticated Panchaloham Metal Composition Certificate and an artisan origin seal from our heritage sanctum workshops.',
   },
   {
     question: 'Will Panchaloham jewellery tarnish or rust over time?',

@@ -90,10 +90,10 @@ export default function RefundsAndCancellationsPage() {
           <div>
             <div style={{ color: 'var(--gold, #d4af37)', fontWeight: 600 }}>Business Category:</div>
             <div style={{ color: '#fff9eb', fontWeight: 600 }}>
-              Precious &amp; Semi-Precious Jewellery (MCC: 5944)
+              Handicrafts, Religious Goods &amp; Devotional Artefacts (MCC: 5973 / 5999)
             </div>
             <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem' }}>
-              Retail sale of finished Panchaloham temple jewellery &amp; artefacts
+              Retail sale of handcrafted traditional Panchaloham devotional ornaments &amp; spiritual artefacts
             </div>
           </div>
           <div>
@@ -188,7 +188,7 @@ export default function RefundsAndCancellationsPage() {
                 <strong>Size Adjustment:</strong> For bangles, rings, and kadas, we offer one-time size exchange assistance within 7 days.
               </li>
               <li>
-                <strong>Condition of Item:</strong> The jewellery piece must be unworn, undamaged by the user, and returned with its original sacred velvet packaging and hallmark authenticity certificate.
+                <strong>Condition of Item:</strong> The jewellery piece must be unworn, undamaged by the user, and returned with its original sacred velvet packaging and authenticity certificate.
               </li>
             </ul>
           </section>
@@ -203,7 +203,7 @@ export default function RefundsAndCancellationsPage() {
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
               <li>
-                <strong>Approval Timeline:</strong> Once the returned item is received at our master atelier and inspected for hallmark integrity, refund approval is communicated within <strong>24–48 hours</strong>.
+                <strong>Approval Timeline:</strong> Once the returned item is received at our master atelier and inspected for quality and condition, refund approval is communicated within <strong>24–48 hours</strong>.
               </li>
               <li>
                 <strong>Settlement Timeline:</strong> The refund is credited back to your original payment method (Bank Account, UPI, Debit/Credit Card) within <strong>5 to 7 business days</strong>, subject to your issuing bank’s standard clearing cycles.

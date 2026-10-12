@@ -333,8 +333,8 @@ function LoginForm() {
                 <ShieldCheck size={20} className="trust-icon" />
               </div>
               <div className="trust-text">
-                <span className="trust-title">Assay Certified</span>
-                <span className="trust-sub">Purity</span>
+                <span className="trust-title">Guild Certified</span>
+                <span className="trust-sub">Panchaloham</span>
               </div>
             </div>
 

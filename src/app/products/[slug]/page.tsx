@@ -47,27 +47,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (deityLower.includes('ganesh') || nameLower.includes('ganesh')) {
     productSpecificKeywords.push(
-      'ganesha pendant gold',
-      'ganpati pendant gold',
-      'ganesh locket gold',
-      'gold locket ganesh',
-      'ganpati locket gold',
-      '22k gold ganesh pendant'
+      'ganesha pendant panchaloham',
+      'ganpati pendant panchaloham',
+      'ganesh locket panchaloham',
+      'panchaloham locket ganesh',
+      'ganpati locket panchaloham',
+      'panchaloham ganesh pendant'
     );
   } else if (deityLower.includes('lakshmi') || nameLower.includes('lakshmi') || nameLower.includes('laxmi')) {
     productSpecificKeywords.push(
-      'lakshmi pendant gold',
-      'laxmi pendant gold',
-      'gold laxmi pendant',
+      'lakshmi pendant panchaloham',
+      'laxmi pendant panchaloham',
+      'panchaloham laxmi pendant',
       'lakshmi dollar chain',
-      'female lakshmi pendant designs in gold',
-      '5 gram gold lakshmi pendant',
-      'lakshmi devi lockets gold'
+      'female lakshmi pendant designs in panchaloham',
+      'panchaloham lakshmi dollar',
+      'lakshmi devi lockets panchaloham'
     );
   } else if (deityLower.includes('murugan') || nameLower.includes('vel')) {
     productSpecificKeywords.push(
       'Murugan Vel pendant',
-      'vel locket gold',
+      'vel locket panchaloham',
       'south indian temple jewellery'
     );
   }

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
           copper: '78.5%',
           zinc: '12.0%',
           iron: '4.0%',
-          purityCertificate: 'Government Assay Certified',
+          purityCertificate: 'Temple Guild Certified',
         },
       };
 

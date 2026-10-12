@@ -2014,7 +2014,7 @@ export default function CheckoutPage() {
                 }}
               >
                 <ShieldCheck size={16} color="#d4af37" />
-                <span>100% Certified Panchaloham (Govt Assay)</span>
+                <span>100% Certified Panchaloham (Artisan Guild)</span>
               </div>
               <div
                 style={{

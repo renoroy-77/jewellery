@@ -60,25 +60,25 @@ export const TARGET_KEYWORDS = [
   'spiritual jewellery India',
   'sanctum consecrated jewellery',
 
-  // Ganesha High-Volume Queries (3.6K+ Volume)
-  'ganesha pendant gold',
-  'ganpati pendant gold',
-  'ganesh locket gold',
-  'gold locket ganesh',
+  // Ganesha High-Volume Queries (Devotional & Panchaloham)
+  'ganesha pendant panchaloham',
+  'ganpati pendant panchaloham',
+  'ganesh locket panchaloham',
+  'panchaloham locket ganesh',
   'ganesh pendant silver',
-  'ganpati locket gold',
-  '22k gold ganesh pendant',
-  'Lord Ganesha gold pendant',
+  'ganpati locket panchaloham',
+  'panchaloham ganesh pendant',
+  'Lord Ganesha panchaloham pendant',
 
-  // Lakshmi High-Volume Queries (2.4K+ Volume)
-  'lakshmi pendant gold',
-  'laxmi pendant gold',
-  'gold laxmi pendant',
+  // Lakshmi High-Volume Queries
+  'lakshmi pendant panchaloham',
+  'laxmi pendant panchaloham',
+  'panchaloham laxmi pendant',
   'lakshmi dollar chain',
-  'female lakshmi pendant designs in gold',
-  '5 gram gold lakshmi pendant',
-  '8 gram gold lakshmi pendant',
-  'lakshmi devi lockets gold',
+  'female lakshmi pendant designs in panchaloham',
+  'panchaloham lakshmi dollar',
+  'panchaloham lakshmi locket',
+  'lakshmi devi lockets panchaloham',
   'lakshmi pendant necklace',
   'laxmi pendant necklace',
   'mangalsutra with lakshmi pendant',
@@ -86,9 +86,9 @@ export const TARGET_KEYWORDS = [
 
   // Murugan & Shiva Sacred Queries
   'Murugan Vel pendant',
-  'vel locket gold',
+  'vel locket panchaloham',
   'Shiva Lingam panchaloham',
-  'five metal gold pendant',
+  'five metal sacred pendant',
   'sacred gifts',
 ];
 
@@ -130,7 +130,7 @@ export function constructMetadata({
     title: fullTitle,
     description: cleanDescription,
     keywords,
-    authors: [{ name: 'Aamadappetti Sanctum Goldsmiths' }],
+    authors: [{ name: 'Aamadappetti Artisans' }],
     creator: 'Aamadappetti',
     publisher: 'Aamadappetti Panchaloham Jewellery',
     metadataBase: new URL(siteConfig.url),
