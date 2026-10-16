@@ -26,7 +26,6 @@ import {
   Gift,
   Coins,
   KeyRound,
-  MessageCircle,
 } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useCart } from '@/context/CartContext';
@@ -64,7 +63,7 @@ export default function AccountPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [addressForm, setAddressForm] = useState({
-    label: 'Home / Puja Room',
+    label: 'Home',
     recipientName: '',
     phone: '',
     streetAddress: '',
@@ -292,7 +291,7 @@ export default function AccountPage() {
   const handleOpenAddAddress = () => {
     setEditingAddressId(null);
     setAddressForm({
-      label: 'Home / Puja Room',
+      label: 'Home',
       recipientName: session?.user.name || '',
       phone: session?.user.phone || '',
       streetAddress: '',
@@ -336,7 +335,7 @@ export default function AccountPage() {
       const refreshed = await devoteeAuthService.getAddresses(session.user.id);
       setAddresses(refreshed);
       setIsAddressModalOpen(false);
-      toast.success('Puja shipping address saved successfully!');
+      toast.success('Shipping address saved successfully!');
     } catch (err: any) {
       toast.error(err.message || 'Failed to save address.');
     }
@@ -345,9 +344,9 @@ export default function AccountPage() {
   const handleDeleteAddress = async (addressId: string) => {
     if (!session) return;
     const ok = await confirm({
-      title: 'Remove Puja Address',
-      message: 'Are you sure you want to remove this sacred delivery address?',
-      description: 'You can add or update your Puja shipping addresses anytime.',
+      title: 'Remove Address',
+      message: 'Are you sure you want to remove this delivery address?',
+      description: 'You can add or update your delivery addresses anytime.',
       confirmText: 'Yes, Remove Address',
       cancelText: 'No, Keep It',
       isDanger: true,
@@ -359,7 +358,7 @@ export default function AccountPage() {
       await devoteeAuthService.deleteAddress(session.user.id, addressId);
       const refreshed = await devoteeAuthService.getAddresses(session.user.id);
       setAddresses(refreshed);
-      toast.success('Puja shipping address removed.');
+      toast.success('Shipping address removed.');
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete address.');
     }
@@ -371,7 +370,7 @@ export default function AccountPage() {
       await devoteeAuthService.setDefaultAddress(session.user.id, addressId);
       const refreshed = await devoteeAuthService.getAddresses(session.user.id);
       setAddresses(refreshed);
-      toast.success('Primary Puja address updated!');
+      toast.success('Primary address updated!');
     } catch (err: any) {
       toast.error(err.message || 'Failed to set default address.');
     }
@@ -919,9 +918,9 @@ export default function AccountPage() {
                               <div className="tracking-steps">
                                 {[
                                   { title: 'Confirmed', desc: 'Order Placed' },
-                                  { title: 'Consecration', desc: 'Puja Sanctum' },
+                                  { title: 'Consecration', desc: 'Sanctum' },
                                   { title: 'Dispatched', desc: 'In-Transit' },
-                                  { title: 'Delivered', desc: 'Puja Altar' },
+                                  { title: 'Delivered', desc: 'Doorstep' },
                                 ].map((step, idx) => {
                                   const isDone = idx <= statusInfo.stepIndex;
                                   const isCurrent = idx === statusInfo.stepIndex;
@@ -970,7 +969,7 @@ export default function AccountPage() {
                             <div className="order-delivery-address-box">
                               <div className="delivery-box-title">
                                 <MapPin size={13} className="text-gold" />
-                                <span>Puja Delivery Address</span>
+                                <span>Delivery Address</span>
                               </div>
                               <div className="delivery-box-text">{order.shippingAddress}</div>
                             </div>
@@ -978,17 +977,6 @@ export default function AccountPage() {
 
                           {/* Action Buttons */}
                           <div className="order-actions-row">
-                            <a
-                              href={`https://api.whatsapp.com/send?phone=919840000000&text=${encodeURIComponent(
-                                `Namaste Aamadappetti, I need assistance regarding my Order #${order.id}.`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="order-whatsapp-btn"
-                            >
-                              <MessageCircle size={16} />
-                              <span>WhatsApp Order Support</span>
-                            </a>
                             <Link href="/collections" className="order-reorder-btn">
                               <Sparkles size={15} />
                               <span>Explore More Pieces</span>
@@ -1400,7 +1388,7 @@ export default function AccountPage() {
               <div id="section-addresses" className="dashboard-section">
                 <div className="dashboard-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
-                    <h3 className="dashboard-section-title">Saved Puja &amp; Delivery Addresses</h3>
+                    <h3 className="dashboard-section-title">Saved Delivery Addresses</h3>
                     <p className="dashboard-section-subtitle">
                       Saved addresses automatically pre-fill at checkout for a frictionless, elder-friendly experience.
                     </p>
@@ -1415,7 +1403,7 @@ export default function AccountPage() {
                   <div className="dashboard-empty-card">
                     <MapPin size={44} className="empty-icon" />
                     <h4>No Delivery Addresses Saved</h4>
-                    <p>Add your home or puja sanctum address once, and it will be remembered for all future purchases.</p>
+                    <p>Add your delivery address once, and it will be remembered for all future purchases.</p>
                     <button onClick={handleOpenAddAddress} className="btn-gold" style={{ marginTop: '12px' }}>
                       + Add Your First Address
                     </button>
@@ -1441,7 +1429,7 @@ export default function AccountPage() {
                               border: addr.isDefault ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(255,255,255,0.1)',
                             }}
                           >
-                            {addr.isDefault ? '★ Primary Sanctum' : addr.label}
+                            {addr.isDefault ? '★ Primary Address' : addr.label}
                           </span>
 
                           <div style={{ display: 'flex', gap: '8px' }}>
@@ -1486,7 +1474,7 @@ export default function AccountPage() {
                             </button>
                           ) : (
                             <span style={{ fontSize: '0.82rem', color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <Check size={14} /> Default for Puja Deliveries
+                              <Check size={14} /> Default for Deliveries
                             </span>
                           )}
                         </div>
@@ -1500,7 +1488,7 @@ export default function AccountPage() {
                   <div className="address-modal-backdrop">
                     <div className="address-modal-card">
                       <h3 style={{ color: '#f5eedb', margin: '0 0 4px 0', fontSize: '1.3rem' }}>
-                        {editingAddressId ? 'Edit Puja Shipping Address' : 'Add New Puja Shipping Address'}
+                        {editingAddressId ? 'Edit Delivery Address' : 'Add New Delivery Address'}
                       </h3>
                       <p style={{ color: '#9db3a8', fontSize: '0.85rem', margin: '0 0 20px 0' }}>
                         This address will be remembered and automatically populated at checkout.
@@ -1515,7 +1503,7 @@ export default function AccountPage() {
                               required
                               value={addressForm.label}
                               onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value })}
-                              placeholder="e.g. Home / Puja Room"
+                              placeholder="e.g. Home / Office"
                               className="login-input-field"
                             />
                           </div>

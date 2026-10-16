@@ -2,7 +2,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAddressDto {
-  @ApiProperty({ example: 'Home / Puja Room', required: false })
+  @ApiProperty({ example: 'Home', required: false })
   @IsOptional()
   @IsString()
   label?: string;

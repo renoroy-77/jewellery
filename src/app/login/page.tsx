@@ -345,7 +345,7 @@ function LoginForm() {
                 <Leaf size={20} className="trust-icon" />
               </div>
               <div className="trust-text">
-                <span className="trust-title">Sacred Puja</span>
+                <span className="trust-title">Sacred Consecration</span>
                 <span className="trust-sub">Blessed Delivery</span>
               </div>
             </div>

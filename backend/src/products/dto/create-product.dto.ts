@@ -106,7 +106,7 @@ export class CreateProductDto {
   @IsOptional()
   weight?: string;
 
-  @ApiPropertyOptional({ example: 'Consecrated during Chithirai festival puja.' })
+  @ApiPropertyOptional({ example: 'Consecrated during Chithirai festival rituals.' })
   @IsString()
   @IsOptional()
   consecrationDetails?: string;

@@ -203,7 +203,7 @@ export default function AboutPage() {
           <div className="pillar-item">
             <Sparkles size={36} className="pillar-icon" />
             <h4>Sanctum Energized (Prana Pratishtha)</h4>
-            <p>Consecrated through ancient temple pooja rituals to channel divine protection and auspiciousness.</p>
+            <p>Consecrated through ancient temple consecration rituals to channel divine protection and auspiciousness.</p>
           </div>
           <div className="pillar-item">
             <ShieldCheck size={36} className="pillar-icon" />

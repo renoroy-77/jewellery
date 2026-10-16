@@ -343,14 +343,14 @@ export const BLOG_POSTS: BlogPost[] = [
           heading: 'Auspicious Muhurthams for Presentation',
           body: [
             'Present divine jewellery on auspicious Tithis such as Akshaya Tritiya, Dhanteras, Navratri, or personal birth Nakshatras. Accompany the gift with fresh betel leaves, unbroken supari, and sacred rice (Akshata).',
-            'Because our jewellery arrives consecration-ready in a hand-crafted presentation casket, it can be placed directly on the recipient’s home altar for initial blessings.',
+            'Because our jewellery arrives consecration-ready in a hand-crafted presentation casket, it can be placed directly on the recipient’s home prayer space for initial blessings.',
           ],
         },
       ],
       takeaways: [
         'Sacred jewellery gifts convey eternal blessings and protective grace.',
         'Ideal for weddings, child naming rituals, housewarmings, and festival milestones.',
-        'Arrives in ceremonial presentation packaging ready for puja offering.',
+        'Arrives in ceremonial presentation packaging ready for sacred offering.',
       ],
       relatedProductSlugs: [
         'goddess-lakshmi-pendant',

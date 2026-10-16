@@ -246,7 +246,7 @@ export class UsersService {
     const created = await this.prisma.devoteeAddress.create({
       data: {
         devoteeId: devotee.id,
-        label: dto.label || 'Home / Puja Room',
+        label: dto.label || 'Home',
         recipientName: dto.recipientName,
         phone: dto.phone,
         streetAddress: dto.streetAddress,

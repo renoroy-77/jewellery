@@ -420,7 +420,7 @@ export default function CheckoutPage() {
       if (loggedDevotee && saveAddressForFuture) {
         try {
           await devoteeAuthService.addAddress(loggedDevotee.id, {
-            label: 'Puja Delivery',
+            label: 'Home Delivery',
             recipientName: form.customerName.trim(),
             phone: normalizedPhone,
             streetAddress: form.streetAddress.trim(),
@@ -928,7 +928,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Step 1: Puja Shipping Address */}
+            {/* Step 1: Shipping Address */}
             <div
               className="checkout-section-box"
               style={{
@@ -967,7 +967,7 @@ export default function CheckoutPage() {
                   1
                 </span>
                 <h2 style={{ fontSize: '1.2rem', color: '#fcf9f2', margin: 0 }}>
-                  Puja Shipping Address
+                  Shipping Address
                 </h2>
               </div>
 

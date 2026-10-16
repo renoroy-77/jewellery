@@ -134,7 +134,7 @@ export const devoteeAuthService = {
         {
           id: 'addr-1',
           devoteeId: fallbackUser.id,
-          label: 'Home / Puja Room',
+          label: 'Home',
           recipientName: fallbackUser.name,
           phone: fallbackUser.phone || '+91 98450 12345',
           streetAddress: '42, Sannathi Street, Mylapore',

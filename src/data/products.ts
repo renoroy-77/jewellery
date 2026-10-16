@@ -395,7 +395,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     featured: false,
     description:
-      'Hand-cast brass and Panchaloham sacred temple lamp crowned by an intricately fanned peacock motif. Creates an enchanting golden aura during morning and evening sandhya puja.',
+      'Hand-cast brass and Panchaloham sacred temple lamp crowned by an intricately fanned peacock motif. Creates an enchanting golden aura during morning and evening sandhya prayers.',
     metalComposition: {
       gold: '1.0%',
       silver: '5.0%',
@@ -413,9 +413,9 @@ export const PRODUCTS: Product[] = [
     benefits: [
       'Heavy weighted base prevents accidental tipping',
       'Burns sesame oil or pure cow ghee smoothly without excess smoke',
-      'Brings radiant sattvic energy to any home prayer altar',
+      'Brings radiant sattvic energy to any sacred space',
     ],
-    tags: ['diya', 'lamp', 'pooja', 'brass'],
+    tags: ['diya', 'lamp', 'brass'],
   },
 ];
 

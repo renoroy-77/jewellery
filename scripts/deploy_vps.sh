@@ -40,6 +40,7 @@ rsync -avz \
   --exclude '.vercel' \
   --exclude '.env*.local' \
   --exclude '.env.production' \
+  --exclude '*.apk' \
   --exclude '.DS_Store' \
   "$PROJECT_DIR/" "$VPS_HOST:$REMOTE_ROOT/frontend/"
 

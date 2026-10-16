@@ -136,7 +136,7 @@ model DevoteeAddress {
   id            String      @id @default(uuid())
   devoteeId     String
   devotee       DevoteeUser @relation(fields: [devoteeId], references: [id], onDelete: Cascade)
-  label         String      @default("Home") // "Home", "Puja Room", "Ancestral Illam", "Temple"
+  label         String      @default("Home") // "Home", "Work", "Ancestral Illam", "Temple"
   recipientName String
   phone         String
   streetAddress String      @db.Text
