@@ -22,6 +22,7 @@ import { referralsService, UserReferralSummary } from '@/services/referralsServi
 import { OrderCMS } from '@/data/cmsData';
 
 function OrderSuccessContent() {
+  const searchParams = useSearchParams();
   const rawOrderId = searchParams.get('orderId') || searchParams.get('order_id');
   const orderId = rawOrderId && rawOrderId !== '{order_id}' ? rawOrderId : '';
   const method = searchParams.get('method') || 'payu';
