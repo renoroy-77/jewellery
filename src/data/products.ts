@@ -106,8 +106,6 @@ export const PRODUCTS: Product[] = [
     category: 'pendants',
     price: 1899,
     originalPrice: 2499,
-    rating: 5.0,
-    reviewsCount: 120,
     inStock: true,
     featured: true,
     description:
@@ -142,8 +140,6 @@ export const PRODUCTS: Product[] = [
     category: 'pendants',
     price: 1799,
     originalPrice: 2299,
-    rating: 5.0,
-    reviewsCount: 98,
     inStock: true,
     featured: true,
     description:
@@ -178,8 +174,6 @@ export const PRODUCTS: Product[] = [
     category: 'pendants',
     price: 1599,
     originalPrice: 2099,
-    rating: 5.0,
-    reviewsCount: 76,
     inStock: true,
     featured: true,
     description:
@@ -214,8 +208,6 @@ export const PRODUCTS: Product[] = [
     category: 'pendants',
     price: 1999,
     originalPrice: 2599,
-    rating: 5.0,
-    reviewsCount: 112,
     inStock: true,
     featured: true,
     description:
@@ -250,8 +242,6 @@ export const PRODUCTS: Product[] = [
     category: 'pendants',
     price: 1299,
     originalPrice: 1699,
-    rating: 5.0,
-    reviewsCount: 64,
     inStock: true,
     featured: true,
     description:
@@ -285,8 +275,6 @@ export const PRODUCTS: Product[] = [
     category: 'chains',
     price: 2499,
     originalPrice: 3199,
-    rating: 5.0,
-    reviewsCount: 89,
     inStock: true,
     featured: true,
     description:
@@ -321,8 +309,6 @@ export const PRODUCTS: Product[] = [
     category: 'bracelets',
     price: 2199,
     originalPrice: 2899,
-    rating: 4.9,
-    reviewsCount: 53,
     inStock: true,
     featured: false,
     description:
@@ -356,8 +342,6 @@ export const PRODUCTS: Product[] = [
     category: 'rings',
     price: 1499,
     originalPrice: 1999,
-    rating: 4.8,
-    reviewsCount: 67,
     inStock: true,
     featured: false,
     description:
@@ -390,8 +374,6 @@ export const PRODUCTS: Product[] = [
     category: 'pooja-items',
     price: 1199,
     originalPrice: 1599,
-    rating: 5.0,
-    reviewsCount: 44,
     inStock: true,
     featured: false,
     description:

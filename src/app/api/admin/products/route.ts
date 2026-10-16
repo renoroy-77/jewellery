@@ -31,8 +31,6 @@ export async function POST(req: Request) {
         ...product,
         id: product.id || `prod-${Date.now()}`,
         slug: product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        rating: product.rating || 5.0,
-        reviewsCount: product.reviewsCount || 1,
         inStock: product.inStock !== false,
         images: product.images && product.images.length > 0 ? product.images : ['/assets/cat_ganesha.png'],
         benefits: product.benefits || ['Bestows Divine Grace', 'Attracts Abundance'],

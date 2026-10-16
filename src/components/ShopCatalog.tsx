@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
+import { ShoppingBag, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
 import { useProductsQuery, useCategoriesQuery } from '@/hooks/queries/useQueries';
 import { useCart } from '@/context/CartContext';
 import { Product, Category } from '@/types';
@@ -124,8 +124,6 @@ export default function ShopCatalog({
       list.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'price-high') {
       list.sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
     }
 
     return list;
@@ -290,7 +288,6 @@ export default function ShopCatalog({
                 <option value="featured">Featured & Popular</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
-                <option value="rating">Customer Rating</option>
               </select>
             </div>
           </div>
@@ -363,22 +360,6 @@ export default function ShopCatalog({
                           );
                         })()}
                         <h3 className="ecom-item-title">{product.name}</h3>
-
-                        {/* Rating */}
-                        <div className="ecom-rating-row">
-                          <div className="stars">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={12}
-                                fill={i < Math.floor(product.rating || 5) ? '#dfba6c' : 'none'}
-                                color="#dfba6c"
-                              />
-                            ))}
-                          </div>
-                          <span className="ecom-rating-num">{product.rating || 5}</span>
-                          <span className="ecom-rating-reviews">({product.reviewsCount || 1})</span>
-                        </div>
 
                         {/* Pricing */}
                         <div className="ecom-pricing-row">

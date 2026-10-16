@@ -987,7 +987,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         'originalPrice': '₹ $origPriceVal',
                         'stock': stockVal,
                         'isLowStock': stockVal < 5,
-                        'rating': 5.0,
                         'isFeatured': isFeatured,
                         'featured': isFeatured,
                         'isActive': inStock,
@@ -1015,7 +1014,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       'stock': stockVal,
                       'description': desc,
                       'inStock': inStock,
-                      'rating': 5.0,
                       'featured': isFeatured,
                       'isFeatured': isFeatured,
                       'images': selectedImage.isNotEmpty ? [selectedImage] : <String>[],
@@ -1394,7 +1392,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Deity: ${product['deity']} • Rating: ★ ${product['rating']}',
+                  'Deity: ${product['deity']}',
                   style: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF64748B)),
                 ),
                 const SizedBox(height: 8),
@@ -3471,7 +3469,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> p) {
-    final ratingStr = p['rating']?.toString() ?? '5.0';
     final nameStr = p['name']?.toString() ?? 'Panchaloham Ornament';
     final deityStr = p['deity']?.toString() ?? '';
     final priceStr = p['price']?.toString() ?? '₹ 0';
@@ -3536,25 +3533,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            nameStr,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A), height: 1.2),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
-                            const SizedBox(width: 2),
-                            Text(ratingStr, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B))),
-                          ],
-                        ),
-                      ],
+                    Text(
+                      nameStr,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A), height: 1.2),
                     ),
                     Text(deityStr, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
                     const SizedBox(height: 4),

@@ -116,8 +116,6 @@ export class ProductsService {
         category: dto.category || 'pendants',
         price: Number(dto.price),
         originalPrice: dto.originalPrice ? Number(dto.originalPrice) : null,
-        rating: dto.rating ?? 5.0,
-        reviewsCount: dto.reviewsCount ?? 1,
         inStock: dto.inStock !== false,
         featured: dto.featured === true,
         description: dto.description || '',

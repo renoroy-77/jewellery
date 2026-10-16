@@ -6,8 +6,8 @@ export interface Product {
   category: string;
   price: number;
   originalPrice?: number;
-  rating: number;
-  reviewsCount: number;
+  rating?: number;
+  reviewsCount?: number;
   inStock: boolean;
   featured?: boolean;
   description: string;

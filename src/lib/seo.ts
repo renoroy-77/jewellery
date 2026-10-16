@@ -330,13 +330,17 @@ export function getProductSchema(product: Product) {
         returnFees: 'https://schema.org/FreeReturn',
       },
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: product.rating.toString(),
-      reviewCount: product.reviewsCount.toString(),
-      bestRating: '5',
-      worstRating: '1',
-    },
+    ...(product.rating != null
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.rating.toString(),
+            reviewCount: (product.reviewsCount ?? 1).toString(),
+            bestRating: '5',
+            worstRating: '1',
+          },
+        }
+      : {}),
     additionalProperty: [
       {
         '@type': 'PropertyValue',

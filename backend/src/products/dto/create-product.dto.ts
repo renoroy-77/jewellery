@@ -42,16 +42,6 @@ export class CreateProductDto {
   @IsOptional()
   originalPrice?: number;
 
-  @ApiPropertyOptional({ example: 5.0, default: 5.0 })
-  @IsNumber()
-  @IsOptional()
-  rating?: number;
-
-  @ApiPropertyOptional({ example: 1, default: 1 })
-  @IsNumber()
-  @IsOptional()
-  reviewsCount?: number;
-
   @ApiPropertyOptional({ example: true, default: true })
   @IsBoolean()
   @IsOptional()

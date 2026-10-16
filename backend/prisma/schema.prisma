@@ -53,8 +53,6 @@ model Product {
   category            String
   price               Float
   originalPrice       Float?
-  rating              Float    @default(5.0)
-  reviewsCount        Int      @default(1)
   inStock             Boolean  @default(true)
   featured            Boolean  @default(false)
   description         String   @db.Text

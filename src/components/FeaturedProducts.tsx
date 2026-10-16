@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
 import { useFeaturedProductsQuery } from '@/hooks/queries/useQueries';
@@ -85,20 +85,6 @@ export default function FeaturedProducts() {
                 <div className="product-info-four">
                   <div className="product-category-meta">{(product.category || 'Panchaloham').toUpperCase()}</div>
                   <h3 className="product-title-four">{product.name}</h3>
-
-                  <div className="product-rating">
-                    <div className="rating-stars" role="img" aria-label={`${product.rating || 5} out of 5 stars`}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={13}
-                          fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
-                          stroke="#f5d77f"
-                        />
-                      ))}
-                    </div>
-                    <span className="rating-count">({product.reviewsCount || 1})</span>
-                  </div>
 
                   <div className="product-price-row">
                     <span className="current-price">₹{Number(product.price || 0).toLocaleString('en-IN')}</span>

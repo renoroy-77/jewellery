@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import {
-  Star,
   ShieldCheck,
   Truck,
   RotateCcw,
@@ -188,24 +187,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 </span>
               )}
 
-              <h1 className="pdp-title">{product.name}</h1>
-
-              <div className="product-rating" style={{ marginBottom: 16 }}>
-                <div className="rating-stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      fill={i < Math.floor(product.rating) ? '#f5d77f' : 'none'}
-                      stroke="#f5d77f"
-                    />
-                  ))}
-                </div>
-                <span style={{ fontSize: '0.9rem', color: '#d4af37', fontWeight: 600 }}>
-                  {product.rating}
-                </span>
-                <span className="rating-count">({product.reviewsCount} Devotee Reviews)</span>
-              </div>
+              <h1 className="pdp-title" style={{ marginBottom: 16 }}>{product.name}</h1>
 
               {/* Responsive Price Row */}
               <div className="pdp-price-row">

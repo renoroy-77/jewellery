@@ -2,7 +2,7 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { ChevronRight, ShoppingBag, Star } from 'lucide-react';
+import { ChevronRight, ShoppingBag } from 'lucide-react';
 import { DEITY_COLLECTIONS } from '@/data/products';
 import { productsService } from '@/services/productsService';
 import { categoriesService } from '@/services/categoriesService';
@@ -288,19 +288,6 @@ export default async function CategoryPage({ params }: Props) {
                     </div>
                     <div className="product-info">
                       <h3 className="product-title">{product.name}</h3>
-                      <div className="product-rating">
-                        <div className="rating-stars">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={13}
-                              fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
-                              stroke="#f5d77f"
-                            />
-                          ))}
-                        </div>
-                        <span className="rating-count">({product.reviewsCount || 1})</span>
-                      </div>
                       <div className="product-price-row">
                         <span className="current-price">
                           ₹{Number(product.price || 0).toLocaleString('en-IN')}
