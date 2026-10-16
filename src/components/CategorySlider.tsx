@@ -43,8 +43,8 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
   const activeIndexRef = useRef(0);
   activeIndexRef.current = activeIndex;
 
-  const [isHovered, setIsHovered] = useState(false);
-  const [isInteracting, setIsInteracting] = useState(false);
+  const isHoveredRef = useRef(false);
+  const isInteractingRef = useRef(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Total items in carousel (collections + 1 "View All" card)
@@ -78,12 +78,12 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
     }
   }, []);
 
-  // Pause auto-sliding on manual click/swipe and give full interval before resuming
+  // Pause auto-sliding on manual click/swipe without causing React re-renders
   const pauseAutoPlay = useCallback(() => {
-    setIsInteracting(true);
+    isInteractingRef.current = true;
     if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     resumeTimeoutRef.current = setTimeout(() => {
-      setIsInteracting(false);
+      isInteractingRef.current = false;
     }, USER_CLICK_PAUSE_MS);
   }, []);
 
@@ -106,13 +106,13 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
 
   // Automatic slide rotation: 01 -> 02 -> 03 -> ...
   useEffect(() => {
-    if (isHovered || isInteracting) return;
     const timer = setInterval(() => {
+      if (isHoveredRef.current || isInteractingRef.current) return;
       const nextIndex = (activeIndexRef.current + 1) % totalSlides;
       scrollToSlide(nextIndex);
     }, CAROUSEL_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [isHovered, isInteracting, scrollToSlide, totalSlides]);
+  }, [scrollToSlide, totalSlides]);
 
   // Clean up timeouts on unmount
   useEffect(() => {
@@ -120,14 +120,6 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
       if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     };
   }, []);
-
-  const handleTouchStart = () => {
-    pauseAutoPlay();
-  };
-
-  const handleTouchEnd = () => {
-    pauseAutoPlay();
-  };
 
   return (
     <section className="categories-section section-padding" aria-labelledby="collections-heading">
@@ -157,8 +149,8 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
         {/* Carousel Container */}
         <div
           className="category-slider-wrapper"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; }}
         >
           {/* Desktop Navigation Arrows */}
           <button
@@ -174,10 +166,6 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
             ref={sliderRef}
             className="category-row-five"
             onScroll={handleScroll}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchStart}
-            onMouseUp={handleTouchEnd}
           >
             {collections.map((cat, index) => {
               const isActive = index === activeIndex;
@@ -188,7 +176,6 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
                   href={`/collections/${cat.slug}`}
                   className={`category-card-five ${isActive ? 'active-card' : ''}`}
                   title={`Explore ${cat.name}`}
-                  onClick={pauseAutoPlay}
                 >
                   <div className="category-circle-wrapper-five">
                     <div className="category-circle-inner-five">
@@ -213,7 +200,6 @@ export default function CategorySlider({ initialCategories = [] }: CategorySlide
               href="/collections"
               className="category-card-five category-card-viewall"
               title="Explore All Jewellery Collections"
-              onClick={pauseAutoPlay}
             >
               <div className="category-circle-wrapper-five viewall-circle">
                 <div className="category-circle-inner-five viewall-inner">

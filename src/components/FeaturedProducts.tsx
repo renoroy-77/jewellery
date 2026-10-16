@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/LanguageContext';
@@ -9,6 +10,7 @@ import { useFeaturedProductsQuery } from '@/hooks/queries/useQueries';
 import { Product } from '@/types';
 
 export default function FeaturedProducts() {
+  const router = useRouter();
   const { t } = useTranslation();
   const { addToCart } = useCart();
   const { data: featuredProducts = [] } = useFeaturedProductsQuery();
@@ -50,7 +52,15 @@ export default function FeaturedProducts() {
         {/* 4-Item Featured Product Cards Grid */}
         <div className="product-grid-four">
           {featuredProducts.map((product: Product) => (
-            <article key={product.id} className="product-card-four" id={`product-${product.id}`}>
+            <article
+              key={product.id}
+              className="product-card-four"
+              id={`product-${product.id}`}
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('.product-card-actions-wrap')) return;
+                router.push(`/products/${product.slug}`);
+              }}
+            >
               <Link
                 href={`/products/${product.slug}`}
                 className="product-card-four-link"

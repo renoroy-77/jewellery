@@ -1281,11 +1281,43 @@ button {
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   width: 155px;
   max-width: 155px;
-  scroll-snap-align: start;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
-.category-card-five:hover {
-  transform: translateY(-5px);
+@media (hover: hover) and (pointer: fine) {
+  .category-card-five:hover {
+    transform: translateY(-5px);
+  }
+
+  .category-card-five:hover .category-circle-wrapper-five {
+    transform: scale(1.07);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 30px rgba(251, 216, 114, 0.55);
+    background: linear-gradient(135deg, #fff2be 0%, #fbd561 50%, #d4af37 100%);
+  }
+
+  .category-card-five:hover .category-circle-inner-five img {
+    transform: scale(1.12);
+  }
+
+  .category-card-five:hover .category-name-five {
+    color: #ffd966;
+    text-shadow: 0 0 12px rgba(255, 217, 102, 0.5);
+  }
+}
+
+.category-card-five.active-card .category-circle-wrapper-five {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 20px rgba(251, 216, 114, 0.4);
+}
+
+.category-card-five.active-card .category-name-five {
+  color: #ffd966;
+}
+
+.category-card-five:active .category-circle-wrapper-five {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
 }
 
 .category-circle-wrapper-five {
@@ -1297,13 +1329,7 @@ button {
   background: linear-gradient(135deg, #ffd966 0%, #d4af37 45%, rgba(212, 175, 55, 0.25) 100%);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25);
   transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
-}
-
-.category-card-five:hover .category-circle-wrapper-five,
-.category-card-five.active-card .category-circle-wrapper-five {
-  transform: scale(1.07);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 30px rgba(251, 216, 114, 0.55);
-  background: linear-gradient(135deg, #fff2be 0%, #fbd561 50%, #d4af37 100%);
+  touch-action: manipulation;
 }
 
 .category-circle-inner-five {
@@ -1322,10 +1348,6 @@ button {
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.category-card-five:hover .category-circle-inner-five img {
-  transform: scale(1.12);
-}
-
 .category-name-five {
   font-family: var(--font-serif);
   font-size: 0.96rem;
@@ -1334,12 +1356,6 @@ button {
   line-height: 1.35;
   letter-spacing: 0.025em;
   transition: color 0.3s ease;
-}
-
-.category-card-five:hover .category-name-five,
-.category-card-five.active-card .category-name-five {
-  color: #ffd966;
-  text-shadow: 0 0 12px rgba(255, 217, 102, 0.5);
 }
 
 /* Desktop Carousel Arrow Buttons */
@@ -1548,40 +1564,19 @@ button {
   transition: var(--transition);
 }
 
-.category-card:hover .category-circle-wrapper {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
-}
+@media (hover: hover) and (pointer: fine) {
+  .category-card:hover .category-circle-wrapper {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+  }
 
-.category-circle-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #04140d;
-}
+  .category-card:hover .category-circle-inner img {
+    transform: scale(1.12);
+  }
 
-.category-circle-inner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.category-card:hover .category-circle-inner img {
-  transform: scale(1.12);
-}
-
-.category-name {
-  font-family: var(--font-serif);
-  font-size: 0.78rem;
-  color: #fdf5df;
-  font-weight: 500;
-  line-height: 1.25;
-}
-
-.category-card:hover .category-name {
-  color: var(--gold-light);
+  .category-card:hover .category-name {
+    color: var(--gold-light);
+  }
 }
 
 /* Featured Products Section */
@@ -4569,12 +4564,26 @@ button {
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
-.ecom-product-card:hover {
-  border-color: rgba(212, 175, 55, 0.6);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+@media (hover: hover) and (pointer: fine) {
+  .ecom-product-card:hover {
+    border-color: rgba(212, 175, 55, 0.6);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  .ecom-product-card:hover .ecom-product-img {
+    transform: scale(1.06);
+  }
+}
+
+.ecom-product-card:active {
+  transform: scale(0.985);
+  transition: transform 0.1s ease;
 }
 
 .ecom-card-link {
@@ -4582,6 +4591,9 @@ button {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
 .ecom-card-img-wrap {
@@ -4590,6 +4602,7 @@ button {
   padding-top: 100%;
   background: radial-gradient(circle, #092c1e 0%, #03100a 100%);
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 .ecom-product-img {
@@ -4599,10 +4612,6 @@ button {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
-}
-
-.ecom-product-card:hover .ecom-product-img {
-  transform: scale(1.06);
 }
 
 .ecom-card-badge-group {

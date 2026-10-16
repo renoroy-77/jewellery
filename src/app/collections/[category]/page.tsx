@@ -172,27 +172,52 @@ export default async function CategoryPage({ params }: Props) {
       return true;
     }
 
-    // 2. Deity matching for deity-specific collections
-    if (catId === 'ganesha' || catSlug.includes('ganesha')) {
-      return pDeity.includes('ganesha') || p.name.toLowerCase().includes('ganesha');
+    const pName = p.name.toLowerCase();
+
+    // 2. Specialized category matching
+    if (catId === 'lockets' || catSlug.includes('locket') || catId === 'pendants' || catSlug.includes('pendant')) {
+      return (
+        pCat.includes('locket') ||
+        pCat.includes('pendant') ||
+        pName.includes('locket') ||
+        pName.includes('dollar') ||
+        pName.includes('pendant')
+      );
     }
-    if (catId === 'murugan' || catSlug.includes('murugan')) {
-      return pDeity.includes('murugan') || p.name.toLowerCase().includes('murugan') || p.name.toLowerCase().includes('vel');
+    if (catId === 'chains' || catSlug.includes('chain')) {
+      return pCat.includes('chain') || pName.includes('chain') || pName.includes('necklace') || pName.includes('mala');
     }
-    if (catId === 'shiva' || catSlug.includes('shiva')) {
-      return pDeity.includes('shiva') || p.name.toLowerCase().includes('shiva') || p.name.toLowerCase().includes('trishul') || p.name.toLowerCase().includes('rudraksha');
+    if (catId === 'bracelets' || catSlug.includes('bracelet') || catSlug.includes('kada')) {
+      return pCat.includes('bracelet') || pCat.includes('kada') || pName.includes('bracelet') || pName.includes('kada') || pName.includes('bangle');
     }
-    if (catId === 'lakshmi' || catSlug.includes('lakshmi')) {
-      return pDeity.includes('lakshmi') || p.name.toLowerCase().includes('lakshmi');
+    if (catId === 'rings' || catSlug.includes('ring')) {
+      return pCat.includes('ring') || pName.includes('ring');
     }
-    if (catId === 'devi' || catSlug.includes('devi')) {
-      return pDeity.includes('devi') || pDeity.includes('durga') || p.name.toLowerCase().includes('devi');
-    }
-    if (catId === 'spiritual' || catSlug.includes('spiritual')) {
-      return p.tags?.includes('spiritual') || pDeity.includes('brahman') || p.name.toLowerCase().includes('om');
+    if (catId === 'pooja-items' || catSlug.includes('pooja') || catSlug.includes('ritual')) {
+      return pCat.includes('pooja') || pName.includes('lamp') || pName.includes('diya') || pName.includes('vilakku');
     }
 
-    // 3. Fallback matching
+    // 3. Deity matching for deity-specific collections
+    if (catId === 'ganesha' || catSlug.includes('ganesha')) {
+      return pDeity.includes('ganesha') || pName.includes('ganesha') || pName.includes('ganpati');
+    }
+    if (catId === 'murugan' || catSlug.includes('murugan')) {
+      return pDeity.includes('murugan') || pName.includes('murugan') || pName.includes('vel');
+    }
+    if (catId === 'shiva' || catSlug.includes('shiva')) {
+      return pDeity.includes('shiva') || pName.includes('shiva') || pName.includes('trishul') || pName.includes('rudraksha');
+    }
+    if (catId === 'lakshmi' || catSlug.includes('lakshmi')) {
+      return pDeity.includes('lakshmi') || pName.includes('lakshmi') || pName.includes('laxmi');
+    }
+    if (catId === 'devi' || catSlug.includes('devi')) {
+      return pDeity.includes('devi') || pDeity.includes('durga') || pName.includes('devi');
+    }
+    if (catId === 'spiritual' || catSlug.includes('spiritual')) {
+      return p.tags?.includes('spiritual') || pDeity.includes('brahman') || pName.includes('om');
+    }
+
+    // 4. Fallback matching
     return (
       pDeity.includes(catId) ||
       pDeity.includes(catSlug) ||

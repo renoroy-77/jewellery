@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Star, Search, Check, Filter, X, RotateCcw, Loader2 } from 'lucide-react';
 import { useProductsQuery, useCategoriesQuery } from '@/hooks/queries/useQueries';
 import { useCart } from '@/context/CartContext';
@@ -16,6 +17,7 @@ export default function ShopCatalog({
   initialProducts = [],
   initialCategories = [],
 }: ShopCatalogProps) {
+  const router = useRouter();
   const { addToCart } = useCart();
 
   const { data: products = initialProducts, isLoading: loading } = useProductsQuery(
@@ -317,7 +319,14 @@ export default function ShopCatalog({
                   : 0;
 
                 return (
-                  <div key={product.id} className="ecom-product-card">
+                  <div
+                    key={product.id}
+                    className="ecom-product-card"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('.ecom-card-actions')) return;
+                      router.push(`/products/${product.slug}`);
+                    }}
+                  >
                     <Link href={`/products/${product.slug}`} className="ecom-card-link">
                       {/* Image */}
                       <div className="ecom-card-img-wrap">
