@@ -24,7 +24,7 @@ ssh "$VPS_HOST" "bash -c '
   cd $REMOTE_ROOT/backend
   npm install
   npx prisma generate
-  npx prisma db push
+  npx prisma db push --accept-data-loss
   npm run build
   pm2 restart jewellery-backend
 '"
