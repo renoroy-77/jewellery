@@ -247,9 +247,8 @@ export class PaymentsService {
     const frontendUrl = this.getFrontendUrl();
     const backendUrl = this.getBackendUrl();
 
-    const surl = dto.returnUrl && dto.returnUrl.startsWith('http')
-      ? dto.returnUrl
-      : `${backendUrl}/api/payments/payu/response`;
+    // PayU surl/furl MUST point to backend response handler for hash verification & DB commitment
+    const surl = `${backendUrl}/api/payments/payu/response`;
     const furl = `${backendUrl}/api/payments/payu/response`;
 
     const key = this.payuKey || 'test_merchant_key';

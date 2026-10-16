@@ -22,8 +22,8 @@ import { referralsService, UserReferralSummary } from '@/services/referralsServi
 import { OrderCMS } from '@/data/cmsData';
 
 function OrderSuccessContent() {
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId') || searchParams.get('order_id') || 'ORD-98425';
+  const rawOrderId = searchParams.get('orderId') || searchParams.get('order_id');
+  const orderId = rawOrderId && rawOrderId !== '{order_id}' ? rawOrderId : '';
   const method = searchParams.get('method') || 'payu';
 
   const [order, setOrder] = useState<OrderCMS | null>(null);
@@ -154,20 +154,6 @@ function OrderSuccessContent() {
             textAlign: 'left',
           }}
         >
-          <div>
-            <div style={{ fontSize: '0.78rem', color: '#8fa59b' }}>Order ID</div>
-            <div
-              style={{
-                fontSize: '1.2rem',
-                fontWeight: 700,
-                color: '#f5d77f',
-                letterSpacing: '0.04em',
-              }}
-            >
-              {orderId}
-            </div>
-          </div>
-
           <div>
             <div style={{ fontSize: '0.78rem', color: '#8fa59b' }}>Payment Status</div>
             <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#4ade80' }}>

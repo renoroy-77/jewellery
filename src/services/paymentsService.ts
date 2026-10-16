@@ -70,7 +70,7 @@ export const paymentsService = {
     const notes = legacyNotes || notesOrCustomer || {};
     const returnUrl =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/order-success?orderId={order_id}&method=payu`
+        ? `${window.location.origin}/order-success?method=payu`
         : undefined;
 
     const res = await fetch(`${API_BASE_URL}/api/payments/payu/create-order`, {
