@@ -788,8 +788,8 @@ export default function AccountPage() {
                 onClick={() => handleTabClick('orders')}
                 className={`dashboard-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
               >
-                <Package size={17} />
-                <span>Consecrated Orders</span>
+                <Package size={16} />
+                <span>Orders</span>
                 {orders.length > 0 && <span className="tab-badge">{orders.length}</span>}
               </button>
 
@@ -799,7 +799,7 @@ export default function AccountPage() {
                 onClick={() => handleTabClick('rewards')}
                 className={`dashboard-tab-btn ${activeTab === 'rewards' ? 'active' : ''}`}
               >
-                <Gift size={17} />
+                <Gift size={16} />
                 <span>Refer &amp; Earn</span>
                 <span className="tab-badge tab-badge-gold">₹100</span>
               </button>
@@ -810,8 +810,8 @@ export default function AccountPage() {
                 onClick={() => handleTabClick('addresses')}
                 className={`dashboard-tab-btn ${activeTab === 'addresses' ? 'active' : ''}`}
               >
-                <MapPin size={17} />
-                <span>Puja Addresses</span>
+                <MapPin size={16} />
+                <span>Addresses</span>
                 {addresses.length > 0 && <span className="tab-badge">{addresses.length}</span>}
               </button>
 
@@ -821,8 +821,8 @@ export default function AccountPage() {
                 onClick={() => handleTabClick('profile')}
                 className={`dashboard-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
               >
-                <User size={17} />
-                <span>Devotee Profile</span>
+                <User size={16} />
+                <span>Profile</span>
               </button>
             </nav>
           </div>
@@ -860,7 +860,12 @@ export default function AccountPage() {
                     {orders.map((order) => {
                       const statusInfo = getOrderStatusInfo(order.status);
                       const isCopied = copiedOrderId === order.id;
-                      const orderShortId = order.id.startsWith('ORD-') ? order.id : `ORD-${order.id.slice(0, 8).toUpperCase()}`;
+                      const cleanRawId = (order.id || '').replace(/^(rcpt_|ord_)/i, '');
+                      const orderShortId = order.id.startsWith('ORD-')
+                        ? order.id
+                        : cleanRawId.length > 12
+                        ? `ORD-${cleanRawId.slice(-8).toUpperCase()}`
+                        : `ORD-${cleanRawId.toUpperCase()}`;
 
                       return (
                         <div key={order.id} className="order-card active-order">

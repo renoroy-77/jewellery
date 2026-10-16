@@ -40,4 +40,6 @@ next-env.d.ts
 file_*.png
 imagetressary.png
 imageu9237893742.png
+*.apk
+*.gif
 .env*

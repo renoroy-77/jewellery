@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'api_service.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/inquiries_screen.dart';
-import '../theme/temple_theme.dart';
 
 /// Top-level background message handler for Firebase Messaging
 @pragma('vm:entry-point')
@@ -229,73 +230,300 @@ class NotificationService {
     }
   }
 
-  /// Shows an elegant in-app notification banner when message arrives while app is open
+  static OverlayEntry? _currentBannerEntry;
+  static Timer? _dismissTimer;
+
+  /// Shows an authentic top slide-down Sanctum push notification banner
+  static void showInAppNotification({
+    BuildContext? context,
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) {
+    final ctx = context ?? navigatorKey.currentContext;
+    if (ctx == null) return;
+
+    final overlay = Overlay.maybeOf(ctx) ?? navigatorKey.currentState?.overlay;
+    if (overlay == null) return;
+
+    // Remove any currently displayed banner
+    _dismissTimer?.cancel();
+    _currentBannerEntry?.remove();
+    _currentBannerEntry = null;
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => _TopPushNotificationBanner(
+        title: title,
+        body: body,
+        onTap: () {
+          entry.remove();
+          _currentBannerEntry = null;
+          _dismissTimer?.cancel();
+          if (data != null) {
+            handleNotificationClick(data);
+          }
+        },
+        onDismiss: () {
+          entry.remove();
+          _currentBannerEntry = null;
+          _dismissTimer?.cancel();
+        },
+      ),
+    );
+
+    _currentBannerEntry = entry;
+    overlay.insert(entry);
+
+    // Auto dismiss after 6 seconds
+    _dismissTimer = Timer(const Duration(seconds: 6), () {
+      if (_currentBannerEntry == entry) {
+        entry.remove();
+        _currentBannerEntry = null;
+      }
+    });
+  }
+
+  /// Shows an elegant top-sliding in-app push notification banner when message arrives while app is open
   static void _showForegroundNotificationBanner(RemoteMessage message) {
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
+    final title = message.notification?.title ?? message.data['title'] ?? '🪔 New Sacred Order';
+    final body = message.notification?.body ?? message.data['body'] ?? 'Consecrated ornament order placed by devotee.';
+    showInAppNotification(
+      title: title,
+      body: body,
+      data: message.data,
+    );
+  }
+}
 
-    final title = message.notification?.title ?? '🪔 Sacred Notification';
-    final body = message.notification?.body ?? 'New Sanctum alert received.';
+/// Floating Top Slide-Down In-App Push Notification Banner
+class _TopPushNotificationBanner extends StatefulWidget {
+  final String title;
+  final String body;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 5),
-        backgroundColor: const Color(0xFF031910),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: TempleColors.goldPrimary, width: 1.2),
-        ),
-        content: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0A3725),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_active_rounded,
-                color: TempleColors.goldPrimary,
-                size: 20,
+  const _TopPushNotificationBanner({
+    required this.title,
+    required this.body,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_TopPushNotificationBanner> createState() => _TopPushNotificationBannerState();
+}
+
+class _TopPushNotificationBannerState extends State<_TopPushNotificationBanner>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<Offset> _offsetAnim;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+    _offsetAnim = Tween<Offset>(
+      begin: const Offset(0, -1.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
+    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+
+  Future<void> _dismiss() async {
+    await _ctrl.reverse();
+    widget.onDismiss();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Positioned(
+      top: topPadding + 10,
+      left: 16,
+      right: 16,
+      child: SlideTransition(
+        position: _offsetAnim,
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: Material(
+            color: Colors.transparent,
+            child: GestureDetector(
+              onTap: widget.onTap,
+              onVerticalDragUpdate: (details) {
+                if (details.primaryDelta != null && details.primaryDelta! < -6) {
+                  _dismiss();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFA072B1E),
+                      Color(0xFA03180F),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.8),
+                    width: 1.4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Glowing Diya / Temple Bell Emblem
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const RadialGradient(
+                          colors: [
+                            Color(0x44D4AF37),
+                            Color(0x05047857),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: const Color(0xFFE2C475).withValues(alpha: 0.7),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '🪔',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Notification Title, Subtitle, & Details
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'AAMADAPPETTI SANCTUM',
+                                style: GoogleFonts.cinzel(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.5,
+                                  color: const Color(0xFFE2C475),
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                'Just Now',
+                                style: GoogleFonts.inter(
+                                  fontSize: 9.5,
+                                  color: const Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            widget.title,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFFFFFBE8),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.body,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              color: const Color(0xFFCBD5E1),
+                              height: 1.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    // Gold "VIEW" Pill Action Button
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFE2C475),
+                            Color(0xFFC5A049),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'VIEW',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF031910),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.arrow_outward_rounded,
+                            size: 12,
+                            color: Color(0xFF031910),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: TempleColors.goldPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    body,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11.5,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: 'VIEW',
-          textColor: TempleColors.goldBright,
-          onPressed: () {
-            handleNotificationClick(message.data);
-          },
+          ),
         ),
       ),
     );

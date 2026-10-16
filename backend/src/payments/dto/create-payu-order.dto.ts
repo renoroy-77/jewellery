@@ -57,4 +57,9 @@ export class CreatePayUOrderDto {
   @IsOptional()
   @IsObject()
   notes?: Record<string, any>;
+
+  @ApiPropertyOptional({ description: 'Optional order payload to pre-create pending order in DB' })
+  @IsOptional()
+  @IsObject()
+  orderData?: Record<string, any>;
 }

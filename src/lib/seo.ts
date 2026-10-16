@@ -304,7 +304,7 @@ export function getProductSchema(product: Product) {
         shippingDestination: {
           '@type': 'DefinedRegion',
           addressCountry: 'IN',
-        },
+        }, 
         deliveryTime: {
           '@type': 'ShippingDeliveryTime',
           handlingTime: {

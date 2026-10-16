@@ -539,12 +539,16 @@ export default function AdminOrdersPage() {
                       {/* Items Ordered */}
                       <td>
                         <div style={{ fontSize: '0.82rem', color: '#334155' }}>
-                          {order.items.map((it) => (
-                            <div key={it.productId} style={{ marginBottom: '2px' }}>
-                              <strong style={{ color: '#0f172a' }}>{it.productName}</strong>{' '}
-                              <span style={{ color: '#0d5438', fontWeight: 600 }}>×{it.quantity}</span>
-                            </div>
-                          ))}
+                          {order.items && order.items.length > 0 ? (
+                            order.items.map((it: any, idx: number) => (
+                              <div key={it.productId || idx} style={{ marginBottom: '2px' }}>
+                                <strong style={{ color: '#0f172a' }}>{it.productName || it.name || it.title || 'Sacred Item'}</strong>{' '}
+                                <span style={{ color: '#0d5438', fontWeight: 600 }}>×{it.quantity || 1}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <span style={{ color: '#64748b' }}>Sacred Devotional Item (×1)</span>
+                          )}
                         </div>
                       </td>
 

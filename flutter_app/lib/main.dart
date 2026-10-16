@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/temple_theme.dart';
-import 'screens/login_screen.dart';
-import 'screens/dashboard_screen.dart';
-import 'services/auth_storage.dart';
+import 'screens/splash_screen.dart';
+import 'services/api_service.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
@@ -18,19 +17,15 @@ Future<void> main() async {
     ),
   );
 
-  // Initialize FCM Push Notifications and Deep Link routing
+  // Pre-initialize auth credentials and FCM Push Notifications
+  await ApiService.initAuth();
   await NotificationService.initialize();
 
-  // Check persistent login state: stays logged in until explicit logout or uninstall
-  final isLoggedIn = await AuthStorage.isLoggedIn();
-
-  runApp(AamadappettiApp(isLoggedIn: isLoggedIn));
+  runApp(const AamadappettiApp());
 }
 
 class AamadappettiApp extends StatelessWidget {
-  final bool isLoggedIn;
-
-  const AamadappettiApp({super.key, this.isLoggedIn = false});
+  const AamadappettiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +34,7 @@ class AamadappettiApp extends StatelessWidget {
       title: 'Aamadappetti Panchaloham Jewellery - Admin Sanctum',
       debugShowCheckedModeBanner: false,
       theme: TempleTheme.theme,
-      home: isLoggedIn ? const AdminDashboardScreen() : const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }

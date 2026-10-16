@@ -383,9 +383,28 @@ class _InquiriesScreenState extends State<InquiriesScreen> {
                         );
                         // Persist to backend
                         ApiService.updateInquiryStatus(inq['id'].toString(), inq['status']).then((ok) {
-                          if (!ok && mounted) {
+                          if (ok && mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Failed to sync status update to backend.'), backgroundColor: Color(0xFFDC2626)),
+                              SnackBar(
+                                content: Text('Inquiry ${inq['id']} status synced to backend.'),
+                                backgroundColor: TempleColors.sanctumGreen,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          } else if (!ok && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Inquiry status updated locally. Backend sync pending for ${inq['id']}.'),
+                                backgroundColor: const Color(0xFFB45309),
+                                duration: const Duration(seconds: 3),
+                                action: SnackBarAction(
+                                  label: 'Retry',
+                                  textColor: Colors.white,
+                                  onPressed: () {
+                                    ApiService.updateInquiryStatus(inq['id'].toString(), inq['status']);
+                                  },
+                                ),
+                              ),
                             );
                           }
                         });
@@ -678,7 +697,7 @@ class _InquiriesScreenState extends State<InquiriesScreen> {
                         const SizedBox(height: 8),
                         Text((inq['name'] ?? 'Devotee Inquiry').toString(), style: GoogleFonts.inter(fontSize: 14.5, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A))),
                         const SizedBox(height: 3),
-                        Text((inq['request'] ?? '').toString(), maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF475569))),
+                        Text((inq['request'] ?? '').toString(), maxLines: 3, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 12.5, height: 1.35, color: const Color(0xFF475569))),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

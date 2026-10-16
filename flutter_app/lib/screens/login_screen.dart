@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/temple_theme.dart';
 import '../widgets/lotus_flourish_divider.dart';
+import '../widgets/aamadappetti_chest_animation.dart';
 import 'dashboard_screen.dart';
 import '../services/api_service.dart';
 import '../services/auth_storage.dart';
@@ -55,6 +56,13 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/images/aamadappetti_closed.png'), context);
+    precacheImage(const AssetImage('assets/images/aamadappetti_open.png'), context);
+  }
+
+  @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
@@ -83,7 +91,12 @@ class _LoginScreenState extends State<LoginScreen>
           _passwordController.text,
         );
         if (authResult != null && (authResult['success'] == true || authResult['token'] != null)) {
-          await AuthStorage.saveLogin(username: _usernameController.text.trim());
+          final token = authResult['token']?.toString() ?? 'sanctum-master-token';
+          ApiService.authToken = token;
+          await AuthStorage.saveLogin(
+            username: _usernameController.text.trim(),
+            token: token,
+          );
           if (mounted) {
             Navigator.pushReplacement(
               context,
@@ -214,31 +227,23 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildBrandHeader() {
     return Column(
       children: [
-        // Brand Logo (Aamadappetti with traditional jewel chest)
-        Container(
-          constraints: const BoxConstraints(maxHeight: 120, maxWidth: 280),
-          child: Image.asset(
-            'assets/images/brand_logo_transparent.png',
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset(
-                'assets/images/brand_logo.png',
-                fit: BoxFit.contain,
-              );
-            },
-          ),
+        // Animated Traditional Aamadappetti Jewel Chest (Opening & Closing)
+        const AamadappettiChestAnimation(
+          size: 125,
+          mode: AamadappettiMode.breathingLoop,
+          interactive: true,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 6),
 
-        // "A D M I N   S A N C T U M"
+        // Brand Name
         Text(
-          'ADMIN  SANCTUM',
+          'AAMADAPPETTI',
           textAlign: TextAlign.center,
           style: GoogleFonts.cinzel(
-            fontSize: 17.5,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 4.8,
-            color: TempleColors.textGoldLight,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 4.2,
+            color: const Color(0xFFF9ECC5),
             shadows: [
               Shadow(
                 color: Colors.black.withValues(alpha: 0.8),
@@ -248,6 +253,26 @@ class _LoginScreenState extends State<LoginScreen>
               Shadow(
                 color: TempleColors.goldMetallic.withValues(alpha: 0.4),
                 blurRadius: 14,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+
+        // "A D M I N   S A N C T U M"
+        Text(
+          'ADMIN  SANCTUM',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.cinzel(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 3.5,
+            color: TempleColors.textGoldLight,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.8),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),

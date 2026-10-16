@@ -193,6 +193,7 @@ export class OrdersService {
         productId: dbProduct?.id || it.productId || it.id || `custom-${Date.now()}`,
         slug: dbProduct?.slug || it.slug || 'custom-item',
         name: itemName,
+        productName: itemName,
         price: unitPrice,
         quantity: qty,
         image: dbProduct?.images?.[0] || it.image || '/assets/prod_ganesha_hq.webp',

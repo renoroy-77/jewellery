@@ -604,7 +604,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ],
                             ),
                             const SizedBox(height: 2),
-                            Text((cat['desc'] ?? '').toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B))),
+                            Text((cat['desc'] ?? '').toString(), maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 11.5, height: 1.3, color: const Color(0xFF64748B))),
                             const SizedBox(height: 4),
                             Text('${cat['count'] ?? 0} consecrated pieces listed', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF0D5438))),
                           ],

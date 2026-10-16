@@ -236,6 +236,7 @@ export class PaymentsService {
     const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9999999999';
     const customerName = (dto.customerDetails?.customerName || dto.notes?.devoteeName || 'Devotee Customer')
       .replace(/[^a-zA-Z0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 50) || 'Devotee Customer';
     const customerEmail = (dto.customerDetails?.customerEmail || dto.notes?.email || 'devotee@aamadappetti.com')
@@ -425,15 +426,14 @@ export class PaymentsService {
     this.logger.log(`Payment successfully verified: ${paymentId} for order ${txnid}`);
 
     let createdOrder: any = null;
-    if (orderData) {
-      try {
-        const existing = await this.ordersService.findOne(txnid).catch(() => null);
-        if (existing) {
-          createdOrder = await this.ordersService.updateStatus(txnid, {
-            status: 'Confirmed',
-            trackingNumber: paymentId,
-          });
-        } else {
+    try {
+      const existing = await this.ordersService.findOne(txnid).catch(() => null);
+      if (existing) {
+        createdOrder = await this.ordersService.updateStatus(txnid, {
+          status: 'Confirmed',
+          trackingNumber: paymentId,
+        });
+      } else if (orderData) {
           createdOrder = await this.ordersService.create({
             ...orderData,
             id: txnid,
@@ -468,7 +468,6 @@ export class PaymentsService {
           )
           .catch(() => {});
       }
-    }
 
     return {
       success: true,
@@ -524,12 +523,35 @@ export class PaymentsService {
 
     if (status === 'success' && isValid) {
       try {
-        await this.ordersService.updateStatus(txnid, {
-          status: 'Confirmed',
-          trackingNumber: String(mihpayid),
-        });
+        const existing = await this.ordersService.findOne(txnid).catch(() => null);
+        if (existing) {
+          await this.ordersService.updateStatus(txnid, {
+            status: 'Confirmed',
+            trackingNumber: String(mihpayid),
+          });
+        } else {
+          await this.ordersService.create({
+            id: txnid,
+            devoteeName: body.firstname || 'Devotee Customer',
+            email: body.email || 'devotee@aamadappetti.com',
+            phone: body.phone || body.udf1 || '+91 8723907309',
+            shippingAddress: body.udf2 || 'Devotee Sanctum Delivery',
+            items: [
+              {
+                productId: `prod-payu-${Date.now()}`,
+                name: body.productinfo || 'Sacred Temple Jewellery Order',
+                price: parseFloat(amount) || 0,
+                quantity: 1,
+              },
+            ],
+            totalAmount: parseFloat(amount) || 0,
+            status: 'Confirmed',
+            trackingNumber: String(mihpayid),
+            paymentMethod: 'PayU Online (Verified)',
+          });
+        }
       } catch (e: any) {
-        this.logger.warn(`Could not update order status for #${txnid}: ${e.message}`);
+        this.logger.warn(`Could not update or create order for #${txnid}: ${e.message}`);
       }
 
       await this.telegramService
@@ -565,12 +587,35 @@ export class PaymentsService {
 
     if (status === 'success' && txnid) {
       try {
-        await this.ordersService.updateStatus(txnid, {
-          status: 'Processing',
-          trackingNumber: String(paymentId),
-        });
+        const existing = await this.ordersService.findOne(txnid).catch(() => null);
+        if (existing) {
+          await this.ordersService.updateStatus(txnid, {
+            status: 'Processing',
+            trackingNumber: String(paymentId),
+          });
+        } else {
+          await this.ordersService.create({
+            id: txnid,
+            devoteeName: payload?.firstname || 'Devotee Customer',
+            email: payload?.email || 'devotee@aamadappetti.com',
+            phone: payload?.phone || payload?.udf1 || '+91 8723907309',
+            shippingAddress: payload?.udf2 || 'Devotee Sanctum Delivery',
+            items: [
+              {
+                productId: `prod-payu-${Date.now()}`,
+                name: payload?.productinfo || 'Sacred Temple Jewellery Order',
+                price: parseFloat(amount) || 0,
+                quantity: 1,
+              },
+            ],
+            totalAmount: parseFloat(amount) || 0,
+            status: 'Confirmed',
+            trackingNumber: String(paymentId),
+            paymentMethod: 'PayU Webhook (Verified)',
+          });
+        }
       } catch (e: any) {
-        this.logger.warn(`Could not update order #${txnid} via PayU webhook: ${e.message}`);
+        this.logger.warn(`Could not update or create order #${txnid} via PayU webhook: ${e.message}`);
       }
 
       await this.telegramService

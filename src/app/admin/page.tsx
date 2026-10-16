@@ -289,11 +289,11 @@ export default function AdminDashboardPage() {
                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{ord.devoteeName}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ord.phone}</div>
                       </td>
-                      <td>
                         <div style={{ fontSize: '0.85rem', color: '#334155', maxWidth: '240px' }}>
-                          {ord.items.map((it) => `${it.productName} (×${it.quantity})`).join(', ')}
+                          {ord.items && ord.items.length > 0
+                            ? ord.items.map((it: any) => `${it.productName || it.name || it.title || 'Sacred Item'} (×${it.quantity || 1})`).join(', ')
+                            : 'Sacred Devotional Item (×1)'}
                         </div>
-                      </td>
                       <td>
                         <strong style={{ color: '#0f172a' }}>
                           ₹{ord.totalAmount.toLocaleString('en-IN')}

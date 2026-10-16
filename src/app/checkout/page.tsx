@@ -733,6 +733,7 @@ export default function CheckoutPage() {
 
   return (
     <div
+      className="checkout-container"
       style={{
         minHeight: '100vh',
         background: '#020d09',
@@ -764,7 +765,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Page Header */}
-        <div style={{ marginBottom: '36px' }}>
+        <div style={{ marginBottom: '36px' }} className="checkout-header-wrap">
           <h1
             style={{
               fontFamily: "'Cinzel', serif",
@@ -773,10 +774,11 @@ export default function CheckoutPage() {
               marginBottom: '8px',
               letterSpacing: '0.02em',
             }}
+            className="checkout-main-title"
           >
             Checkout &amp; Shipping
           </h1>
-          <p style={{ color: '#9db3a8', fontSize: '0.92rem', margin: 0 }}>
+          <p style={{ color: '#9db3a8', fontSize: '0.92rem', margin: 0 }} className="checkout-subtitle">
             Complete your order with 256-bit encrypted secure payment and fast insured doorstep delivery.
           </p>
         </div>
@@ -816,6 +818,7 @@ export default function CheckoutPage() {
           <form onSubmit={handleCheckoutSubmit}>
             {/* Devotee Identity Banner */}
             <div
+              className="checkout-devotee-card"
               style={{
                 background: 'radial-gradient(ellipse at top, #142018 0%, #06110a 100%)',
                 border: '1.5px solid rgba(74, 222, 128, 0.4)',
@@ -834,7 +837,7 @@ export default function CheckoutPage() {
                   gap: '14px',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
                   <div
                     style={{
                       width: '46px',
@@ -853,9 +856,9 @@ export default function CheckoutPage() {
                   >
                     {(loggedDevotee.name || form.customerName || 'D').charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fcf9f2' }}>
+                      <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fcf9f2', wordBreak: 'break-word' }}>
                         Namaste, {loggedDevotee.name || form.customerName || 'Devotee'}
                       </span>
                       <span
@@ -875,7 +878,7 @@ export default function CheckoutPage() {
                         <span>Verified Devotee</span>
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: '#9db3a8', marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.82rem', color: '#9db3a8', marginTop: '2px', wordBreak: 'break-word' }}>
                       <span>{loggedDevotee.email}</span>
                       {(loggedDevotee.phone || form.phone) && (
                         <>
@@ -927,6 +930,7 @@ export default function CheckoutPage() {
 
             {/* Step 1: Puja Shipping Address */}
             <div
+              className="checkout-section-box"
               style={{
                 background: 'rgba(4, 20, 13, 0.75)',
                 border: '1px solid rgba(212, 175, 55, 0.2)',
@@ -1372,6 +1376,7 @@ export default function CheckoutPage() {
             {/* Referral Welcome Code Box */}
             {(!referralSettings || referralSettings.enabled) && (
               <div
+                className="checkout-section-box"
                 style={{
                   background: 'rgba(4, 20, 13, 0.75)',
                   border: appliedReferral?.valid
@@ -1527,6 +1532,7 @@ export default function CheckoutPage() {
             {/* Sanctum Wallet Credit Card */}
             {availableWallet > 0 && (
               <div
+                className="checkout-section-box"
                 style={{
                   background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(4, 20, 13, 0.85) 100%)',
                   border: useWalletBalance
@@ -1622,6 +1628,7 @@ export default function CheckoutPage() {
 
             {/* Step 3: Payment Method Selection */}
             <div
+              className="checkout-section-box"
               style={{
                 background: 'rgba(4, 20, 13, 0.75)',
                 border: '1px solid rgba(212, 175, 55, 0.2)',
@@ -1756,6 +1763,7 @@ export default function CheckoutPage() {
 
           {/* Right Column: Order Summary Sidebar */}
           <div
+            className="checkout-summary-sidebar"
             style={{
               background: 'rgba(4, 20, 13, 0.85)',
               border: '1px solid rgba(212, 175, 55, 0.25)',

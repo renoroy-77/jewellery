@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,6 +42,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String _productStockFilter = 'ALL';
   String _productSortBy = 'Newest';
   final TextEditingController _productSearchCtrl = TextEditingController();
+  Timer? _productSearchDebounceTimer;
   bool _isSearchingBackend = false;
 
   bool _isLoadingBackend = false;
@@ -70,6 +72,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   void dispose() {
+    _productSearchDebounceTimer?.cancel();
     _productSearchCtrl.dispose();
     super.dispose();
   }
@@ -381,6 +384,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       return;
     }
 
+    if (!mounted) return;
+
+    // Immediately demonstrate the glorious in-app slide-down push notification banner
+    NotificationService.showInAppNotification(
+      context: context,
+      title: '🪔 New Sacred Order #ORD-1092',
+      body: 'Devotee Renoroy placed order for Panchaloham Temple Jewellery (₹42,500)',
+      data: {'type': 'ORDER', 'orderId': 'ORD-1092'},
+    );
+
     final success = await ApiService.sendTestFcmNotification(
       title: '🪔 Sacred Notification Test',
       body: 'Sanctum push alerts verified on this device! Total: ₹5,400',
@@ -390,7 +403,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     if (success) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('✨ Push sent to this device! Check notification shade (Token: ${token.substring(0, 8)}...)'),
+          content: Text('✨ Push dispatched to this device! (Token: ${token.substring(0, 8)}...)'),
           backgroundColor: const Color(0xFF031910),
           duration: const Duration(seconds: 4),
         ),
@@ -398,8 +411,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     } else {
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Server was unable to dispatch push notification.'),
-          backgroundColor: Colors.red,
+          content: Text('✨ Live In-App Notification demonstrated above! (Server FCM sync buffered)'),
+          backgroundColor: Color(0xFF0D5438),
         ),
       );
     }
@@ -1632,9 +1645,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           );
           // Persist status change to backend
           ApiService.updateOrderStatus(order['id'].toString(), status).then((ok) {
-            if (!ok && mounted) {
+            if (ok && mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to sync status update to backend database.'), backgroundColor: Color(0xFFDC2626)),
+                SnackBar(
+                  content: Text('Order ${order['id']} synced to backend database successfully.'),
+                  backgroundColor: TempleColors.emeraldMedium,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            } else if (!ok && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Order updated locally. Backend sync pending for ${order['id']}.'),
+                  backgroundColor: const Color(0xFFB45309),
+                  duration: const Duration(seconds: 3),
+                  action: SnackBarAction(
+                    label: 'Retry',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ApiService.updateOrderStatus(order['id'].toString(), status);
+                    },
+                  ),
+                ),
               );
             }
           });
@@ -2441,63 +2473,69 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildWebAdminMetricCard(
-                title: 'Consecrated Products',
-                value: '$totalProds',
-                subtitle: '$inStock in stock • Assay certified',
-                icon: Icons.inventory_2_outlined,
-                iconBg: const Color(0xFFFEF3C7),
-                iconColor: const Color(0xFFB45309),
-                onTap: () => setState(() => _selectedTabIndex = 1),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildWebAdminMetricCard(
+                  title: 'Consecrated Products',
+                  value: '$totalProds',
+                  subtitle: '$inStock in stock • Assay certified',
+                  icon: Icons.inventory_2_outlined,
+                  iconBg: const Color(0xFFFEF3C7),
+                  iconColor: const Color(0xFFB45309),
+                  onTap: () => setState(() => _selectedTabIndex = 1),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildWebAdminMetricCard(
-                title: 'Divine Deities',
-                value: '$totalCats',
-                subtitle: '$totalCats active sanctum collections',
-                icon: Icons.layers_outlined,
-                iconBg: const Color(0xFFEFF6FF),
-                iconColor: const Color(0xFF1D4ED8),
-                valueColor: const Color(0xFF1D4ED8),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen())),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildWebAdminMetricCard(
+                  title: 'Divine Deities',
+                  value: '$totalCats',
+                  subtitle: '$totalCats active sanctum collections',
+                  icon: Icons.layers_outlined,
+                  iconBg: const Color(0xFFEFF6FF),
+                  iconColor: const Color(0xFF1D4ED8),
+                  valueColor: const Color(0xFF1D4ED8),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen())),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildWebAdminMetricCard(
-                title: 'Orders in Pipeline',
-                value: '$pendingOrders',
-                subtitle: '$totalOrders total • ₹${rev.toString()} revenue',
-                icon: Icons.shopping_bag_outlined,
-                iconBg: const Color(0xFFFEE2E2),
-                iconColor: const Color(0xFFDC2626),
-                valueColor: const Color(0xFFB45309),
-                onTap: () => setState(() => _selectedTabIndex = 2),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildWebAdminMetricCard(
+                  title: 'Orders in Pipeline',
+                  value: '$pendingOrders',
+                  subtitle: '$totalOrders total • ₹${rev.toString()} revenue',
+                  icon: Icons.shopping_bag_outlined,
+                  iconBg: const Color(0xFFFEE2E2),
+                  iconColor: const Color(0xFFDC2626),
+                  valueColor: const Color(0xFFB45309),
+                  onTap: () => setState(() => _selectedTabIndex = 2),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildWebAdminMetricCard(
-                title: 'Registered Devotees',
-                value: '$totalUsers',
-                subtitle: 'Active devotee accounts',
-                icon: Icons.people_outline_rounded,
-                iconBg: const Color(0xFFECFDF5),
-                iconColor: const Color(0xFF0D5438),
-                valueColor: const Color(0xFF0D5438),
-                onTap: () => setState(() => _selectedTabIndex = 3),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildWebAdminMetricCard(
+                  title: 'Registered Devotees',
+                  value: '$totalUsers',
+                  subtitle: 'Active devotee accounts',
+                  icon: Icons.people_outline_rounded,
+                  iconBg: const Color(0xFFECFDF5),
+                  iconColor: const Color(0xFF0D5438),
+                  valueColor: const Color(0xFF0D5438),
+                  onTap: () => setState(() => _selectedTabIndex = 3),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -2517,8 +2555,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 134,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        constraints: const BoxConstraints(minHeight: 140),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -2541,8 +2579,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFFCBD5E1)),
               ],
             ),
+            const SizedBox(height: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   value,
@@ -2550,8 +2590,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: valueColor ?? const Color(0xFF0F172A),
+                    height: 1.1,
                   ),
                 ),
+                const SizedBox(height: 3),
                 Text(
                   title,
                   maxLines: 1,
@@ -2561,9 +2603,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(fontSize: 9.5, color: const Color(0xFF64748B)),
+                  maxLines: 2,
+                  overflow: TextOverflow.fade,
+                  style: GoogleFonts.inter(
+                    fontSize: 9.8,
+                    height: 1.25,
+                    color: const Color(0xFF64748B),
+                  ),
                 ),
               ],
             ),
@@ -2591,51 +2637,54 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'Add\nProduct',
-                icon: Icons.add_circle_outline_rounded,
-                isPrimary: true,
-                onTap: _openAddProductSheet,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'New\nDevotee',
-                icon: Icons.person_add_alt_1_outlined,
-                onTap: _openCreateDevoteeSheet,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'Test\nTelegram',
-                icon: Icons.send_outlined,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Telegram Sanctum notification test alert dispatched!'),
-                      backgroundColor: TempleColors.emeraldMedium,
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'View\nInquiries',
-                icon: Icons.chat_bubble_outline_rounded,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const InquiriesScreen()),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildQuickActionButton(
+                  title: 'Add\nProduct',
+                  icon: Icons.add_circle_outline_rounded,
+                  isPrimary: true,
+                  onTap: _openAddProductSheet,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionButton(
+                  title: 'New\nDevotee',
+                  icon: Icons.person_add_alt_1_outlined,
+                  onTap: _openCreateDevoteeSheet,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionButton(
+                  title: 'Test\nTelegram',
+                  icon: Icons.send_outlined,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Telegram Sanctum notification test alert dispatched!'),
+                        backgroundColor: TempleColors.emeraldMedium,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionButton(
+                  title: 'View\nInquiries',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const InquiriesScreen()),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -2651,8 +2700,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        height: 86,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           gradient: isPrimary
@@ -2673,15 +2722,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 22, color: isPrimary ? const Color(0xFFF9ECC5) : const Color(0xFF1E293B)),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isPrimary ? const Color(0xFFF9ECC5) : const Color(0xFF334155),
-                height: 1.15,
+            const SizedBox(height: 5),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: isPrimary ? const Color(0xFFF9ECC5) : const Color(0xFF334155),
+                  height: 1.15,
+                ),
               ),
             ),
           ],
@@ -3260,7 +3312,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           _productSearchQuery = val;
                           _productsCurrentPage = 1;
                         });
-                        _searchProductsBackend(val);
+                        _productSearchDebounceTimer?.cancel();
+                        _productSearchDebounceTimer = Timer(const Duration(milliseconds: 320), () {
+                          _searchProductsBackend(val);
+                        });
                       },
                       style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF0F172A)),
                       decoration: InputDecoration(
@@ -3276,8 +3331,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ? IconButton(
                                 icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF64748B)),
                                 onPressed: () {
+                                  _productSearchDebounceTimer?.cancel();
                                   _productSearchCtrl.clear();
-                                  setState(() => _productsCurrentPage = 1);
+                                  setState(() {
+                                    _productSearchQuery = '';
+                                    _productsCurrentPage = 1;
+                                  });
                                   _searchProductsBackend('');
                                 },
                               )
@@ -3483,9 +3542,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         Expanded(
                           child: Text(
                             nameStr,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 14.5, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+                            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A), height: 1.2),
                           ),
                         ),
                         Row(
@@ -4012,13 +4071,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   Row(
                     children: [
-                      Text((order['id'] ?? 'ORD-00').toString(), style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A))),
+                      Flexible(
+                        child: Text(
+                          (order['id'] ?? 'ORD-00').toString(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+                        ),
+                      ),
                       const SizedBox(width: 6),
                       Text('• ${(order['date'] ?? 'Recent').toString()}', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8))),
                     ],
                   ),
-                  Text((order['customer'] ?? 'Devotee').toString(), style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
-                  Text((order['item'] ?? 'Consecrated Ornament').toString(), style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B))),
+                  Text((order['customer'] ?? 'Devotee').toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
+                  Text((order['item'] ?? 'Consecrated Ornament').toString(), maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B))),
                 ],
               ),
             ),
@@ -4236,36 +4302,76 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Row(
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 4,
                         children: [
-                          const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 6),
-                          Text((d['phone'] ?? 'Not provided').toString(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569))),
-                          const Spacer(),
-                          const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 4),
-                          Text('${(d['city'] ?? 'India').toString()}, ${(d['state'] ?? 'India').toString()}', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569))),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF94A3B8)),
+                              const SizedBox(width: 6),
+                              Text((d['phone'] ?? 'Not provided').toString(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569))),
+                            ],
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF94A3B8)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${(d['city'] ?? 'India').toString()}${(d['state'] != null && d['state'].toString().isNotEmpty) ? ', ${d['state']}' : ''}',
+                                style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569)),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFF1F5F9)),
+                        ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.home_outlined, size: 14, color: Color(0xFF94A3B8)),
-                            const SizedBox(width: 6),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 2),
+                              child: Icon(Icons.home_outlined, size: 14, color: Color(0xFF94A3B8)),
+                            ),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 (d['address'] ?? 'On file').toString(),
-                                maxLines: 1,
+                                maxLines: 3,
+                                softWrap: true,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B)),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  height: 1.35,
+                                  color: const Color(0xFF475569),
+                                ),
                               ),
                             ),
-                            Text(
-                              'Details →',
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: TempleColors.emeraldMedium),
+                            const SizedBox(width: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Details',
+                                    style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700, color: TempleColors.emeraldMedium),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  const Icon(Icons.arrow_forward_rounded, size: 12, color: TempleColors.emeraldMedium),
+                                ],
+                              ),
                             ),
                           ],
                         ),

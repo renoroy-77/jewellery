@@ -7680,10 +7680,6 @@ button {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  .tracking-steps {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
   .rewards-points-large {
     font-size: 2.8rem;
   }
@@ -8397,6 +8393,51 @@ button {
     gap: 20px !important;
   }
 
+  /* Mobile Checkout Page Enhancements */
+  .checkout-container {
+    padding-top: 74px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: 60px !important;
+  }
+
+  .checkout-header-wrap {
+    margin-bottom: 18px !important;
+  }
+
+  .checkout-main-title {
+    font-size: 1.55rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.01em !important;
+    margin-bottom: 6px !important;
+  }
+
+  .checkout-subtitle {
+    font-size: 0.82rem !important;
+    line-height: 1.42 !important;
+    color: #9db3a8 !important;
+  }
+
+  .checkout-devotee-card {
+    padding: 14px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .checkout-section-box {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .checkout-summary-sidebar {
+    position: static !important;
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+    margin-top: 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+
   /* Prevent auto-zoom in iOS Safari on focus */
   input[type="text"],
   input[type="email"],
@@ -8609,6 +8650,8 @@ button {
     padding: 10px 12px !important;
     border-bottom: 1px solid rgba(212, 175, 55, 0.22) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    -webkit-mask-image: linear-gradient(to right, black 0%, black 86%, transparent 100%) !important;
+    mask-image: linear-gradient(to right, black 0%, black 86%, transparent 100%) !important;
   }
 
   .dashboard-nav {
@@ -8616,8 +8659,8 @@ button {
     flex-direction: row !important;
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
-    gap: 10px !important;
-    padding: 2px 4px 4px !important;
+    gap: 8px !important;
+    padding: 2px 8px 4px 4px !important;
     -webkit-overflow-scrolling: touch !important;
     scroll-snap-type: x mandatory !important;
     scrollbar-width: none !important;
@@ -8634,8 +8677,8 @@ button {
     flex: 0 0 auto !important;
     width: auto !important;
     scroll-snap-align: center !important;
-    padding: 10px 18px !important;
-    font-size: 0.85rem !important;
+    padding: 8px 14px !important;
+    font-size: 0.8rem !important;
     font-weight: 600 !important;
     border-radius: 9999px !important;
     background: rgba(5, 24, 16, 0.88) !important;
@@ -8643,8 +8686,8 @@ button {
     color: #cbd8d1 !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    min-height: 44px !important;
+    gap: 6px !important;
+    min-height: 40px !important;
     cursor: pointer !important;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
@@ -8794,6 +8837,10 @@ button {
     font-size: 0.85rem !important;
     font-weight: 700 !important;
     color: #fff9eb !important;
+    max-width: 175px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   .order-copy-btn {
@@ -8836,9 +8883,21 @@ button {
     position: relative !important;
   }
 
+  .tracking-steps::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 12px !important;
+    left: 10% !important;
+    right: 10% !important;
+    height: 2px !important;
+    background: repeating-linear-gradient(to right, rgba(212, 175, 55, 0.4) 0, rgba(212, 175, 55, 0.4) 4px, transparent 4px, transparent 8px) !important;
+    z-index: 0 !important;
+  }
+
   .tracking-step {
     text-align: center !important;
     position: relative !important;
+    z-index: 1 !important;
   }
 
   .step-dot {
@@ -8854,6 +8913,8 @@ button {
     border: 1.5px solid rgba(212, 175, 55, 0.4) !important;
     background: #061e14 !important;
     color: #c9dbd3 !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
 
   .tracking-step.completed .step-dot {
@@ -8872,16 +8933,19 @@ button {
 
   .step-name strong {
     display: block !important;
-    font-size: 0.7rem !important;
+    font-size: 0.68rem !important;
     color: #fcf9f2 !important;
-    line-height: 1.2 !important;
+    line-height: 1.18 !important;
+    white-space: normal !important;
+    word-break: normal !important;
   }
 
   .step-desc-text {
     display: block !important;
-    font-size: 0.6rem !important;
+    font-size: 0.58rem !important;
     color: #8faaa0 !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
+    margin-top: 2px !important;
   }
 
   /* Items list on Mobile */
@@ -8920,9 +8984,13 @@ button {
     font-size: 0.86rem !important;
     font-weight: 700 !important;
     color: #fff9eb !important;
-    white-space: nowrap !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
     overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.35 !important;
     margin-bottom: 2px !important;
   }
 
