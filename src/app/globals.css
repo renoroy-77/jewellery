@@ -1776,12 +1776,36 @@ button {
   flex-direction: column;
   position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.product-card-four:hover {
-  transform: translateY(-6px);
-  border-color: #ffd966;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 24px rgba(212, 175, 55, 0.35);
+.product-card-four-link,
+.product-card-link {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-card-four:hover {
+    transform: translateY(-6px);
+    border-color: #ffd966;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 24px rgba(212, 175, 55, 0.35);
+  }
+
+  .product-card-four:hover .product-image-container-four img {
+    transform: scale(1.08);
+  }
+
+  .product-card-four:hover .product-title-four {
+    color: #ffd966;
+  }
 }
 
 .product-image-container-four {
@@ -1790,6 +1814,7 @@ button {
   aspect-ratio: 1;
   background: #03120c;
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 .product-image-container-four img {
@@ -1798,10 +1823,6 @@ button {
   object-fit: cover;
   display: block;
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.product-card-four:hover .product-image-container-four img {
-  transform: scale(1.08);
 }
 
 .product-deity-badge-four {
@@ -1821,10 +1842,11 @@ button {
 }
 
 .product-info-four {
-  padding: 18px 16px 20px;
+  padding: 18px 16px 14px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  touch-action: manipulation;
 }
 
 .product-category-meta {
@@ -1845,10 +1867,6 @@ button {
   transition: color 0.3s ease;
 }
 
-.product-card-four:hover .product-title-four {
-  color: #ffd966;
-}
-
 .product-card {
   background: #061e16;
   border: 1px solid rgba(212, 175, 55, 0.32);
@@ -1858,12 +1876,20 @@ button {
   display: flex;
   flex-direction: column;
   position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--gold-primary);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold-primary);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .product-card:hover .product-image-container img {
+    transform: scale(1.06);
+  }
 }
 
 .product-image-container {
@@ -1872,17 +1898,15 @@ button {
   aspect-ratio: 1;
   background: #04140d;
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 .product-image-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.product-card:hover .product-image-container img {
-  transform: scale(1.06);
 }
 
 .wishlist-btn {
@@ -1988,6 +2012,8 @@ button {
   transition: var(--transition);
   cursor: pointer;
   margin-top: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .add-to-cart-btn:hover {

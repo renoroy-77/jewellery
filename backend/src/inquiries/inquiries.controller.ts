@@ -20,9 +20,19 @@ export class InquiriesController {
   constructor(private readonly inquiriesService: InquiriesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all inquiries with optional filtering' })
-  findAll(@Query('status') status?: string, @Query('search') search?: string) {
-    return this.inquiriesService.findAll(status, search);
+  @ApiOperation({ summary: 'Get all inquiries with optional filtering and pagination' })
+  findAll(
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.inquiriesService.findAll(
+      status,
+      search,
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 
   @Get(':id')

@@ -73,6 +73,11 @@ model Product {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  @@index([category])
+  @@index([featured])
+  @@index([inStock])
+  @@index([createdAt])
+  @@index([price])
   @@map("products")
 }
 
@@ -99,6 +104,10 @@ model Order {
   updatedAt        DateTime @updatedAt
 
   @@index([devoteeId])
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -118,6 +127,8 @@ model DevoteeUser {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
+  @@index([phone])
+  @@index([createdAt])
   @@map("devotee_users")
 }
 
@@ -150,6 +161,8 @@ model OtpVerification {
   createdAt DateTime @default(now())
 
   @@index([email])
+  @@index([expiresAt])
+  @@index([createdAt])
   @@map("otp_verifications")
 }
 
@@ -172,6 +185,9 @@ model BlogPost {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  @@index([category])
+  @@index([featured])
+  @@index([createdAt])
   @@map("blog_posts")
 }
 
@@ -326,6 +342,8 @@ model Inquiry {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  @@index([status])
+  @@index([createdAt])
   @@map("inquiries")
 }
 

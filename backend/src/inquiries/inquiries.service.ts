@@ -9,7 +9,7 @@ export class InquiriesService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(status?: string, search?: string) {
+  async findAll(status?: string, search?: string, rawPage?: number, rawLimit?: number) {
     const where: any = {};
 
     if (status && status !== 'ALL') {
@@ -25,6 +25,32 @@ export class InquiriesService {
         { referenceId: { contains: q, mode: 'insensitive' } },
         { message: { contains: q, mode: 'insensitive' } },
       ];
+    }
+
+    const isPaginated = rawPage !== undefined || rawLimit !== undefined;
+
+    if (isPaginated) {
+      const page = Math.max(1, Number(rawPage) || 1);
+      const limit = Math.max(1, Number(rawLimit) || 10);
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+        this.prisma.inquiry.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.inquiry.count({ where }),
+      ]);
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
     }
 
     return this.prisma.inquiry.findMany({

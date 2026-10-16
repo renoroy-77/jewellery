@@ -50,28 +50,6 @@ export class AuthService {
   async sendDevoteeOtp(dto: SendDevoteeOtpDto) {
     const email = dto.email.toLowerCase().trim();
 
-    // Check recent unverified OTP request to enforce a 30s resend cooldown
-    const recentOtp = await this.prisma.otpVerification.findFirst({
-      where: {
-        email,
-        verified: false,
-        createdAt: { gt: new Date(Date.now() - 30 * 1000) },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (recentOtp) {
-      const elapsedSeconds = Math.floor(
-        (Date.now() - new Date(recentOtp.createdAt).getTime()) / 1000,
-      );
-      const remainingCooldown = Math.max(0, 30 - elapsedSeconds);
-      return {
-        success: true,
-        message: `OTP was recently sent. Please check your inbox or wait ${remainingCooldown} seconds before requesting a new code.`,
-        cooldownRemaining: remainingCooldown,
-      };
-    }
-
     // Generate random 6-digit numeric OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -99,10 +77,17 @@ export class AuthService {
     });
     const recipientName = existingUser?.name || dto.name || 'Devotee';
 
-    // Dispatch email via Nodemailer Gmail SMTP
-    const emailSent = await this.mailService.sendOtpEmail(email, otp, recipientName);
-
-    this.logger.log(`Devotee OTP [${otp}] dispatched for email: ${email} (emailSent: ${emailSent})`);
+    // Dispatch email asynchronously via Nodemailer (pooled Gmail SMTP) without blocking client response
+    this.mailService
+      .sendOtpEmail(email, otp, recipientName)
+      .then((emailSent) => {
+        this.logger.log(
+          `Devotee OTP [${otp}] dispatched for email: ${email} (emailSent: ${emailSent})`,
+        );
+      })
+      .catch((err: any) => {
+        this.logger.error(`Async OTP email dispatch error for ${email}: ${err.message}`);
+      });
 
     return {
       success: true,

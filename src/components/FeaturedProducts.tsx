@@ -51,29 +51,30 @@ export default function FeaturedProducts() {
         <div className="product-grid-four">
           {featuredProducts.map((product: Product) => (
             <article key={product.id} className="product-card-four" id={`product-${product.id}`}>
+              <Link
+                href={`/products/${product.slug}`}
+                className="product-card-four-link"
+                aria-label={`View details for ${product.name}`}
+              >
                 <div className="product-image-container-four">
-                  <Link href={`/products/${product.slug}`} aria-label={`View details for ${product.name}`}>
-                    <img
-                      src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
-                      alt={`${product.name} - Panchaloham Temple Jewellery`}
-                      title={`${product.name} - Panchaloham Temple Jewellery`}
-                      width={320}
-                      height={320}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
-                      }}
-                    />
-                  </Link>
+                  <img
+                    src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
+                    alt={`${product.name} - Panchaloham Temple Jewellery`}
+                    title={`${product.name} - Panchaloham Temple Jewellery`}
+                    width={320}
+                    height={320}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/assets/prod_ganesha_hq.webp';
+                    }}
+                  />
                   <span className="product-deity-badge-four">{product.deity || 'Sacred'}</span>
                 </div>
 
                 <div className="product-info-four">
                   <div className="product-category-meta">{(product.category || 'Panchaloham').toUpperCase()}</div>
-                  <h3 className="product-title-four">
-                    <Link href={`/products/${product.slug}`}>{product.name}</Link>
-                  </h3>
+                  <h3 className="product-title-four">{product.name}</h3>
 
                   <div className="product-rating">
                     <div className="rating-stars" role="img" aria-label={`${product.rating || 5} out of 5 stars`}>
@@ -97,17 +98,25 @@ export default function FeaturedProducts() {
                       </span>
                     )}
                   </div>
-
-                  <button
-                    className="add-to-cart-btn"
-                    onClick={() => addToCart(product, 1)}
-                    aria-label={`Add to Bag: ${product.name}`}
-                  >
-                    <ShoppingBag size={16} />
-                    <span>{t('featured.add_to_bag', 'Add to Bag')}</span>
-                  </button>
                 </div>
-              </article>
+              </Link>
+
+              <div className="product-card-actions-wrap" style={{ padding: '0 16px 18px', marginTop: 'auto' }}>
+                <button
+                  type="button"
+                  className="add-to-cart-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(product, 1);
+                  }}
+                  aria-label={`Add to Bag: ${product.name}`}
+                >
+                  <ShoppingBag size={16} />
+                  <span>{t('featured.add_to_bag', 'Add to Bag')}</span>
+                </button>
+              </div>
+            </article>
           ))}
         </div>
       </div>

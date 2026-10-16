@@ -252,52 +252,49 @@ export default async function CategoryPage({ params }: Props) {
             <div className="product-grid">
               {matchedProducts.map((product) => (
                 <article key={product.id} className="product-card">
-                  <div className="product-image-container">
-                    <Link href={`/products/${product.slug}`}>
+                  <Link href={`/products/${product.slug}`} className="product-card-link" aria-label={`View ${product.name}`}>
+                    <div className="product-image-container">
                       <img
                         src={product.images?.[0] || '/assets/prod_ganesha_hq.webp'}
                         alt={product.name}
                         loading="lazy"
                       />
-                    </Link>
-                    <span className="product-deity-badge">{product.deity || 'Sacred'}</span>
-                  </div>
-                  <div className="product-info">
-                    <h3 className="product-title">
-                      <Link href={`/products/${product.slug}`}>{product.name}</Link>
-                    </h3>
-                    <div className="product-rating">
-                      <div className="rating-stars">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={13}
-                            fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
-                            stroke="#f5d77f"
-                          />
-                        ))}
+                      <span className="product-deity-badge">{product.deity || 'Sacred'}</span>
+                    </div>
+                    <div className="product-info">
+                      <h3 className="product-title">{product.name}</h3>
+                      <div className="product-rating">
+                        <div className="rating-stars">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={13}
+                              fill={i < Math.floor(product.rating || 5) ? '#f5d77f' : 'none'}
+                              stroke="#f5d77f"
+                            />
+                          ))}
+                        </div>
+                        <span className="rating-count">({product.reviewsCount || 1})</span>
                       </div>
-                      <span className="rating-count">({product.reviewsCount || 1})</span>
-                    </div>
-                    <div className="product-price-row">
-                      <span className="current-price">
-                        ₹{Number(product.price || 0).toLocaleString('en-IN')}
-                      </span>
-                      {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
-                        <span className="original-price">
-                          ₹{Number(product.originalPrice).toLocaleString('en-IN')}
+                      <div className="product-price-row">
+                        <span className="current-price">
+                          ₹{Number(product.price || 0).toLocaleString('en-IN')}
                         </span>
-                      )}
+                        {product.originalPrice != null && Number(product.originalPrice) > Number(product.price || 0) && (
+                          <span className="original-price">
+                            ₹{Number(product.originalPrice).toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className="add-to-cart-btn"
+                        style={{ textAlign: 'center' }}
+                      >
+                        <ShoppingBag size={16} />
+                        <span>View Sacred Details</span>
+                      </div>
                     </div>
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="add-to-cart-btn"
-                      style={{ textAlign: 'center' }}
-                    >
-                      <ShoppingBag size={16} />
-                      <span>View Sacred Details</span>
-                    </Link>
-                  </div>
+                  </Link>
                 </article>
               ))}
             </div>
